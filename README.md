@@ -1,1 +1,1 @@
-# Algorithm-for-Learning-Mod-2-MA
+# Algorithm for Learning Mod-2-MA
