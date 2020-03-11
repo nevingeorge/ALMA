@@ -8,7 +8,7 @@ The input file is a text document containing the specifications of the target fu
 <size of the alphabet>
   
 <characters in the alphabet>
-
+  
 <size of the target function (r)>
 
 <γ of the target function (fy)>
