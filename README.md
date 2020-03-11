@@ -4,17 +4,18 @@ The algorithm takes in as input a mod-2-MA and prints to stdout the MA obtained 
 
 ### Format of Input File
 The input file is a text document containing the specifications of the target function. It must have the following format (there is no separation between the lines and all the characters are space separated):
-  
-<size of the target function (r)>
 
-<γ of the target function (fy)>
+Line 1: size of the alphabet
 
-<size of the alphabet>
-  
-<characters in the alphabet>
+Line 2: characters in the alphabet
 
-Rest of the file:
-List of μ's for each character in the alphabet, with each μ appears in a rxr grid
+Line 3: size of the target function (r)
+
+Line 4: γ of the target function (fy)
+
+Lines 5-end: List of μ's for each character in the alphabet, with each μ appearing in a rxr grid
+
+Examples of input files can be found in the respository.
 
 ### Author: Nevin George
 
