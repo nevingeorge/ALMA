@@ -17,6 +17,8 @@ Lines 5-end: List of μ's for each character in the alphabet, with each μ appea
 
 Example input files can be found in the respository.
 
+In Mod2_MA.java, change the file name in the initialize function to the name of the intended input file.
+
 ### Author: Nevin George
 
 ### Advisor: Dana Angluin
