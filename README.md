@@ -15,7 +15,7 @@ Line 4: γ of the target function (fy)
 
 Lines 5-end: List of μ's for each character in the alphabet, with each μ appearing in a rxr grid
 
-Examples of input files can be found in the respository.
+Example input files can be found in the respository.
 
 ### Author: Nevin George
 
