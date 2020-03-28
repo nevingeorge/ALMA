@@ -3,7 +3,7 @@
 The algorithm (written in Java) takes as input a mod-2-MA and prints to stdout the MA obtained after learning the input function through a series of membership and equivalence queries. The motivation behind this algorithm originally arose from Angluin's exact learning model described in her paper "Learning regular sets from queries and counterexamples."
 
 ### Format of Input File
-The input file is a text document containing the specifications of the target function. It must have the following format (there is no line separation, characters are space separated, and lines beginning with // are ignored):
+The input file is a text document containing the specifications of the target function. It must have the following format (no line separation, characters are space separated, and lines beginning with // are ignored):
 
 Line 1: size of the alphabet
 
