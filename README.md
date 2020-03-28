@@ -5,7 +5,7 @@ The algorithm (written in Java) takes as input a mod-2-MA and prints to stdout t
 ### Format of Input File
 The input file is a text document containing the specifications of the target function. It must have the following format (no line separation, characters are space separated, and lines beginning with // are ignored):
 
-Line 1: size of the alphabet
+Line 1: alphabet size
 
 Line 2: characters in the alphabet
 
