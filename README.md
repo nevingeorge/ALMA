@@ -1,6 +1,5 @@
-# Algorithm for Learning Mod-2-MA
-
-The algorithm (written in Java) takes as input a mod-2-MA and prints to stdout the MA obtained after learning the input function through a series of membership and equivalence queries. The motivation behind this algorithm originally arose from Angluin's exact learning model described in her paper "Learning regular sets from queries and counterexamples."
+# Algorithm for Learning Mod-2-Multiplicity Automata
+Mod2_MA.java takes as input a mod-2-MA and prints to stdout the MA obtained after learning the input function through a series of membership and equivalence queries. The motivation behind this algorithm originally arose from Angluin's exact learning model described in her paper "Learning regular sets from queries and counterexamples."
 
 ### Format of Input File
 The input file is a text document containing the specifications of the target function. It must have the following format (no line separation, characters are space separated, and lines beginning with // are ignored):
@@ -19,6 +18,28 @@ Example input files can be found in the respository.
 
 In Mod2_MA.java, change the file name in the initialize function to the name of the intended input file.
 
+# Algorithm for Learning Strongly Unambiguous Büchi Automata (SUBA)
+SUBA.java takes as input a SUBA and converts it into an equivalent UFA. The resulting UFA is then converted into an equivalent mod-2-MA and learned using Mod2_MA.java.
+
+### Format of Input File
+The input file is a text document containing the specifications of a SUBA of the form (Q, Σ, Q_in, ∆, F). The file must have the following format (no line separation, characters are space separated, and lines beginning with // are ignored):
+
+Line 1: number of states (Q)
+
+Line 2: alphabet size
+
+Line 3: characters in the alphabet
+
+Line 4: initial states (Q_in)
+
+Line 5: final states (F)
+
+Lines 6-end: transitions - each line has the form q_i a q_j, where q_i,q_j∈ and a is a letter in the alphabet.
+
+Example input files can be found in the GitHub repository.
+
+In SUBA.java, change the file name in the SUBAtoUFA function to the name of the intended input file.
+  
 ### Author: Nevin George
 
 ### Advisor: Dana Angluin
