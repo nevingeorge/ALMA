@@ -1,0 +1,16 @@
+// number of states
+2
+// alphabet size
+2
+// alphabet
+a b
+// initial states
+1
+// final states
+1 2
+// number of transitions
+3
+// transitions
+1 a 2
+1 a 1
+2 b 2
