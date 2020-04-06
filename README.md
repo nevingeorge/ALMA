@@ -34,7 +34,9 @@ Line 4: initial states (Q_in)
 
 Line 5: final states (F)
 
-Lines 6-end: transitions - each line has the form q_i a q_j, where q_i,q_j∈ and a is a letter in the alphabet.
+Line 6: number of transitions
+
+Lines 7-end: transitions - each line has the form q_i a q_j, where q_i,q_j∈ and a is a letter in the alphabet.
 
 Example input files can be found in the GitHub repository.
 
@@ -52,3 +54,5 @@ Dana Angluin. Learning regular sets from queries and counterexamples. *Inf. Comp
 Dana Angluin, Timos Antonopoulos, Dana Fisman. Strongly Unambiguous Büchi Automata Are Polynomially Predictable with Membership Queries. *28th International Conference on Computer Science Logic*, 8:1–8:17, 2020.
 
 Michael Thon and Herbert Jaeger. Links Between Multiplicity Automata, Observable Operator Models and Predictive State Representations — a Unified Learning Framework. *Journal of Machine Learning Research*, 16(4):103−147, 2015.
+
+N. Bousquet and C. Löding. Equivalence and inclusion problem for strongly unambiguous büchi automata. In Language and Automata Theory and Applications, 4th International Conference, LATA 2010, Trier, Germany, May 24-28, 2010. Proceedings, pages 118–129, 2010. URL: https: //doi.org/10.1007/978-3-642-13089-2_10, doi:10.1007/978-3-642-13089-2\_10.
