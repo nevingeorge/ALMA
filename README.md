@@ -36,7 +36,7 @@ Line 5: final states (F)
 
 Line 6: number of transitions
 
-Lines 7-end: transitions - each line has the form q_i a q_j, where q_i,q_j∈Σ and a is a letter in the alphabet.
+Lines 7-end: transitions - each line has the form q_i a q_j, where q_i,q_j∈Q and a∈Σ.
 
 Example input files can be found in the GitHub repository.
 
