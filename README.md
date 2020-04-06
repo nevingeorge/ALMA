@@ -1,4 +1,4 @@
-# Algorithm for Learning Mod-2-Multiplicity Automata
+## Algorithm for Learning Mod-2-Multiplicity Automata
 Mod2_MA.java takes as input a mod-2-MA and prints to stdout the MA obtained after learning the input function through a series of membership and equivalence queries. The motivation behind this algorithm originally arose from Angluin's exact learning model described in her paper "Learning regular sets from queries and counterexamples."
 
 ### Format of Input File
@@ -18,7 +18,7 @@ Example input files can be found in the respository.
 
 In Mod2_MA.java, change the file name in the initialize function to the name of the intended input file.
 
-# Algorithm for Learning Strongly Unambiguous Büchi Automata (SUBA)
+## Algorithm for Learning Strongly Unambiguous Büchi Automata (SUBA)
 SUBA.java takes as input a SUBA and converts it into an equivalent UFA. The resulting UFA is then converted into an equivalent mod-2-MA and learned using Mod2_MA.java.
 
 ### Format of Input File
@@ -40,11 +40,11 @@ Example input files can be found in the GitHub repository.
 
 In SUBA.java, change the file name in the SUBAtoUFA function to the name of the intended input file.
   
-### Author: Nevin George
+## Author: Nevin George
 
-### Advisor: Dana Angluin
+## Advisor: Dana Angluin
 
-### References
+## References
 Amos Beimel, Francesco Bergadano, Nader H. Bshouty, Eyal Kushilevitz, Stefano Varric- chio. Learning functions represented    as multiplicity automata. *J. ACM*, 47(3):506–530, May 2000.
 
 Dana Angluin. Learning regular sets from queries and counterexamples. *Inf. Comput.*, 75(2):87–106, 1987.
