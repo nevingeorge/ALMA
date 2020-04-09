@@ -1,3 +1,5 @@
+To run either program, in Terminal/Command Prompt change your current directory to the folder containing Mod2_MA.class and SUBA.class and input the command "java Mod2_MA" or "java SUBA" into the command line.
+
 ## Algorithm for Learning Mod-2-Multiplicity Automata
 Mod2_MA.java takes as input a mod-2-MA and prints to stdout the MA obtained after learning the input function through a series of membership and equivalence queries. The motivation behind this algorithm originally arose from Angluin's exact learning model described in her paper "Learning regular sets from queries and counterexamples."
 
@@ -41,8 +43,6 @@ By default the only initial state of the SUBA (and therefore also the UFA) is q_
 Example input files can be found in the GitHub repository.
 
 In SUBA.java, change the file name in the SUBAtoUFA function to the name of the intended input file.
-
-To run either program, in Terminal/Command Prompt change your current directory to the folder containing Mod2_MA.class and SUBA.class and input the command "java Mod2_MA" or "java SUBA" into the command line.
   
 ## Author: Nevin George
 
