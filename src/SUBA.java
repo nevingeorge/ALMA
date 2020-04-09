@@ -22,6 +22,7 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.HashMap;
+import java.util.Scanner;
 import java.util.StringTokenizer;
 
 public class SUBA {
@@ -64,8 +65,14 @@ public class SUBA {
 		
 		// converts the input SUBA into the UFA described in Bousquet and Löding of the form (Q',ΣU{$},∆',F')
 		
+		
+		System.out.println("Input file name (e.g. SUBA_input1.txt)");
+		Scanner in = new Scanner(System.in);
+        
 		// reads from the input file in quotations, ***EDIT THE FILE NAME DEPENDING ON THE INTENDED INPUT FILE***
-		BufferedReader f = new BufferedReader(new FileReader("SUBA_input1.txt"));
+		BufferedReader f = new BufferedReader(new FileReader(in.nextLine()));
+		in.close();
+		System.out.println("--------------------------------------");
 		
 		// Q' = Q U (Q x Q x {0,1})
 		String line = f.readLine();
