@@ -22,7 +22,7 @@ In Mod2_MA.java, change the file name in the initialize function to the name of 
 SUBA.java takes as input a SUBA and converts it into an equivalent UFA. The resulting UFA is then converted into an equivalent mod-2-MA and learned using Mod2_MA.java.
 
 ### Format of Input File
-The input file is a text document containing the specifications of a SUBA of the form (Q, Σ, Q_in, ∆, F). The file must have the following format (no line separation, characters are space separated, and lines beginning with // are ignored):
+The input file is a text document containing the specifications of a SUBA of the form (Q, Σ, ∆, F). The file must have the following format (no line separation, characters are space separated, and lines beginning with // are ignored):
 
 Line 1: number of states (Q)
 
@@ -30,13 +30,13 @@ Line 2: alphabet size
 
 Line 3: characters in the alphabet
 
-Line 4: initial states (Q_in)
+Line 4: final states (F)
 
-Line 5: final states (F)
+Line 5: number of transitions
 
-Line 6: number of transitions
+Lines 6-end: transitions - each line has the form q_i a q_j, where q_i,q_j∈Q and a∈Σ.
 
-Lines 7-end: transitions - each line has the form q_i a q_j, where q_i,q_j∈Q and a∈Σ.
+By default the only initial state of the SUBA (and therefore also the UFA) is q_1.
 
 Example input files can be found in the GitHub repository.
 
