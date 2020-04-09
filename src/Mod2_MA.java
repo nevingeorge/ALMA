@@ -26,6 +26,9 @@ import java.util.StringTokenizer;
 
 public class Mod2_MA {
 	
+	// if true, displays individual queries
+	public static boolean verbose;
+	
 	// alphabet
 	public static int alphabetSize;
 	public static Character[] alphabet;
@@ -77,12 +80,16 @@ public class Mod2_MA {
 		 * Example input files can be found in the GitHub repository.
 		 */
 		
-		// reads in file name from stdin
-		System.out.println("Input file name (e.g. input1.txt)");
+		// reads in file name + optional flag -v from stdin
+		System.out.println("Input file name and optional flag -v (e.g. input1.txt or input1.txt -v)");
 		Scanner in = new Scanner(System.in);
-		BufferedReader f = new BufferedReader(new FileReader(in.nextLine()));
+		String[] arrInput = in.nextLine().split(" ");
 		in.close();
-		System.out.println("---------------------------------");
+		verbose = false;
+		if(arrInput.length == 2 && arrInput[1].equals("-v"))
+			verbose = true;
+		BufferedReader f = new BufferedReader(new FileReader(arrInput[0]));
+		System.out.println("");
 		
 		// alphabet size
 		String line = f.readLine();
@@ -199,6 +206,11 @@ public class Mod2_MA {
 			}
 		}
 		
+		if(verbose) {
+			System.out.println("Results after individual queries");
+			System.out.println("--------------------------------");
+		}
+		
 		// runs the algorithm
 		learnMA(X, Y);
 		
@@ -210,6 +222,9 @@ public class Mod2_MA {
 	}
 	
 	public static void learnMA(ArrayList<String> X, ArrayList<String> Y) throws Exception {
+		if(verbose)
+			displayQueries(X, Y);
+		
 		// creates the γ for the hypothesis
 		int[] hy = createHY(l, X);
 		// creates the set of μ's for the hypothesis
@@ -451,6 +466,8 @@ public class Mod2_MA {
 	}
 
 	public static void displayResults() {
+		System.out.println("Learned mod-2-MA");
+		System.out.println("----------------");
 		// prints γ
 		System.out.print("y: ");
 		String s = "";
@@ -470,6 +487,18 @@ public class Mod2_MA {
 			}
 			System.out.println();
 		}
+	}
+	
+	public static void displayQueries(ArrayList<String> X, ArrayList<String> Y) {
+		System.out.println("l = " + l);
+		System.out.print("X: ɛ");
+		for(int i=0;i<X.size();i++)
+			System.out.print(X.get(i) + " ");
+		System.out.println("");
+		System.out.print("Y: ɛ");
+		for(int i=0;i<Y.size();i++)
+			System.out.print(Y.get(i) + " ");
+		System.out.println("\n");
 	}
 
 	public static String genLongTest() {

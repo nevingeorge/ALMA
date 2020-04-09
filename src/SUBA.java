@@ -64,14 +64,18 @@ public class SUBA {
 		 */
 		
 		// converts the input SUBA into the UFA described in Bousquet and Löding of the form (Q',ΣU{$},∆',F')
-		
-		// reads in file name from stdin
-		System.out.println("Input file name (e.g. SUBA_input1.txt)");
+
+		// reads in file name + optional flag -v from stdin
+		System.out.println("Input file name and optional flag -v (e.g. SUBA_input1.txt or SUBA_input1.txt -v)");
 		Scanner in = new Scanner(System.in);
-		BufferedReader f = new BufferedReader(new FileReader(in.nextLine()));
+		String[] arrInput = in.nextLine().split(" ");
 		in.close();
-		System.out.println("--------------------------------------");
-		
+		Mod2_MA.verbose = false;
+		if(arrInput.length == 2 && arrInput[1].equals("-v"))
+			Mod2_MA.verbose = true;
+		BufferedReader f = new BufferedReader(new FileReader(arrInput[0]));
+		System.out.println("");
+
 		// Q' = Q U (Q x Q x {0,1})
 		String line = f.readLine();
 		while(line.charAt(0) == '/' && line.charAt(1) == '/')
