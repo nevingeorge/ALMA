@@ -26,7 +26,7 @@ import java.util.StringTokenizer;
 
 public class Mod2_MA {
 	
-	// if true, displays individual queries
+	// if true, displays the rows and columns of the Hankel matrix as it is constructed
 	public static boolean verbose;
 	
 	// alphabet
