@@ -77,10 +77,9 @@ public class Mod2_MA {
 		 * Example input files can be found in the GitHub repository.
 		 */
 		
+		// reads in file name from stdin
 		System.out.println("Input file name (e.g. input1.txt)");
 		Scanner in = new Scanner(System.in);
-        
-		// reads from the input file in quotations, ***EDIT THE FILE NAME DEPENDING ON THE INTENDED INPUT FILE***
 		BufferedReader f = new BufferedReader(new FileReader(in.nextLine()));
 		in.close();
 		System.out.println("---------------------------------");

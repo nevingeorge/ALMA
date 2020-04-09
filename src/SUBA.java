@@ -60,16 +60,14 @@ public class SUBA {
 		 * and a∈Σ.
 		 * 
 		 * By default the only initial state of the SUBA (and therefore also the UFA) is q_1.
-		 * Example input files can be found in the GitHub repository.
+		 * Example input files can be found in the repository.
 		 */
 		
 		// converts the input SUBA into the UFA described in Bousquet and Löding of the form (Q',ΣU{$},∆',F')
 		
-		
+		// reads in file name from stdin
 		System.out.println("Input file name (e.g. SUBA_input1.txt)");
 		Scanner in = new Scanner(System.in);
-        
-		// reads from the input file in quotations, ***EDIT THE FILE NAME DEPENDING ON THE INTENDED INPUT FILE***
 		BufferedReader f = new BufferedReader(new FileReader(in.nextLine()));
 		in.close();
 		System.out.println("--------------------------------------");
