@@ -107,7 +107,7 @@ public class Mod2_MA {
 		 */
 		
 		// reads from the input file in quotations, ***EDIT THE FILE NAME DEPENDING ON THE INTENDED INPUT FILE***
-		BufferedReader f = new BufferedReader(new FileReader("input1.txt"));
+		BufferedReader f = new BufferedReader(new FileReader("input4.txt"));
 		
 		// alphabet size
 		String line = f.readLine();

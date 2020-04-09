@@ -1,9 +1,8 @@
 /*
  * Author: Nevin George
  * Advisor: Dana Angluin
- * Program Description: The algorithm takes in as input a SUBA of the form (Q, Σ, Q_in, ∆, F) and converts it
- * into an equivalent UFA of the form (Q',ΣU{$},Q_in,∆',F'). The resulting UFA is then converted into an
- * equivalent mod-2-MA and learned using the Mod2_MA.java program.
+ * Program Description: The algorithm takes as input a SUBA and converts it into an equivalent UFA. The resulting 
+ * UFA is then converted into an equivalent mod-2-MA and learned using Mod2_MA.java.
  * 
  * References:
  * 1 Amos Beimel, Francesco Bergadano, Nader H. Bshouty, Eyal Kushilevitz, Stefano Varric- chio. Learning 
@@ -28,7 +27,7 @@ import java.util.HashMap;
 import java.util.StringTokenizer;
 
 public class SUBA {
-	// UFA = (Q',ΣU{$},Q_in,∆',F')
+	// UFA = (Q',ΣU{$},∆',F')
 	
 	// Q' has states q_1 to q_numStates
 	public static int numStates;
@@ -38,9 +37,6 @@ public class SUBA {
 	public static Character[] alphabet;
 	// maps letters in alphabet to a corresponding index
 	public static HashMap<Character, Integer> letterToIndex;
-	
-	// initial states Q_in
-	public static boolean[] Q_in;
 	
 	// transition matrix Δ'
 	public static boolean[][][] transition;
@@ -121,24 +117,24 @@ public class SUBA {
 	}
 	
 	public static void SUBAtoUFA() throws Exception {
-		/* The input file containing the SUBA (Q, Σ, Q_in, ∆, F) must have the following format (no line 
+		/* The input file containing the SUBA (Q, Σ, ∆, F) must have the following format (no line 
 		 * separation, characters are space separated, and lines beginning with // are ignored):
 		 * <number of states (Q)>
 		 * <alphabet size>
 		 * <characters in the alphabet>
-		 * <initial states (Q_in)>
 		 * <final states (F)>
 		 * <number of transitions>
 		 * The remaining lines are the transitions, with each line having the form q_j a q_k, where q_j,q_k∈Q
 		 * and a∈Σ.
 		 * 
+		 * By default the only initial state of the SUBA (and therefore also the UFA) is q_1.
 		 * Example input files can be found in the GitHub repository.
 		 */
 		
-		// converts the input SUBA into the UFA described in Bousquet and Löding of the form (Q',ΣU{$},Q_in,∆',F')
+		// converts the input SUBA into the UFA described in Bousquet and Löding of the form (Q',ΣU{$},∆',F')
 		
 		// reads from the input file in quotations, ***EDIT THE FILE NAME DEPENDING ON THE INTENDED INPUT FILE***
-		BufferedReader f = new BufferedReader(new FileReader("SUBA_input2.txt"));
+		BufferedReader f = new BufferedReader(new FileReader("SUBA_input1.txt"));
 		
 		// Q' = Q U (Q x Q x {0,1})
 		String line = f.readLine();
@@ -184,25 +180,6 @@ public class SUBA {
 		letterToIndex = new HashMap<Character, Integer>();
 		for(int i=0;i<alphabetSize;i++)
 			letterToIndex.put(alphabet[i], i);
-		
-		// --------------------------------------------------------------------------------------
-		
-		// initial states (same initial states as input SUBA)
-		line = f.readLine();
-		while(line.charAt(0) == '/' && line.charAt(1) == '/')
-			line = f.readLine();
-		st = new StringTokenizer(line);
-		
-		Q_in = new boolean[numStates+1];
-		while(st.hasMoreTokens()) {
-			int state = Integer.parseInt(st.nextToken());
-			if(1<=state && state<=Q && !Q_in[state])
-				Q_in[state] = true;
-			else {
-				f.close();
-				throw new Exception("Invalid input: invalid or duplicate input state");
-			}
-		}
 		
 		// --------------------------------------------------------------------------------------
 		
@@ -357,7 +334,7 @@ public class SUBA {
 		int[] hy = createHY(l, X);
 		// creates the set of μ's for the hypothesis
 		int[][][] hu = createHU(X, Y, l);
-		
+
 		// sees if the hypothesis = target function, if so returns the hypothesis
 		if(EQ(hy, hu, l)) {
 			resulty = hy;

@@ -1,20 +1,24 @@
 // number of states
-6
+10
 // alphabet size
 15
 // alphabet
 a b c d e f g h i j k l m n o
 // final states
-2 4 5 
+2 4 5 9
 // number of transitions
-9
+13
 // transitions
-1 e 2
-1 g 4
-1 h 5
-1 i 6
 4 a 6
 2 b 3
 4 a 4
 3 m 4
 4 j 5
+8 k 2
+1 c 3
+1 f 4
+1 g 7
+1 h 2
+2 i 9
+9 j 2
+5 g 3

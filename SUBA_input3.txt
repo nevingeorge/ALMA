@@ -4,8 +4,6 @@
 15
 // alphabet
 a b c d e f g h i j k l m n o
-// initial states
-1
 // final states
 2 4 5 
 // number of transitions

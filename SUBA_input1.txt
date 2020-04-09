@@ -4,8 +4,6 @@
 2
 // alphabet
 a b
-// initial states
-1
 // final states
 1 2
 // number of transitions
