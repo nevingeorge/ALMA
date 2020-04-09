@@ -41,6 +41,8 @@ By default the only initial state of the SUBA (and therefore also the UFA) is q_
 Example input files can be found in the GitHub repository.
 
 In SUBA.java, change the file name in the SUBAtoUFA function to the name of the intended input file.
+
+## To run either program, in Terminal/Command Prompt change your current directory to the folder containing Mod2_MA.class and SUBA.class and input the command "java Mod2_MA" or "java SUBA" into the command line.
   
 ## Author: Nevin George
 
