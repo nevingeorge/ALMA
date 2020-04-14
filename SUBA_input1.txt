@@ -1,3 +1,4 @@
+// SUBA for the language (Σ* b)^ω
 // number of states
 2
 // alphabet size
@@ -5,10 +6,11 @@
 // alphabet
 a b
 // final states
-1 2
+2
 // number of transitions
-3
+4
 // transitions
-1 a 2
 1 a 1
+1 a 2
 2 b 2
+2 b 1

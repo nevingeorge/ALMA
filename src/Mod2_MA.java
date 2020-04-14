@@ -58,11 +58,6 @@ public class Mod2_MA {
 	// length of current X and Y
 	public static int l;
 	
-	// length of "long" final check
-	public static int checkLength;
-	// number of "long" strings to check
-	public static int numToCheck;
-	
 	public static void main(String[] args) throws Exception {
 		initialize();
 		run();
@@ -119,6 +114,11 @@ public class Mod2_MA {
 			throw new Exception("Invalid input: alphabet size exceeds the specified size");
 		}
 		
+		// maps each letter in alphabet to an index
+		letterToIndex = new HashMap<Character, Integer>();
+		for(int i=0;i<alphabetSize;i++)
+			letterToIndex.put(alphabet[i], i);
+		
 		// size of the target function
 		line = f.readLine();
 		while(line.charAt(0) == '/' && line.charAt(1) == '/')
@@ -168,20 +168,8 @@ public class Mod2_MA {
 			}
 			line = f.readLine();
 		}
+		
 		f.close();
-		
-		// general variables to initialize
-		
-		checkLength = 100;
-		numToCheck = 20;
-		
-		// initial size of X and Y
-		l = 1;
-		
-		// maps each letter in alphabet to an index
-		letterToIndex = new HashMap<Character, Integer>();
-		for(int i=0;i<alphabetSize;i++)
-			letterToIndex.put(alphabet[i], i);
 	}
 	
 	public static void run() throws Exception {
@@ -190,6 +178,7 @@ public class Mod2_MA {
 		ArrayList<String> Y = new ArrayList<String>();
 		X.add("");
 		Y.add("");
+		l = 1;
 		
 		/* f("") cannot equal 0 (otherwise can't form a linearly independent basis of elements in X).
 		 * The algorithm instead begins with a 2x2 matrix of full rank.
@@ -214,7 +203,7 @@ public class Mod2_MA {
 		// runs the algorithm
 		learnMA(X, Y);
 		
-		// additional final check, checks equivalence of numToCheck "long" randomly generated strings
+		// statistical final check of equivalence
 		if(finalCheck())
 			displayResults();
 		else
@@ -323,18 +312,6 @@ public class Mod2_MA {
 		
 		// multiplies the final result with γ
 		return LinearAlgebra.dotProduct(cur[0],fy);
-	}
-	
-	public static int MQH(String w, int[] hy, int[][][] hu, int l) {
-		// MQ for the current hypothesis
-		int[][] cur = new int[l][l];
-		for(int i=0;i<l;i++)
-			cur[i][i] = 1;
-		
-		for(int i=0;i<w.length();i++)
-			cur = LinearAlgebra.nxnMatrixMult(cur, hu[letterToIndex.get(w.charAt(i))]);
-		
-		return LinearAlgebra.dotProduct(cur[0],hy);
 	}
 	
 	public static boolean EQ(int[] hy, int[][][] hu, int l) {		 
@@ -501,20 +478,32 @@ public class Mod2_MA {
 		System.out.println("\n");
 	}
 
-	public static String genLongTest() {
-		String longTest = "";
+	public static String genTest(int len) {
+		// adds len number of random characters in alphabet to test
+		String test = "";
+		for(int i=0;i<len;i++)
+			test += alphabet[(int)(Math.random()*alphabetSize)];
+		return test;
+	}
+	
+	public static int MQH(String w) {
+		// MQ for the current hypothesis
+		int[][] cur = new int[l][l];
+		for(int i=0;i<l;i++)
+			cur[i][i] = 1;
 		
-		// adds checkLength random characters in alphabet to longTest
-		for(int i=0;i<checkLength;i++)
-			longTest += alphabet[(int)(Math.random()*alphabetSize)];
-		return longTest;
+		for(int i=0;i<w.length();i++)
+			cur = LinearAlgebra.nxnMatrixMult(cur, resultu[letterToIndex.get(w.charAt(i))]);
+		
+		return LinearAlgebra.dotProduct(cur[0],resulty);
 	}
 	
 	public static boolean finalCheck() {
-		for(int i=0;i<numToCheck;i++) {
-			// creates a "long" test and checks whether the hypothesis and target function have the same output
-			String longTest = genLongTest();
-			if(MQ(longTest)!=MQH(longTest, resulty, resultu, l))
+		// creates 20 tests of length 1-100
+		// checks whether the hypothesis and target function have the same output
+		for(int i=1;i<=20;i++) {
+			String test = genTest((int)(Math.random()*100)+1);
+			if(MQ(test)!=MQH(test))
 				return false;
 		}
 		return true;
