@@ -1,4 +1,4 @@
-// SUBA for the language Σ* a Σ^(12−1) a b^ω
+// SUBA for the language Σ* a Σ^11 a b^ω
 // number of states
 14
 // alphabet size
