@@ -1,3 +1,5 @@
+package com.algorithms;
+
 /*
  * Author: Nevin George
  * Advisor: Dana Angluin
@@ -23,6 +25,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
 import java.util.StringTokenizer;
+import org.apache.commons.math3.linear.Array2DRowRealMatrix;
+import org.apache.commons.math3.linear.ArrayRealVector;
+import org.apache.commons.math3.linear.DecompositionSolver;
+import org.apache.commons.math3.linear.LUDecomposition;
+import org.apache.commons.math3.linear.MatrixUtils;
+import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.linear.RealVector;
 
 public class Mod2_MA {
 	
@@ -36,15 +45,15 @@ public class Mod2_MA {
 	public static HashMap<Character, Integer> letterToIndex;
 	
 	// γ of target function
-	public static int[] fy;
+	public static double[] fy;
 	// set of nxn μ's of target function
-	public static int[][][] fu;
+	public static double[][][] fu;
 	// size of target function
 	public static int r;
 	// γ the algorithm produces
-	public static int[] resulty;
+	public static double[] resulty;
 	// set of nxn μ's the algorithm produces
-	public static int[][][] resultu;
+	public static double[][][] resultu;
 	
 	// counter-example
 	public static String z;
@@ -132,7 +141,7 @@ public class Mod2_MA {
 			line = f.readLine();
 		st = new StringTokenizer(line);
 		
-		fy = new int[r];
+		fy = new double[r];
 		for(int i=0;i<r;i++)
 			fy[i] = Integer.parseInt(st.nextToken());
 		
@@ -142,7 +151,7 @@ public class Mod2_MA {
 		}
 		
 		// set of μ's for the target function
-		fu = new int[alphabetSize][r][r];
+		fu = new double[alphabetSize][r][r];
 		for(int i=0;i<alphabetSize;i++) {
 			for(int j=0;j<r;j++) {
 				line = f.readLine();
@@ -184,8 +193,8 @@ public class Mod2_MA {
 		 * The algorithm instead begins with a 2x2 matrix of full rank.
 		 */
 		if(MQ("")==0) {
-			int[] hy = createHY(l, X);
-			int[][][] setOfHu = createHU(X, Y, l);
+			double[] hy = createHY(l, X);
+			double[][][] setOfHu = createHU(X, Y, l);
 			
 			// generates a counter-example z
 			if(!EQ(hy, setOfHu, l)) {
@@ -215,9 +224,9 @@ public class Mod2_MA {
 			displayQueries(X, Y);
 		
 		// creates the γ for the hypothesis
-		int[] hy = createHY(l, X);
+		double[] hy = createHY(l, X);
 		// creates the set of μ's for the hypothesis
-		int[][][] hu = createHU(X, Y, l);
+		double[][][] hu = createHU(X, Y, l);
 		
 		// sees if the hypothesis = target function, if so returns the hypothesis
 		if(EQ(hy, hu, l)) {
@@ -242,58 +251,53 @@ public class Mod2_MA {
 		learnMA(X, Y);
 	}
 	
-	public static int[] createHY(int l, ArrayList<String> X) {
+	public static double[] createHY(int l, ArrayList<String> X) {
 		// γ is the set of results obtained after performing membership queries on the indices in X
-		int[] y = new int[l];
+		double[] y = new double[l];
 		for(int i=0;i<l;i++) 
 			y[i] = MQ(X.get(i));
 		return y;
 	}
 	
-	public static int[][][] createHU(ArrayList<String> X, ArrayList<String> Y, int l) {
+	public static double[][][] createHU(ArrayList<String> X, ArrayList<String> Y, int l) {
 		/*
 		 * For every s, define a matrix μ by letting its i-th row be the coefficients of the vector F_{xi+σ}(y) 
 		 * when expressed as a linear combination of the vectors F_x1 to F_xl (such coefficients exist as F_x1 
 		 * to F_xl are linearly independent).
 		*/
-		int[][][] setOfU = new int[alphabetSize][l][l];
+		
+		double[][][] setOfU = new double[alphabetSize][l][l];
 		for(int c=0;c<alphabetSize;c++) {
 			// calculuates μ_c
 			char sig = alphabet[c];
-			int[][] u = new int[l][l];
 			
-			// calculates the vectors F_x1 to F_xl
-			int[][] rowsOfFxi = new int[l][l];
-			for(int j=0;j<l;j++) {
-				int[] Fxi = new int[l];
-				for(int k=0;k<l;k++)
-					Fxi[k] = MQ(X.get(j) + Y.get(k));
-				rowsOfFxi[j] = Fxi;
-			}
-			
-			int[][] inverseRoF;
-			// if rowsOfFxi is not invertible, inverseRoF is a 0 matrix
-			if(LinearAlgebra.determinant(rowsOfFxi)==0) {
-				inverseRoF = new int[l][l];
+			// calculates the vectors F_xi and F_{xi+σ}
+			double[][] F_xi = new double[l][l];
+			double[][] F_xi_sigma = new double[l][l];
+			for(int i=0;i<l;i++) {
 				for(int j=0;j<l;j++) {
-					for(int k=0;k<l;k++)
-						inverseRoF[j][k] = 0;
+					F_xi[j][i] = MQ(X.get(i) + Y.get(j));
+					F_xi_sigma[i][j] = MQ(X.get(i) + sig + Y.get(j));
 				}
 			}
-			else
-				inverseRoF = LinearAlgebra.inverse(rowsOfFxi);
 			
+			// solves the matrix equation using LU Decomposition
+			RealMatrix coefficients = new Array2DRowRealMatrix(F_xi);
+			DecompositionSolver solver = new LUDecomposition(coefficients).getSolver();
 			for(int i=0;i<l;i++) {
-				// calculates F_{xi+σ}
-				int[] Fxisig = new int[l];
-				for(int j=0;j<l;j++)
-					Fxisig[j] = MQ(X.get(i) + sig + Y.get(j));
-				
-				// calculates μ
-				u[i] = LinearAlgebra.rowxnxnMatrixMult(Fxisig, inverseRoF);
+				RealVector constants = new ArrayRealVector(F_xi_sigma[i]);
+				try {
+					RealVector solution = solver.solve(constants);
+					for(int j=0;j<l;j++)
+						setOfU[c][i][j] = mod2(solution.getEntry(j));
+				}
+				// matrix is not invertible
+				catch(Exception e) {
+					for(int j=0;j<l;j++)
+						setOfU[c][i][j] = 0;
+				}
 			}
 			
-			setOfU[c] = u;
 		}
 		return setOfU;
 	}
@@ -302,19 +306,31 @@ public class Mod2_MA {
 		// MQ for the target function
 		
 		// initializes cur as the rxr identity matrix
-		int[][] cur = new int[r][r];
-		for(int i=0;i<r;i++)
-			cur[i][i] = 1;
+		RealMatrix cur = MatrixUtils.createRealIdentityMatrix(r);
 		
 		// multiplies cur by the corresponding μ for each letter in ω
 		for(int i=0;i<w.length();i++)
-			cur = LinearAlgebra.nxnMatrixMult(cur, fu[letterToIndex.get(w.charAt(i))]);
+			cur = cur.multiply(MatrixUtils.createRealMatrix(fu[letterToIndex.get(w.charAt(i))]));
 		
 		// multiplies the final result with γ
-		return LinearAlgebra.dotProduct(cur[0],fy);
+		return mod2(cur.getRowVector(0).dotProduct(new ArrayRealVector(fy)));
 	}
 	
-	public static boolean EQ(int[] hy, int[][][] hu, int l) {		 
+	public static int MQH(String w) {
+		// MQ for the current hypothesis
+		
+		// initializes cur as the rxr identity matrix
+		RealMatrix cur = MatrixUtils.createRealIdentityMatrix(r);
+		
+		// multiplies cur by the corresponding μ for each letter in ω
+		for(int i=0;i<w.length();i++)
+			cur = cur.multiply(MatrixUtils.createRealMatrix(fu[letterToIndex.get(w.charAt(i))]));
+		
+		// multiplies the final result with γ
+		return mod2(cur.getRowVector(0).dotProduct(new ArrayRealVector(fy)));
+	}
+	
+	public static boolean EQ(double[] hy, double[][][] hu, int l) {		 
 		/* EQ constructs the MA formed by combining the target function and hypothesis.
 		 * 
 		 * Each μ(ω) of the combined MA has the following form (the 0's representing block 0 matrices):
@@ -334,7 +350,7 @@ public class Mod2_MA {
 		 */
 		
 		// set of μ for the combined MA
-		int[][][] setOfU = new int[alphabetSize][r+l][r+l];
+		double[][][] setOfU = new double[alphabetSize][r+l][r+l];
 		for(int i=0;i<alphabetSize;i++) {
 			for(int j=0;j<r+l;j++) {
 				for(int k=0;k<r+l;k++) {
@@ -352,7 +368,7 @@ public class Mod2_MA {
 		}
 		
 		// γ for the combined MA
-		int[] y = new int[r+l];
+		double[] y = new double[r+l];
 		for(int i=0;i<r+l;i++) {
 			// γ has the form [fy hy]
 			if(i<r)
@@ -363,12 +379,13 @@ public class Mod2_MA {
 		
 		// To form the basis, we will follow algorithm 1 detailed in the paper by Thon and Jaeger.
 		// Basis for the set span(μ(ω)γ : ω∈Σ*)
-		ArrayList<int[]> B = new ArrayList<int[]>();
+		double[][] B = new double[r+l][r+l];
+		int sizeB = 0;
 		// Contains the corresponding ω for every element in B
 		ArrayList<String> WB = new ArrayList<String>();
 		
 		// Set with elements to try to add to B, begin with y
-		ArrayList<int[]> C = new ArrayList<int[]>();
+		ArrayList<double[]> C = new ArrayList<double[]>();
 		// Contains the corresponding ω for every element in C
 		ArrayList<String> WC = new ArrayList<String>();
 		C.add(y);
@@ -377,25 +394,28 @@ public class Mod2_MA {
 		
 		while(sizeC>0) {
 			// element to test
-			int[] w = C.remove(0);
+			double[] w = C.remove(0);
 			String s = WC.remove(0);
 			sizeC--;
 			
 			// tests if ω is linearly independent of B
-			if(LinearAlgebra.linInd(w, B)) {
+			if(linInd(w, B, sizeB)) {
 				// found a counter-example
-				if(LinearAlgebra.mod2(w[0]+w[r]) == 1) {
+				if(mod2(w[0]+w[r]) == 1) {
 					z = s;
 					return false;
 				}
 				
 				// extends B
-				B.add(w);
+				B[sizeB++] = w;
 				WB.add(s);
 				
 				// adds {μ(σ)ω | σ∈Σ} to C
 				for(int i=0;i<alphabetSize;i++) {
-					C.add(LinearAlgebra.nxnxnx1MatrixMult(setOfU[i],w));
+					RealMatrix m = MatrixUtils.createRealMatrix(setOfU[i]);
+					RealVector p = MatrixUtils.createRealVector(w);
+					double[] v = m.operate(p).toArray();
+					C.add(v);
 					WC.add(alphabet[i]+s);
 					sizeC++;
 				}
@@ -406,7 +426,67 @@ public class Mod2_MA {
 		return true;
 	}
 	
-	public static void calcWSigY(int l, int[][][] hu, ArrayList<String> X, ArrayList<String> Y) throws Exception {
+	public static boolean linInd(double[] w, double[][] B, int sizeB) {
+		if(sizeB==0)
+			return true;
+		
+		// forms the augmented matrix B|w
+		int numRows = w.length;
+		int numCols = sizeB+1;
+		
+		RealMatrix m = MatrixUtils.createRealMatrix(numRows, numCols);
+		for(int i=0;i<sizeB;i++)
+			m.setColumn(i,B[i]);
+		m.setColumn(numCols-1, w);
+		
+		// put the augmented matrix in rref
+		int r=0;
+		for(int c=0;c<numCols && r<numRows;c++) {
+			int j = r;
+			for(int i=r+1;i<numRows;i++)
+				if(mod2(m.getEntry(i, c)) >mod2(m.getEntry(j, c)))
+					j = i;
+			if(mod2(m.getEntry(j, c)) == 0)
+				continue;
+
+			RealMatrix temp = m.getRowMatrix(j);
+			m.setRowMatrix(j,m.getRowMatrix(r));
+			m.setRowMatrix(r,temp);
+
+			for(int i=0;i<numRows;i++) {
+				if(i!=r) {
+					int t = mod2(m.getEntry(i, c));
+					for(j=0;j<numCols;j++)
+						m.setEntry(i, j, mod2(m.getEntry(i,j) - (t * m.getEntry(r, j))));
+				}
+			}
+			r++;
+		}
+		
+		// finds the index of the last 1 in the last column (if exists)
+		int index = -1;
+		for(int i=numRows-1;i>=0;i--) {
+			if(mod2(m.getEntry(i, numCols-1)) == 1) {
+				index = i;
+				break;
+			}
+		}
+		
+		// last vector is the 0 vector, in span(B)
+		if(index == -1)
+			return false;
+		
+		// checks whether in span
+		for(int j=0;j<numCols-1;j++) {
+			if(mod2(m.getEntry(index, j)) == 1)
+				return false;
+		}
+		
+		// linearly independent
+		return true;
+	}
+	
+	public static void calcWSigY(int l, double[][][] hu, ArrayList<String> X, ArrayList<String> Y) throws Exception {
 		// goes through every possible prefix of z starting with ω = "" and σ = (first character of ω)
 		// prefix = ω + σ
 		for(int i=0;i<z.length();i++) {
@@ -415,12 +495,9 @@ public class Mod2_MA {
 			sig = z.charAt(i);
 			
 			// calculates μ(ω)
-			int[][] u = new int[l][l];
-			for(int m=0;m<l;m++)
-				u[m][m] = 1;
-			
+			RealMatrix u = MatrixUtils.createRealIdentityMatrix(l);
 			for(int n=0;n<w.length();n++)
-				u = LinearAlgebra.nxnMatrixMult(u, hu[letterToIndex.get(w.charAt(n))]);
+				u = u.multiply(MatrixUtils.createRealMatrix(hu[letterToIndex.get(w.charAt(n))]));
 			
 			// goes through every possible value of y in Y
 			// equation is F_{ω+σ}(y) != sum((μ(ω)_1,i) * F_{xi+σ}(y))
@@ -430,8 +507,8 @@ public class Mod2_MA {
 				
 				int right = 0;
 				for(int k=0;k<l;k++)
-					right += u[0][k] * MQ(X.get(k) + sig + y);
-				right = LinearAlgebra.mod2(right);
+					right += mod2(u.getEntry(0, k)) * MQ(X.get(k) + sig + y);
+				right = mod2(right);
 				
 				// found a solution, values we want to return are set using global variables
 				if(left!=right)
@@ -449,7 +526,7 @@ public class Mod2_MA {
 		System.out.print("y: ");
 		String s = "";
 		for(int i=0;i<resulty.length;i++)
-			s += resulty[i] + " ";
+			s += mod2(resulty[i]) + " ";
 		System.out.println(s + "\n");
 		
 		// prints the μ's
@@ -459,7 +536,7 @@ public class Mod2_MA {
 			for(int j=0;j<resultu[i].length;j++) {
 				s = "";
 				for(int k=0;k<resultu[i].length;k++)
-					s += resultu[i][j][k] + " ";
+					s += mod2(resultu[i][j][k]) + " ";
 				System.out.println(s);
 			}
 			System.out.println();
@@ -486,18 +563,6 @@ public class Mod2_MA {
 		return test;
 	}
 	
-	public static int MQH(String w) {
-		// MQ for the current hypothesis
-		int[][] cur = new int[l][l];
-		for(int i=0;i<l;i++)
-			cur[i][i] = 1;
-		
-		for(int i=0;i<w.length();i++)
-			cur = LinearAlgebra.nxnMatrixMult(cur, resultu[letterToIndex.get(w.charAt(i))]);
-		
-		return LinearAlgebra.dotProduct(cur[0],resulty);
-	}
-	
 	public static boolean finalCheck() {
 		// creates 20 tests of length 1-100
 		// checks whether the hypothesis and target function have the same output
@@ -508,5 +573,12 @@ public class Mod2_MA {
 		}
 		return true;
 	}
-
+	
+	public static int mod2(double n) {
+		int temp = (int) Math.round(n);
+		if(temp%2==0)
+			return 0;
+		else
+			return 1;
+	}
 }

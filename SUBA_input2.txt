@@ -1,36 +1,27 @@
-// SUBA for the language ((a+b)* (a (a+b)^2 a (a+b)^2 c + b (a+b)^2 b (a+b)^2 d))^ω
+// SUBA for the language Σ* a Σ^5 a b^ω
 // number of states
-13
+8
 // alphabet size
-4
-// alphabet
-a b c d
-// final states
 2
+// alphabet
+a b
+// final states
+8
 // number of transitions
-24
+15
 // transitions
 1 a 1
 1 b 1
 1 a 2
-1 b 8
 2 a 3
 2 b 3
 3 a 4
 3 b 4
 4 a 5
+4 b 5
 5 a 6
 5 b 6
 6 a 7
 6 b 7
-7 c 1
-8 a 9
-8 b 9
-9 a 10
-9 b 10
-10 b 11
-11 a 12
-11 b 12
-12 a 13
-12 b 13
-13 d 1
+7 a 8
+8 b 8

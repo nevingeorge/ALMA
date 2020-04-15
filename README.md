@@ -1,5 +1,3 @@
-To run either program, in Terminal/Command Prompt change your current directory to the bin folder and input the command "java Mod2_MA" or "java SUBA" into the command line. The program will then ask for the input file name and an optional flag -v. If the optional flag is entered, the program will display the rows and columns of the Hankel matrix as it is being constructed.
-
 ## Algorithm for Learning Mod-2-Multiplicity Automata
 Mod2_MA.java takes as input a mod-2-MA and prints to stdout the MA obtained after learning the input function through a series of membership and equivalence queries. The motivation behind this algorithm originally arose from Angluin's exact learning model described in her paper "Learning regular sets from queries and counterexamples."
 

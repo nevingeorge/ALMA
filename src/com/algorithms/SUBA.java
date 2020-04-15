@@ -1,3 +1,4 @@
+package com.algorithms;
 /*
  * Author: Nevin George
  * Advisor: Dana Angluin
@@ -270,14 +271,14 @@ public class SUBA {
 		Mod2_MA.r = Q_UFA;
 		
 		// fy is the characteristic vector of F
-		Mod2_MA.fy = new int[Mod2_MA.r];
+		Mod2_MA.fy = new double[Mod2_MA.r];
 		for(int i=1;i<=Q_UFA;i++) {
 			if(F_UFA[i])
 				Mod2_MA.fy[i-1] = 1;
 		}
 		
 		// for each σ∈Σ, [μ_σ]i,j = 1 if and only if (q_i,σ,q_j)∈∆
-		Mod2_MA.fu = new int[Mod2_MA.alphabetSize][Mod2_MA.r][Mod2_MA.r];
+		Mod2_MA.fu = new double[Mod2_MA.alphabetSize][Mod2_MA.r][Mod2_MA.r];
 		for(int i=0;i<Mod2_MA.alphabetSize;i++) {
 			for(int j=1;j<=Mod2_MA.r;j++) {
 				for(int k=1;k<=Mod2_MA.r;k++) {
