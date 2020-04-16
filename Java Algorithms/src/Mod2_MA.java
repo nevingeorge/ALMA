@@ -1,5 +1,3 @@
-package com.algorithms;
-
 /*
  * Author: Nevin George
  * Advisor: Dana Angluin
