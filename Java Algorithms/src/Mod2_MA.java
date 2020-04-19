@@ -48,10 +48,19 @@ public class Mod2_MA {
 	public static double[][][] fu;
 	// size of target function
 	public static int r;
-	// γ the algorithm produces
-	public static double[] resulty;
-	// set of nxn μ's the algorithm produces
-	public static double[][][] resultu;
+	
+	// Hankel matrix
+	public static ArrayList<Integer> F;
+	public static int sizeF;
+	// maps words to indices of F
+	public static HashMap<String, Integer> wordToIndex;
+	
+	// row indices of F
+	public static ArrayList<String> X;
+	// column indices of F
+	public static ArrayList<String> Y;
+	// size of X and Y
+	public static int l;
 	
 	// counter-example
 	public static String z;
@@ -61,9 +70,11 @@ public class Mod2_MA {
 	public static char sig;
 	// experiment
 	public static String y;
-	
-	// length of current X and Y
-	public static int l;
+		
+	// γ the algorithm produces
+	public static double[] resulty;
+	// set of nxn μ's the algorithm produces
+	public static double[][][] resultu;
 	
 	public static void main(String[] args) throws Exception {
 		initialize();
@@ -180,25 +191,38 @@ public class Mod2_MA {
 	}
 	
 	public static void run() throws Exception {
-		// contain the indices xi and yi
-		ArrayList<String> X = new ArrayList<String>();
-		ArrayList<String> Y = new ArrayList<String>();
+		// initializes the rows and columns of F
+		X = new ArrayList<String>();
+		Y = new ArrayList<String>();
 		X.add("");
 		Y.add("");
 		l = 1;
 		
+		// initializes the Hankel matrix
+		F = new ArrayList<Integer>();
+		sizeF = 0;
+		wordToIndex = new HashMap<String, Integer>();
+		wordToIndex.put("", sizeF++);
+		F.add(MQ(""));
+		
 		/* f("") cannot equal 0 (otherwise can't form a linearly independent basis of elements in X).
 		 * The algorithm instead begins with a 2x2 matrix of full rank.
 		 */
-		if(MQ("")==0) {
-			double[] hy = createHY(l, X);
-			double[][][] setOfHu = createHU(X, Y, l);
+		if(F.get(wordToIndex.get(""))==0) {
+			double[] hy = createHY();
+			double[][][] setOfHu = createHU();
 			
 			// generates a counter-example z
-			if(!EQ(hy, setOfHu, l)) {
+			if(!EQ(hy, setOfHu)) {
+				l++;
 				X.add(z);
 				Y.add(z);
-				l++;
+				for(int i=0;i<l;i++) {
+					wordToIndex.put(X.get(l-1)+Y.get(i), sizeF++);
+					F.add(MQ(X.get(l-1)+Y.get(i)));
+					wordToIndex.put(X.get(i)+Y.get(l-1), sizeF++);
+					F.add(MQ(X.get(i)+Y.get(l-1)));
+				}
 			}
 		}
 		
@@ -208,7 +232,7 @@ public class Mod2_MA {
 		}
 		
 		// runs the algorithm
-		learnMA(X, Y);
+		learnMA();
 		
 		// statistical final check of equivalence
 		if(finalCheck())
@@ -217,17 +241,17 @@ public class Mod2_MA {
 			throw new Exception("Algorithm failed: failed final check.");
 	}
 	
-	public static void learnMA(ArrayList<String> X, ArrayList<String> Y) throws Exception {
+	public static void learnMA() throws Exception {
 		if(verbose)
-			displayQueries(X, Y);
+			displayQueries();
 		
 		// creates the γ for the hypothesis
-		double[] hy = createHY(l, X);
+		double[] hy = createHY();
 		// creates the set of μ's for the hypothesis
-		double[][][] hu = createHU(X, Y, l);
+		double[][][] hu = createHU();
 		
 		// sees if the hypothesis = target function, if so returns the hypothesis
-		if(EQ(hy, hu, l)) {
+		if(EQ(hy, hu)) {
 			resulty = hy;
 			resultu = hu;
 			return;
@@ -237,27 +261,34 @@ public class Mod2_MA {
 		sig = 0;
 		y = "";
 		// attempts to calculate ω, σ, and y, if it cannot find a y that works it throws an exception
-		calcWSigY(l, hu, X, Y);
+		calcWSigY(hu);
 		
 		if(l==r)
 			throw new Exception("Algorithm failed: size of the hypothesis exceeds that of the target function.");
 		
-		// updates l, X, and Y for next recursive call
+		// updates l, X, Y, and F
 		l++;
 		X.add(w);
 		Y.add(sig+y);
-		learnMA(X, Y);
+		// adds the values of the new row and column to F
+		for(int i=0;i<l;i++) {
+			wordToIndex.put(X.get(l-1)+Y.get(i), sizeF++);
+			F.add(MQ(X.get(l-1)+Y.get(i)));
+			wordToIndex.put(X.get(i)+Y.get(l-1), sizeF++);
+			F.add(MQ(X.get(i)+Y.get(l-1)));
+		}
+		learnMA();
 	}
 	
-	public static double[] createHY(int l, ArrayList<String> X) {
+	public static double[] createHY() {
 		// γ is the set of results obtained after performing membership queries on the indices in X
 		double[] y = new double[l];
-		for(int i=0;i<l;i++) 
-			y[i] = MQ(X.get(i));
+		for(int i=0;i<l;i++)
+			y[i] = F.get(wordToIndex.get(X.get(i)));
 		return y;
 	}
 	
-	public static double[][][] createHU(ArrayList<String> X, ArrayList<String> Y, int l) {
+	public static double[][][] createHU() {
 		/*
 		 * For every s, define a matrix μ by letting its i-th row be the coefficients of the vector F_{xi+σ}(y) 
 		 * when expressed as a linear combination of the vectors F_x1 to F_xl (such coefficients exist as F_x1 
@@ -274,8 +305,12 @@ public class Mod2_MA {
 			double[][] F_xi_sigma = new double[l][l];
 			for(int i=0;i<l;i++) {
 				for(int j=0;j<l;j++) {
-					F_xi[j][i] = MQ(X.get(i) + Y.get(j));
-					F_xi_sigma[i][j] = MQ(X.get(i) + sig + Y.get(j));
+					F_xi[j][i] = F.get(wordToIndex.get(X.get(i) + Y.get(j)));
+					if(wordToIndex.get(X.get(i) + sig + Y.get(j)) == null) {
+						wordToIndex.put(X.get(i) + sig + Y.get(j), sizeF++);
+						F.add(MQ(X.get(i) + sig + Y.get(j)));
+					}
+					F_xi_sigma[i][j] = F.get(wordToIndex.get(X.get(i) + sig + Y.get(j)));
 				}
 			}
 			
@@ -318,17 +353,17 @@ public class Mod2_MA {
 		// MQ for the current hypothesis
 		
 		// initializes cur as the rxr identity matrix
-		RealMatrix cur = MatrixUtils.createRealIdentityMatrix(r);
+		RealMatrix cur = MatrixUtils.createRealIdentityMatrix(l);
 		
 		// multiplies cur by the corresponding μ for each letter in ω
 		for(int i=0;i<w.length();i++)
-			cur = cur.multiply(MatrixUtils.createRealMatrix(fu[letterToIndex.get(w.charAt(i))]));
+			cur = cur.multiply(MatrixUtils.createRealMatrix(resultu[letterToIndex.get(w.charAt(i))]));
 		
 		// multiplies the final result with γ
-		return mod2(cur.getRowVector(0).dotProduct(new ArrayRealVector(fy)));
+		return mod2(cur.getRowVector(0).dotProduct(new ArrayRealVector(resulty)));
 	}
 	
-	public static boolean EQ(double[] hy, double[][][] hu, int l) {		 
+	public static boolean EQ(double[] hy, double[][][] hu) {		 
 		/* EQ constructs the MA formed by combining the target function and hypothesis.
 		 * 
 		 * Each μ(ω) of the combined MA has the following form (the 0's representing block 0 matrices):
@@ -484,7 +519,7 @@ public class Mod2_MA {
 		return true;
 	}
 	
-	public static void calcWSigY(int l, double[][][] hu, ArrayList<String> X, ArrayList<String> Y) throws Exception {
+	public static void calcWSigY(double[][][] hu) throws Exception {
 		// goes through every possible prefix of z starting with ω = "" and σ = (first character of ω)
 		// prefix = ω + σ
 		for(int i=0;i<z.length();i++) {
@@ -501,11 +536,21 @@ public class Mod2_MA {
 			// equation is F_{ω+σ}(y) != sum((μ(ω)_1,i) * F_{xi+σ}(y))
 			for(int j=0;j<l;j++) {
 				y = Y.get(j);
-				int left = MQ(w+sig+y);
+				
+				if(wordToIndex.get(w+sig+y) == null) {
+					wordToIndex.put(w+sig+y, sizeF++);
+					F.add(MQ(w+sig+y));
+				}
+				int left = F.get(wordToIndex.get(w+sig+y));
 				
 				int right = 0;
-				for(int k=0;k<l;k++)
-					right += mod2(u.getEntry(0, k)) * MQ(X.get(k) + sig + y);
+				for(int k=0;k<l;k++) {
+					if(wordToIndex.get(X.get(k) + sig + y) == null) {
+						wordToIndex.put(X.get(k) + sig + y, sizeF++);
+						F.add(MQ(X.get(k) + sig + y));
+					}
+					right += mod2(u.getEntry(0, k)) * F.get(wordToIndex.get(X.get(k) + sig + y));
+				}
 				right = mod2(right);
 				
 				// found a solution, values we want to return are set using global variables
@@ -541,16 +586,24 @@ public class Mod2_MA {
 		}
 	}
 	
-	public static void displayQueries(ArrayList<String> X, ArrayList<String> Y) {
+	public static void displayQueries() {
 		System.out.println("l = " + l);
-		System.out.print("X: ɛ");
-		for(int i=0;i<X.size();i++)
+		System.out.print("Rows: ɛ ");
+		for(int i=1;i<X.size();i++)
 			System.out.print(X.get(i) + " ");
-		System.out.println("");
-		System.out.print("Y: ɛ");
-		for(int i=0;i<Y.size();i++)
+		System.out.println();
+		
+		System.out.print("Cols: ɛ ");
+		for(int i=1;i<Y.size();i++)
 			System.out.print(Y.get(i) + " ");
-		System.out.println("\n");
+		
+		System.out.println("\nTable:");
+		for(int i=0;i<X.size();i++) {
+			for(int j=0;j<Y.size();j++)
+				System.out.print(F.get(wordToIndex.get(X.get(i) + Y.get(j))) + " ");
+			System.out.println();
+		}
+		System.out.println();
 	}
 
 	public static String genTest(int len) {
@@ -562,10 +615,10 @@ public class Mod2_MA {
 	}
 	
 	public static boolean finalCheck() {
-		// creates 20 tests of length 1-100
+		// creates 40 tests of length 1-50
 		// checks whether the hypothesis and target function have the same output
-		for(int i=1;i<=20;i++) {
-			String test = genTest((int)(Math.random()*100)+1);
+		for(int i=1;i<=40;i++) {
+			String test = genTest((int)(Math.random()*50)+1);
 			if(MQ(test)!=MQH(test))
 				return false;
 		}
