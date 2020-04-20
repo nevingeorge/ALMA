@@ -342,22 +342,38 @@ public class Mod2_MA {
 		RealMatrix cur = MatrixUtils.createRealIdentityMatrix(r);
 		
 		// multiplies cur by the corresponding μ for each letter in ω
-		for(int i=0;i<w.length();i++)
+		for(int i=0;i<w.length();i++) {
 			cur = cur.multiply(MatrixUtils.createRealMatrix(fu[letterToIndex.get(w.charAt(i))]));
+			// accounts for rounding issues with larger words
+			if(i!=0 && i%25==0) {
+				for(int j=0;j<r;j++) {
+					for(int k=0;k<r;k++)
+						cur.setEntry(j, k, mod2(cur.getEntry(j, k)));
+				}
+			}
+		}
 		
 		// multiplies the final result with γ
 		return mod2(cur.getRowVector(0).dotProduct(new ArrayRealVector(fy)));
 	}
 	
-	public static int MQH(String w) {
-		// MQ for the current hypothesis
+	public static int MQResults(String w) {
+		// MQ for the learned function
 		
-		// initializes cur as the rxr identity matrix
+		// initializes cur as the lxl identity matrix
 		RealMatrix cur = MatrixUtils.createRealIdentityMatrix(l);
 		
 		// multiplies cur by the corresponding μ for each letter in ω
-		for(int i=0;i<w.length();i++)
+		for(int i=0;i<w.length();i++) {
 			cur = cur.multiply(MatrixUtils.createRealMatrix(resultu[letterToIndex.get(w.charAt(i))]));
+			// accounts for rounding issues with larger words
+			if(i!=0 && i%25==0) {
+				for(int j=0;j<l;j++) {
+					for(int k=0;k<l;k++)
+						cur.setEntry(j, k, mod2(cur.getEntry(j, k)));
+				}
+			}
+		}
 		
 		// multiplies the final result with γ
 		return mod2(cur.getRowVector(0).dotProduct(new ArrayRealVector(resulty)));
@@ -616,10 +632,10 @@ public class Mod2_MA {
 	
 	public static boolean finalCheck() {
 		// creates 40 tests of length 1-50
-		// checks whether the hypothesis and target function have the same output
+		// checks whether the learned function and target function have the same output
 		for(int i=1;i<=40;i++) {
 			String test = genTest((int)(Math.random()*50)+1);
-			if(MQ(test)!=MQH(test))
+			if(MQ(test)!=MQResults(test))
 				return false;
 		}
 		return true;

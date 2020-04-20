@@ -361,7 +361,7 @@ public class SUBA {
 			boolean SUBA_accepts = acceptsWord(u,v,1,false,-1);
 			
 			// mod-2-MA: words of the form u$v
-			int mod2_MA_accepts = Mod2_MA.MQH(u+'$'+v);
+			int mod2_MA_accepts = Mod2_MA.MQResults(u+'$'+v);
 			
 			if((SUBA_accepts&&mod2_MA_accepts==0) || (!SUBA_accepts&&mod2_MA_accepts==1))
 				return false;
