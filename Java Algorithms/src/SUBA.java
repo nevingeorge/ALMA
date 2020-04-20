@@ -351,11 +351,11 @@ public class SUBA {
 	}
 	
 	public static boolean finalCheck() {
-		// creates 20 tests of length 1 to 50
+		// creates 40 tests of length 1 to 50
 		// checks whether the SUBA and learned mod-2-MA either both accept or reject the words
-		for(int i=1;i<=20;i++) {
+		for(int i=1;i<=40;i++) {
 			// SUBA: ultimately periodic words of the form u(v)^w
-			// u and v have length 25, so length(u+v) = 50
+			// u and v have length <= 25, so length(u+v) <= 50
 			String u = genTest((int)(Math.random()*25)+1);
 			String v = genTest((int)(Math.random()*25)+1);
 			boolean SUBA_accepts = acceptsWord(u,v,1,false,-1);
