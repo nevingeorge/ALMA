@@ -657,7 +657,7 @@ public class Mod2_MA {
 		for(int i=0;i<word.length();i++) {
 			if(letterToIndex.get(word.charAt(i)) == null)
 				return false;
-			if(word.charAt(i) == '$') {
+			if(!inMod2MA && word.charAt(i) == '$') {
 				if(containsDollar)
 					return false;
 				else
