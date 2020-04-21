@@ -19,6 +19,7 @@
 
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
@@ -33,7 +34,7 @@ import org.apache.commons.math3.linear.RealVector;
 
 public class Mod2_MA {
 	
-	// if true, displays the rows and columns of the Hankel matrix as it is constructed
+	// if true, displays the observation table as it is being constructed
 	public static boolean verbose;
 	
 	// alphabet
@@ -55,9 +56,9 @@ public class Mod2_MA {
 	// maps words to indices of F
 	public static HashMap<String, Integer> wordToIndex;
 	
-	// row indices of F
+	// row indices of the observation table
 	public static ArrayList<String> X;
-	// column indices of F
+	// column indices of the observation table
 	public static ArrayList<String> Y;
 	// size of X and Y
 	public static int l;
@@ -71,14 +72,20 @@ public class Mod2_MA {
 	// experiment
 	public static String y;
 		
-	// γ the algorithm produces
+	// γ of the learned function
 	public static double[] resulty;
-	// set of nxn μ's the algorithm produces
+	// set of nxn μ's of the learned function
 	public static double[][][] resultu;
+	
+	// takes in user input
+	public static Scanner in;
 	
 	public static void main(String[] args) throws Exception {
 		initialize();
 		run();
+		
+		// performs desired operations with the learned mod-2-MA
+		operations(true);
 	}
 	
 	public static void initialize() throws Exception {
@@ -95,42 +102,28 @@ public class Mod2_MA {
 		
 		// reads in file name + optional flag -v from stdin
 		System.out.println("Input file name and optional flag -v (e.g. input1.txt or input1.txt -v)");
-		Scanner in = new Scanner(System.in);
+		in = new Scanner(System.in);
 		String[] arrInput = in.nextLine().split(" ");
-		in.close();
 		verbose = false;
 		if(arrInput.length == 2 && arrInput[1].equals("-v"))
 			verbose = true;
 		BufferedReader f = new BufferedReader(new FileReader(arrInput[0]));
-		System.out.println("");
+		System.out.println();
 		
 		// alphabet size
-		String line = f.readLine();
-		while(line.charAt(0) == '/' && line.charAt(1) == '/')
-			line = f.readLine();
-		
-		alphabetSize = Integer.parseInt(line);
+		alphabetSize = Integer.parseInt(readInput(f));
 		
 		// alphabet
-		line = f.readLine();
-		while(line.charAt(0) == '/' && line.charAt(1) == '/')
-			line = f.readLine();
-		StringTokenizer st = new StringTokenizer(line);
-		
+		StringTokenizer st = new StringTokenizer(readInput(f));
 		alphabet = new Character[alphabetSize];
 		for(int i=0;i<alphabetSize;i++) {
 			String letter = st.nextToken();
-			if(letter.length()!=1) {
-				f.close();
-				throw new Exception("Invalid input: invalid character in the alphabet");
-			}
+			if(letter.length()!=1)
+				throwException(f,"Invalid input: invalid character in the alphabet");
 			alphabet[i] = letter.charAt(0);
 		}
-		
-		if(st.hasMoreTokens()) {
-			f.close();
-			throw new Exception("Invalid input: alphabet size exceeds the specified size");
-		}
+		if(st.hasMoreTokens())
+			throwException(f,"Invalid input: alphabet size exceeds the specified size");
 		
 		// maps each letter in alphabet to an index
 		letterToIndex = new HashMap<Character, Integer>();
@@ -138,60 +131,52 @@ public class Mod2_MA {
 			letterToIndex.put(alphabet[i], i);
 		
 		// size of the target function
-		line = f.readLine();
-		while(line.charAt(0) == '/' && line.charAt(1) == '/')
-			line = f.readLine();
-		
-		r = Integer.parseInt(line);
+		r = Integer.parseInt(readInput(f));
 		
 		// γ of the target function
-		line = f.readLine();
-		while(line.charAt(0) == '/' && line.charAt(1) == '/')
-			line = f.readLine();
-		st = new StringTokenizer(line);
-		
+		st = new StringTokenizer(readInput(f));
 		fy = new double[r];
 		for(int i=0;i<r;i++)
 			fy[i] = Integer.parseInt(st.nextToken());
-		
-		if(st.hasMoreTokens()) {
-			f.close();
-			throw new Exception("Invalid input: γ length exceeds the specified size");
-		}
+		if(st.hasMoreTokens())
+			throwException(f,"Invalid input: γ length exceeds the specified size");
 		
 		// set of μ's for the target function
 		fu = new double[alphabetSize][r][r];
 		for(int i=0;i<alphabetSize;i++) {
 			for(int j=0;j<r;j++) {
-				line = f.readLine();
-				while(line.charAt(0) == '/' && line.charAt(1) == '/')
-					line = f.readLine();
-				st = new StringTokenizer(line);
-				
+				st = new StringTokenizer(readInput(f));
 				for(int k=0;k<r;k++)
 					fu[i][j][k] = Integer.parseInt(st.nextToken());
-				
-				if(st.hasMoreTokens()) {
-					f.close();
-					throw new Exception("Invalid input: μ size exceeds the specified size");
-				}
+				if(st.hasMoreTokens())
+					throwException(f,"Invalid input: μ size exceeds the specified size");
 			}
 		}
-		
-		line = f.readLine();
-		while(line!=null) {
-			if(line.charAt(0) != '/' && line.charAt(1) != '/') {
-				f.close();
-				throw new Exception("Invalid input: μ size exceeds the specified size");
-			}
-			line = f.readLine();
-		}
+		if(readInput(f) != null)
+			throwException(f,"Invalid input: μ size exceeds the specified size");
 		
 		f.close();
 	}
 	
+	public static String readInput(BufferedReader f) throws IOException {
+		String line = f.readLine();
+		// ignores lines beginning with "//"
+		while(line != null && line.charAt(0) == '/' && line.charAt(1) == '/')
+			line = f.readLine();
+		return line;
+	}
+	
+	public static void throwException(BufferedReader f, String message) throws Exception {
+		// properly closes input streams
+		if(f != null)
+			f.close();
+		if(in != null)
+			in.close();
+		throw new Exception(message);
+	}
+	
 	public static void run() throws Exception {
-		// initializes the rows and columns of F
+		// initializes the rows and columns of the observation table
 		X = new ArrayList<String>();
 		Y = new ArrayList<String>();
 		X.add("");
@@ -202,13 +187,14 @@ public class Mod2_MA {
 		F = new ArrayList<Integer>();
 		sizeF = 0;
 		wordToIndex = new HashMap<String, Integer>();
-		wordToIndex.put("", sizeF++);
-		F.add(MQ(""));
+		
+		if(verbose)
+			System.out.println("Results after individual queries\n--------------------------------");
 		
 		/* f("") cannot equal 0 (otherwise can't form a linearly independent basis of elements in X).
 		 * The algorithm instead begins with a 2x2 matrix of full rank.
 		 */
-		if(F.get(wordToIndex.get(""))==0) {
+		if(MQ("")==0) {
 			double[] hy = createHY();
 			double[][][] setOfHu = createHU();
 			
@@ -217,18 +203,7 @@ public class Mod2_MA {
 				l++;
 				X.add(z);
 				Y.add(z);
-				for(int i=0;i<l;i++) {
-					wordToIndex.put(X.get(l-1)+Y.get(i), sizeF++);
-					F.add(MQ(X.get(l-1)+Y.get(i)));
-					wordToIndex.put(X.get(i)+Y.get(l-1), sizeF++);
-					F.add(MQ(X.get(i)+Y.get(l-1)));
-				}
 			}
-		}
-		
-		if(verbose) {
-			System.out.println("Results after individual queries");
-			System.out.println("--------------------------------");
 		}
 		
 		// runs the algorithm
@@ -238,7 +213,7 @@ public class Mod2_MA {
 		if(finalCheck())
 			displayResults();
 		else
-			throw new Exception("Algorithm failed: failed final check.");
+			throwException(null,"Algorithm failed: failed final check.");
 	}
 	
 	public static void learnMA() throws Exception {
@@ -264,19 +239,13 @@ public class Mod2_MA {
 		calcWSigY(hu);
 		
 		if(l==r)
-			throw new Exception("Algorithm failed: size of the hypothesis exceeds that of the target function.");
+			throwException(null,"Algorithm failed: size of the hypothesis exceeds that of the target function.");
 		
-		// updates l, X, Y, and F
+		// updates l, X, and Y
 		l++;
 		X.add(w);
 		Y.add(sig+y);
-		// adds the values of the new row and column to F
-		for(int i=0;i<l;i++) {
-			wordToIndex.put(X.get(l-1)+Y.get(i), sizeF++);
-			F.add(MQ(X.get(l-1)+Y.get(i)));
-			wordToIndex.put(X.get(i)+Y.get(l-1), sizeF++);
-			F.add(MQ(X.get(i)+Y.get(l-1)));
-		}
+		
 		learnMA();
 	}
 	
@@ -284,7 +253,7 @@ public class Mod2_MA {
 		// γ is the set of results obtained after performing membership queries on the indices in X
 		double[] y = new double[l];
 		for(int i=0;i<l;i++)
-			y[i] = F.get(wordToIndex.get(X.get(i)));
+			y[i] = MQ(X.get(i));
 		return y;
 	}
 	
@@ -305,12 +274,8 @@ public class Mod2_MA {
 			double[][] F_xi_sigma = new double[l][l];
 			for(int i=0;i<l;i++) {
 				for(int j=0;j<l;j++) {
-					F_xi[j][i] = F.get(wordToIndex.get(X.get(i) + Y.get(j)));
-					if(wordToIndex.get(X.get(i) + sig + Y.get(j)) == null) {
-						wordToIndex.put(X.get(i) + sig + Y.get(j), sizeF++);
-						F.add(MQ(X.get(i) + sig + Y.get(j)));
-					}
-					F_xi_sigma[i][j] = F.get(wordToIndex.get(X.get(i) + sig + Y.get(j)));
+					F_xi[j][i] = MQ(X.get(i) + Y.get(j));
+					F_xi_sigma[i][j] = MQ(X.get(i) + sig + Y.get(j));
 				}
 			}
 			
@@ -338,6 +303,10 @@ public class Mod2_MA {
 	public static int MQ(String w) {
 		// MQ for the target function
 		
+		// MQ(ω) was previously calculated and is in the Hankel matrix
+		if(wordToIndex.get(w) != null)
+			return F.get(wordToIndex.get(w));
+		
 		// initializes cur as the rxr identity matrix
 		RealMatrix cur = MatrixUtils.createRealIdentityMatrix(r);
 		
@@ -354,7 +323,13 @@ public class Mod2_MA {
 		}
 		
 		// multiplies the final result with γ
-		return mod2(cur.getRowVector(0).dotProduct(new ArrayRealVector(fy)));
+		int out = mod2(cur.getRowVector(0).dotProduct(new ArrayRealVector(fy)));
+		
+		// adds MQ(ω) to the Hankel matrix
+		wordToIndex.put(w, sizeF++);
+		F.add(out);
+		
+		return out;
 	}
 	
 	public static int MQResults(String w) {
@@ -553,20 +528,11 @@ public class Mod2_MA {
 			for(int j=0;j<l;j++) {
 				y = Y.get(j);
 				
-				if(wordToIndex.get(w+sig+y) == null) {
-					wordToIndex.put(w+sig+y, sizeF++);
-					F.add(MQ(w+sig+y));
-				}
-				int left = F.get(wordToIndex.get(w+sig+y));
+				int left = MQ(w+sig+y);
 				
 				int right = 0;
-				for(int k=0;k<l;k++) {
-					if(wordToIndex.get(X.get(k) + sig + y) == null) {
-						wordToIndex.put(X.get(k) + sig + y, sizeF++);
-						F.add(MQ(X.get(k) + sig + y));
-					}
-					right += mod2(u.getEntry(0, k)) * F.get(wordToIndex.get(X.get(k) + sig + y));
-				}
+				for(int k=0;k<l;k++)
+					right += mod2(u.getEntry(0, k)) * MQ(X.get(k) + sig + y);
 				right = mod2(right);
 				
 				// found a solution, values we want to return are set using global variables
@@ -575,7 +541,7 @@ public class Mod2_MA {
 			}
 		}
 		
-		throw new Exception("Algorithm failed: didn't find a suitable omega, sigma, and gamma.");
+		throwException(null,"Algorithm failed: didn't find a suitable omega, sigma, and gamma.");
 	}
 
 	public static void displayResults() {
@@ -603,6 +569,7 @@ public class Mod2_MA {
 	}
 	
 	public static void displayQueries() {
+		// displays the observation table
 		System.out.println("l = " + l);
 		System.out.print("Rows: ɛ ");
 		for(int i=1;i<X.size();i++)
@@ -616,7 +583,7 @@ public class Mod2_MA {
 		System.out.println("\nTable:");
 		for(int i=0;i<X.size();i++) {
 			for(int j=0;j<Y.size();j++)
-				System.out.print(F.get(wordToIndex.get(X.get(i) + Y.get(j))) + " ");
+				System.out.print(MQ(X.get(i) + Y.get(j)) + " ");
 			System.out.println();
 		}
 		System.out.println();
@@ -638,6 +605,67 @@ public class Mod2_MA {
 			if(MQ(test)!=MQResults(test))
 				return false;
 		}
+		return true;
+	}
+	
+	public static void operations(boolean inMod2MA) {
+		System.out.println("Available operations for the learned Mod-2-MA (enter \"quit\" to terminate):");
+		if(inMod2MA)
+			System.out.println("- Test whether a word is accepted: \"-a <word>\"");
+		else
+			System.out.println("- Test whether a word of the form u$v in (L)_$ is accepted: \"-a <word>\"");
+		while(true) {
+			// reads in cmd
+			String line = in.nextLine();
+			
+			// terminate the program
+			if(line.equals("quit")) {
+				in.close();
+				break;
+			}
+			
+			String[] input = line.split(" ");
+			if(input.length == 0)
+				System.out.println("Invalid cmd");
+			
+			// tests whether a word is accepted
+			if(input[0].equals("-a")) {
+				if(input.length>2)
+					System.out.println("Invalid cmd");
+				else {
+					// if no word is passed, the test is the empty string
+					String test = "";
+					if(input.length==2)
+						test = input[1];
+					
+					if(!inAlphabet(test, inMod2MA))
+						System.out.println("Inputted word is not in the language.");
+					else if(MQResults(test) == 1)
+						System.out.println("Accepted");
+					else
+						System.out.println("Not accepted");
+				}
+			}
+			else
+				System.out.println("Invalid cmd");
+		}
+	}
+	
+	public static boolean inAlphabet(String word, boolean inMod2MA) {
+		// a word in (L)_$ must contain exactly one '$'
+		boolean containsDollar = false;
+		for(int i=0;i<word.length();i++) {
+			if(letterToIndex.get(word.charAt(i)) == null)
+				return false;
+			if(word.charAt(i) == '$') {
+				if(containsDollar)
+					return false;
+				else
+					containsDollar = true;
+			}
+		}
+		if(!inMod2MA && !containsDollar)
+			return false;
 		return true;
 	}
 	

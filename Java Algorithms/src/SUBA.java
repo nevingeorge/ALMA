@@ -62,7 +62,10 @@ public class SUBA {
 		
 		// statistical final check of equivalence
 		if(!finalCheck())
-			throw new Exception("Failed final check");
+			Mod2_MA.throwException(null,"Failed final check");
+		
+		// performs desired operations with the learned mod-2-MA
+		Mod2_MA.operations(false);
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -84,9 +87,8 @@ public class SUBA {
 
 		// reads in file name + optional flag -v from stdin
 		System.out.println("Input file name and optional flag -v (e.g. SUBA_input1.txt or SUBA_input1.txt -v)");
-		Scanner in = new Scanner(System.in);
-		String[] arrInput = in.nextLine().split(" ");
-		in.close();
+		Mod2_MA.in = new Scanner(System.in);
+		String[] arrInput = Mod2_MA.in.nextLine().split(" ");
 		Mod2_MA.verbose = false;
 		if(arrInput.length == 2 && arrInput[1].equals("-v"))
 			Mod2_MA.verbose = true;
@@ -95,44 +97,27 @@ public class SUBA {
 
 		// number of states
 		// Q' = Q U (Q x Q x {0,1})
-		String line = f.readLine();
-		while(line.charAt(0) == '/' && line.charAt(1) == '/')
-			line = f.readLine();
-		
-		Q_SUBA = Integer.parseInt(line);
+		Q_SUBA = Integer.parseInt(Mod2_MA.readInput(f));
 		Q_UFA = Q_SUBA + Q_SUBA*Q_SUBA*2;
 		
 		// --------------------------------------------------------------------------------------
 		
 		// alphabet size
-		line = f.readLine();
-		while(line.charAt(0) == '/' && line.charAt(1) == '/')
-			line = f.readLine();
-		
 		// add {$} to the language
-		Mod2_MA.alphabetSize = Integer.parseInt(line) + 1;
+		Mod2_MA.alphabetSize = Integer.parseInt(Mod2_MA.readInput(f)) + 1;
 		
 		// alphabet ΣU{$}
-		line = f.readLine();
-		while(line.charAt(0) == '/' && line.charAt(1) == '/')
-			line = f.readLine();
-		StringTokenizer st = new StringTokenizer(line);
-		
+		StringTokenizer st = new StringTokenizer(Mod2_MA.readInput(f));
 		Mod2_MA.alphabet = new Character[Mod2_MA.alphabetSize];
 		for(int i=0;i<Mod2_MA.alphabetSize-1;i++) {
 			String letter = st.nextToken();
-			if(letter.length()!=1 || letter.charAt(0) == '$') {
-				f.close();
-				throw new Exception("Invalid input: invalid character in the alphabet");
-			}
+			if(letter.length()!=1 || letter.charAt(0) == '$')
+				Mod2_MA.throwException(f,"Invalid input: invalid character in the alphabet");
 			Mod2_MA.alphabet[i] = letter.charAt(0);
 		}
 		Mod2_MA.alphabet[Mod2_MA.alphabetSize-1] = '$';
-		
-		if(st.hasMoreTokens()) {
-			f.close();
-			throw new Exception("Invalid input: alphabet size exceeds the specified size");
-		}
+		if(st.hasMoreTokens())
+			Mod2_MA.throwException(f,"Invalid input: alphabet size exceeds the specified size");
 		
 		// maps each letter in alphabet to an index
 		Mod2_MA.letterToIndex = new HashMap<Character, Integer>();
@@ -142,20 +127,14 @@ public class SUBA {
 		// --------------------------------------------------------------------------------------
 		
 		// final states for the SUBA
-		line = f.readLine();
-		while(line.charAt(0) == '/' && line.charAt(1) == '/')
-			line = f.readLine();
-		st = new StringTokenizer(line);
-		
+		st = new StringTokenizer(Mod2_MA.readInput(f));
 		F_SUBA = new boolean[Q_SUBA+1];
 		while(st.hasMoreTokens()) {
 			int state = Integer.parseInt(st.nextToken());
 			if(1<=state && state<=Q_SUBA && !F_SUBA[state])
 				F_SUBA[state] = true;
-			else {
-				f.close();
-				throw new Exception("Invalid input: invalid or duplicate final state");
-			}
+			else
+				Mod2_MA.throwException(f,"Invalid input: invalid or duplicate final state");
 		}
 		
 		// --------------------------------------------------------------------------------------
@@ -173,15 +152,9 @@ public class SUBA {
 		*/
 		
 		// number of transitions
-		line = f.readLine();
-		while(line.charAt(0) == '/' && line.charAt(1) == '/')
-			line = f.readLine();
-
-		int numTransitions = Integer.parseInt(line);
-		if(numTransitions<1 || numTransitions>((Mod2_MA.alphabetSize-1)*Q_SUBA*Q_SUBA)) {
-			f.close();
-			throw new Exception("Invalid input: invalid number of transitions");
-		}
+		int numTransitions = Integer.parseInt(Mod2_MA.readInput(f));
+		if(numTransitions<1 || numTransitions>((Mod2_MA.alphabetSize-1)*Q_SUBA*Q_SUBA))
+			Mod2_MA.throwException(f,"Invalid input: invalid number of transitions");
 		
 		// transition matrix Δ is used in the final statistical check
 		// for each index (q,a) where q∈Q and a∈Σ, transition_SUBA[q][a] is an ArrayList containing all of the 
@@ -198,26 +171,18 @@ public class SUBA {
 		
 		// lines of the form q_j a q_k, where q_j,q_k∈Q and a∈Σ
 		for(int i=0;i<numTransitions;i++) {
-			line = f.readLine();
-			while(line.charAt(0) == '/' && line.charAt(1) == '/')
-				line = f.readLine();
-			
-			st = new StringTokenizer(line);
+			st = new StringTokenizer(Mod2_MA.readInput(f));
 			int p_start = Integer.parseInt(st.nextToken());
 			
 			String letter = st.nextToken();
-			if(letter.length()!=1) {
-				f.close();
-				throw new Exception("Invalid input: invalid transition");
-			}
+			if(letter.length()!=1)
+				Mod2_MA.throwException(f,"Invalid input: invalid transition");
 			int a = Mod2_MA.letterToIndex.get(letter.charAt(0));
 			
 			int p_end = Integer.parseInt(st.nextToken());
 			
-			if(p_start<1 || p_start>Q_SUBA || p_end<1 || p_end>Q_SUBA) {
-				f.close();
-				throw new Exception("Invalid input: invalid transition");
-			}
+			if(p_start<1 || p_start>Q_SUBA || p_end<1 || p_end>Q_SUBA)
+				Mod2_MA.throwException(f,"Invalid input: invalid transition");
 			
 			// Δ ⊆ Δ' 
 			transition_SUBA[p_start][a].add(p_end);
@@ -254,14 +219,9 @@ public class SUBA {
 			F_UFA[2*Q_SUBA*q+2*q-Q_SUBA] = true;
 		}
 		
-		line = f.readLine();
-		while(line!=null) {
-			if(line.charAt(0) != '/' && line.charAt(1) != '/') {
-				f.close();
-				throw new Exception("Invalid input: more transitions inputted than specified");
-			}
-			line = f.readLine();
-		}
+		if(Mod2_MA.readInput(f) != null)
+			Mod2_MA.throwException(f,"Invalid input: more transitions inputted than specified");
+
 		f.close();
 	}
 
