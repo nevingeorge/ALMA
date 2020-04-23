@@ -51,10 +51,7 @@ public class Mod2_MA {
 	public static int r;
 	
 	// Hankel matrix
-	public static ArrayList<Integer> F;
-	public static int sizeF;
-	// maps words to indices of F
-	public static HashMap<String, Integer> wordToIndex;
+	public static HashMap<String, Integer> F;
 	
 	// row indices of the observation table
 	public static ArrayList<String> X;
@@ -184,9 +181,7 @@ public class Mod2_MA {
 		l = 1;
 		
 		// initializes the Hankel matrix
-		F = new ArrayList<Integer>();
-		sizeF = 0;
-		wordToIndex = new HashMap<String, Integer>();
+		F = new HashMap<String, Integer>();
 		
 		if(verbose)
 			System.out.println("Results after individual queries\n--------------------------------");
@@ -304,8 +299,8 @@ public class Mod2_MA {
 		// MQ for the target function
 		
 		// MQ(ω) was previously calculated and is in the Hankel matrix
-		if(wordToIndex.get(w) != null)
-			return F.get(wordToIndex.get(w));
+		if(F.get(w) != null)
+			return F.get(w);
 		
 		// initializes cur as the rxr identity matrix
 		RealMatrix cur = MatrixUtils.createRealIdentityMatrix(r);
@@ -326,8 +321,7 @@ public class Mod2_MA {
 		int out = mod2(cur.getRowVector(0).dotProduct(new ArrayRealVector(fy)));
 		
 		// adds MQ(ω) to the Hankel matrix
-		wordToIndex.put(w, sizeF++);
-		F.add(out);
+		F.put(w, out);
 		
 		return out;
 	}
