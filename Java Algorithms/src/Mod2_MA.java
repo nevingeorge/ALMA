@@ -62,12 +62,6 @@ public class Mod2_MA {
 	
 	// counter-example
 	public static String z;
-	// subset of z
-	public static String w;
-	// additional character of the prefix ω + σ
-	public static char sig;
-	// experiment
-	public static String y;
 		
 	// γ of the learned function
 	public static double[] resulty;
@@ -183,9 +177,6 @@ public class Mod2_MA {
 		// initializes the Hankel matrix
 		F = new HashMap<String, Integer>();
 		
-		if(verbose)
-			System.out.println("Results after individual queries\n--------------------------------");
-		
 		/* f("") cannot equal 0 (otherwise can't form a linearly independent basis of elements in X).
 		 * The algorithm instead begins with a 2x2 matrix of full rank.
 		 */
@@ -201,6 +192,11 @@ public class Mod2_MA {
 			}
 		}
 		
+		if(verbose) {
+			System.out.println("Results after individual queries\n--------------------------------");
+			displayQueries();
+		}
+		
 		// runs the algorithm
 		learnMA();
 		
@@ -212,9 +208,6 @@ public class Mod2_MA {
 	}
 	
 	public static void learnMA() throws Exception {
-		if(verbose)
-			displayQueries();
-		
 		// creates the γ for the hypothesis
 		double[] hy = createHY();
 		// creates the set of μ's for the hypothesis
@@ -227,19 +220,8 @@ public class Mod2_MA {
 			return;
 		}
 		
-		w = "";
-		sig = 0;
-		y = "";
 		// attempts to calculate ω, σ, and y, if it cannot find a y that works it throws an exception
 		calcWSigY(hu);
-		
-		if(l==r)
-			throwException(null,"Algorithm failed: size of the hypothesis exceeds that of the target function.");
-		
-		// updates l, X, and Y
-		l++;
-		X.add(w);
-		Y.add(sig+y);
 		
 		learnMA();
 	}
@@ -505,8 +487,14 @@ public class Mod2_MA {
 	}
 	
 	public static void calcWSigY(double[][][] hu) throws Exception {
+		// prefix of z = ω + σ
+		String w = "";
+		char sig = 0;
+		// experiment
+		String y = "";
+		boolean noSoln = true;
+		
 		// goes through every possible prefix of z starting with ω = "" and σ = (first character of ω)
-		// prefix = ω + σ
 		for(int i=0;i<z.length();i++) {
 			if(i!=0)
 				w = z.substring(0,i);
@@ -517,25 +505,52 @@ public class Mod2_MA {
 			for(int n=0;n<w.length();n++)
 				u = u.multiply(MatrixUtils.createRealMatrix(hu[letterToIndex.get(w.charAt(n))]));
 			
+			// checks if F_ω = sum(μ(ω)_1,i * F_xi)
+			boolean failed = false;
+			for(int j=0;j<l;j++) {
+				int sum = 0;
+				for(int k=0;k<l;k++)
+					sum = mod2(sum + u.getEntry(0, k)*MQ(X.get(k)+Y.get(j)));
+				
+				if(MQ(w+Y.get(j)) != sum) {
+					failed = true;
+					break;
+				}
+			}
+			if(failed)
+				continue;
+			
 			// goes through every possible value of y in Y
-			// equation is F_{ω+σ}(y) != sum((μ(ω)_1,i) * F_{xi+σ}(y))
+			// checks if F_{ω+σ}(y) != sum(μ(ω)_1,i * F_{xi+σ}(y))
 			for(int j=0;j<l;j++) {
 				y = Y.get(j);
-				
-				int left = MQ(w+sig+y);
-				
-				int right = 0;
+			
+				int sum = 0;
 				for(int k=0;k<l;k++)
-					right += mod2(u.getEntry(0, k)) * MQ(X.get(k) + sig + y);
-				right = mod2(right);
+					sum = mod2(sum + u.getEntry(0, k)*MQ(X.get(k) + sig + y));
 				
-				// found a solution, values we want to return are set using global variables
-				if(left!=right)
-					return;
+				// found a solution
+				if(MQ(w+sig+y) != sum) {		
+					if(l==r)
+						throwException(null,"Algorithm failed: size of the hypothesis exceeds that of the target function.");
+					// updates l, X, and Y
+					l++;
+					X.add(w);
+					Y.add(sig+y);
+					
+					// displays the updated observation table
+					if(verbose)
+						displayQueries();
+					
+					noSoln = false;
+					hu = createHU();
+					break;
+				}
 			}
 		}
 		
-		throwException(null,"Algorithm failed: didn't find a suitable omega, sigma, and gamma.");
+		if(noSoln)
+			throwException(null,"Algorithm failed: didn't find a suitable omega, sigma, and gamma.");
 	}
 
 	public static void displayResults() {
