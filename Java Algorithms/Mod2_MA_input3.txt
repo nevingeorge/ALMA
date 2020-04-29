@@ -1,19 +1,22 @@
-// alphabet size
-2
 // alphabet
-a b
+a b c
 // size of the target function
 4
 // γ of the target function
-0 0 0 1
+0 1 0 1
 // set of μ's for the target function
 // μ(a)
 1 1 0 0
 0 0 1 0
-0 0 0 1
+0 1 0 1
 0 0 0 0
 // μ(b)
-1 0 0 0
+1 0 1 0
 0 0 1 0
-0 0 0 1
-0 0 0 0
+0 1 0 1
+0 0 1 1
+// μ(c)
+1 0 1 0
+1 0 0 0
+0 0 1 1
+1 0 0 1

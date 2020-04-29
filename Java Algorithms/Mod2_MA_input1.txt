@@ -1,7 +1,5 @@
 // From the paper "Strongly Unambiguous Büchi Automata Are Polynomially Predictable with
 // Membership Queries" by Dana Angluin, Timos Antonopoulos, and Dana Fisman.
-// alphabet size
-2
 // alphabet
 a b
 // size of the target function

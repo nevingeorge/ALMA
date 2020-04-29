@@ -1,0 +1,6 @@
+// alphabet
+a b
+// membership query number
+0
+// max test length and number of tests
+25 100

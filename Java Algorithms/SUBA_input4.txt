@@ -3,8 +3,6 @@
 // learned MOD-2-MA has dimension = 44
 // number of states
 6
-// alphabet size
-2
 // alphabet
 a c
 // final states

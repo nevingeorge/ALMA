@@ -1,8 +1,9 @@
 /*
  * Author: Nevin George
  * Advisor: Dana Angluin
- * Program Description: The algorithm takes as input a SUBA and converts it into an equivalent UFA. The 
- * resulting UFA is then converted into an equivalent mod-2-MA and learned using Mod2_MA.java.
+ * Program Description: The program takes in as input a SUBA of n states and converts it into an equivalent UFA of 
+ * 2n^2+n states. The UFA is then converted into an equivalent mod-2-MA of the same size and learned using
+ * Mod2_MA.java.
  * 
  * References:
  * 1 Amos Beimel, Francesco Bergadano, Nader H. Bshouty, Eyal Kushilevitz, Stefano Varric- chio. Learning 
@@ -61,19 +62,20 @@ public class SUBA {
 		Mod2_MA.run();
 		
 		// statistical final check of equivalence
-		if(!finalCheck())
+		if(finalCheck(50,40))
+			Mod2_MA.displayResults();
+		else
 			Mod2_MA.throwException(null,"Failed final check");
 		
 		// performs desired operations with the learned mod-2-MA
-		Mod2_MA.operations(false);
+		Mod2_MA.operations(true);
 	}
 	
 	@SuppressWarnings("unchecked")
 	public static void SUBAtoUFA() throws Exception {
 		/* The input file containing the SUBA (Q, Σ, ∆, F) must have the following format (no line 
-		 * separation, characters are space separated, and lines beginning with // are ignored):
+		 * separation, entries are space separated, and lines beginning with // are ignored):
 		 * <number of states (Q)>
-		 * <alphabet size>
 		 * <characters in the alphabet>
 		 * <final states (F)>
 		 * <number of transitions>
@@ -90,8 +92,14 @@ public class SUBA {
 		Mod2_MA.in = new Scanner(System.in);
 		String[] arrInput = Mod2_MA.in.nextLine().split(" ");
 		Mod2_MA.verbose = false;
-		if(arrInput.length == 2 && arrInput[1].equals("-v"))
-			Mod2_MA.verbose = true;
+		if(arrInput.length > 2)
+			Mod2_MA.throwException(null,"Invalid input: too many inputs passed");
+		if(arrInput.length == 2) {
+			if(arrInput[1].equals("-v"))
+				Mod2_MA.verbose = true;
+			else
+				Mod2_MA.throwException(null,"Invalid input: invalid flag");
+		}
 		BufferedReader f = new BufferedReader(new FileReader(arrInput[0]));
 		System.out.println("");
 
@@ -102,26 +110,23 @@ public class SUBA {
 		
 		// --------------------------------------------------------------------------------------
 		
-		// alphabet size
-		// add {$} to the language
-		Mod2_MA.alphabetSize = Integer.parseInt(Mod2_MA.readInput(f)) + 1;
-		
 		// alphabet ΣU{$}
 		StringTokenizer st = new StringTokenizer(Mod2_MA.readInput(f));
-		Mod2_MA.alphabet = new Character[Mod2_MA.alphabetSize];
-		for(int i=0;i<Mod2_MA.alphabetSize-1;i++) {
+		ArrayList<Character> tempAlphabet = new ArrayList<Character>();
+		while(st.hasMoreTokens()) {
 			String letter = st.nextToken();
 			if(letter.length()!=1 || letter.charAt(0) == '$')
 				Mod2_MA.throwException(f,"Invalid input: invalid character in the alphabet");
-			Mod2_MA.alphabet[i] = letter.charAt(0);
+			tempAlphabet.add(letter.charAt(0));
 		}
-		Mod2_MA.alphabet[Mod2_MA.alphabetSize-1] = '$';
-		if(st.hasMoreTokens())
-			Mod2_MA.throwException(f,"Invalid input: alphabet size exceeds the specified size");
+		tempAlphabet.add('$');
+		Mod2_MA.alphabet = new Character[tempAlphabet.size()];
+		for(int i=0;i<tempAlphabet.size();i++)
+			Mod2_MA.alphabet[i] = tempAlphabet.get(i);
 		
 		// maps each letter in alphabet to an index
 		Mod2_MA.letterToIndex = new HashMap<Character, Integer>();
-		for(int i=0;i<Mod2_MA.alphabetSize;i++)
+		for(int i=0;i<Mod2_MA.alphabet.length;i++)
 			Mod2_MA.letterToIndex.put(Mod2_MA.alphabet[i], i);
 		
 		// --------------------------------------------------------------------------------------
@@ -153,21 +158,21 @@ public class SUBA {
 		
 		// number of transitions
 		int numTransitions = Integer.parseInt(Mod2_MA.readInput(f));
-		if(numTransitions<1 || numTransitions>((Mod2_MA.alphabetSize-1)*Q_SUBA*Q_SUBA))
+		if(numTransitions>((Mod2_MA.alphabet.length-1)*Q_SUBA*Q_SUBA))
 			Mod2_MA.throwException(f,"Invalid input: invalid number of transitions");
 		
 		// transition matrix Δ is used in the final statistical check
 		// for each index (q,a) where q∈Q and a∈Σ, transition_SUBA[q][a] is an ArrayList containing all of the 
 		// reachable states from (q,a)
 		// alphabet for the SUBA does not include $
-		transition_SUBA = new ArrayList[Q_SUBA+1][Mod2_MA.alphabetSize-1];
+		transition_SUBA = new ArrayList[Q_SUBA+1][Mod2_MA.alphabet.length-1];
 		for(int i=1;i<=Q_SUBA;i++) {
-			for(int j=0;j<Mod2_MA.alphabetSize-1;j++)
+			for(int j=0;j<Mod2_MA.alphabet.length-1;j++)
 				transition_SUBA[i][j] = new ArrayList<Integer>();
 		}
 		
 		// transition matrix Δ' has the form (start state, letter, end state)
-		transition_UFA = new boolean[Q_UFA+1][Mod2_MA.alphabetSize][Q_UFA+1];
+		transition_UFA = new boolean[Q_UFA+1][Mod2_MA.alphabet.length][Q_UFA+1];
 		
 		// lines of the form q_j a q_k, where q_j,q_k∈Q and a∈Σ
 		for(int i=0;i<numTransitions;i++) {
@@ -223,6 +228,9 @@ public class SUBA {
 			Mod2_MA.throwException(f,"Invalid input: more transitions inputted than specified");
 
 		f.close();
+		
+		// used in arbitrary.java
+		arbitrary.inputType = -1;
 	}
 
 	public static void UFAtoMod2MA() {
@@ -237,8 +245,8 @@ public class SUBA {
 		}
 		
 		// for each σ∈Σ, [μ_σ]i,j = 1 if and only if (q_i,σ,q_j)∈∆
-		Mod2_MA.fu = new double[Mod2_MA.alphabetSize][Mod2_MA.r][Mod2_MA.r];
-		for(int i=0;i<Mod2_MA.alphabetSize;i++) {
+		Mod2_MA.fu = new double[Mod2_MA.alphabet.length][Mod2_MA.r][Mod2_MA.r];
+		for(int i=0;i<Mod2_MA.alphabet.length;i++) {
 			for(int j=1;j<=Mod2_MA.r;j++) {
 				for(int k=1;k<=Mod2_MA.r;k++) {
 					if(transition_UFA[j][i][k])
@@ -248,35 +256,32 @@ public class SUBA {
 		}
 	}
 	
-	public static boolean acceptsWord(String u, String v, int curState, boolean passedFinal, int q_u) {
+	public static boolean MQ_SUBA(String u, String v, int curState, boolean passedFinal, int q_u) {
 		/* From Bosquet and Löding, u(v)^ω is accepted by the SUBA iff there is a state q∈Q such that
 		 * q_1 (read u) -> q (read v and pass by a final state) -> q.
 		 */
+		
 		// read u
 		if(u.length()!=0) {
 			// look at the first character of u
 			char c = u.charAt(0);
+			
 			// check all possible states reachable from (curState, c)
 			for(int i=0;i<transition_SUBA[curState][Mod2_MA.letterToIndex.get(c)].size();i++) {
 				int newState = transition_SUBA[curState][Mod2_MA.letterToIndex.get(c)].get(i);
+				
 				// ready to read v
-				if(u.length()==1) {
-					// newState is a final state
-					if(F_SUBA[newState] && acceptsWord("",v,newState,true,newState))
-						return true;
-					// newState is not a final state
-					else if(acceptsWord("",v,newState,false,newState))
-						return true;
-				}
+				if(u.length()==1 && MQ_SUBA("",v,newState,false,newState))
+					return true;
 				// more left to read in u
-				else if(u.length()>1 && acceptsWord(u.substring(1),v,newState,false,-1))
+				else if(MQ_SUBA(u.substring(1),v,newState,false,q_u))
 					return true;
 			}
 			// no successful transitions from a letter in u
 			return false;
 		}
 		// read v
-		else {
+		else {			
 			// finished reading v
 			if(v.length()==0) {
 				// for u(v)^ω to be accepted, must be at state q_u and passed a final state
@@ -284,16 +289,18 @@ public class SUBA {
 					return true;
 				return false;
 			}
+			
+			// reached a final state
+			if(F_SUBA[curState])
+				passedFinal = true;
+			
 			// look at the first character of v
 			char c = v.charAt(0);
+			
 			// check all possible states reachable from (curState, c)
 			for(int i=0;i<transition_SUBA[curState][Mod2_MA.letterToIndex.get(c)].size();i++) {
 				int newState = transition_SUBA[curState][Mod2_MA.letterToIndex.get(c)].get(i);
-				// newState is a final state
-				if(F_SUBA[newState] && acceptsWord("",v.substring(1),newState,true,q_u))
-					return true;
-				// newState is not a final state
-				else if(acceptsWord("",v.substring(1),newState, passedFinal, q_u))
+				if(MQ_SUBA("",v.substring(1),newState,passedFinal,q_u))
 					return true;
 			}
 			return false;
@@ -303,28 +310,31 @@ public class SUBA {
 	public static String genTest(int len) {		
 		// adds len number of random characters in alphabet to test
 		String test = "";
-		for(int i=0;i<len;i++) {
-			// cannot include $
-			test += Mod2_MA.alphabet[(int)(Math.random()*(Mod2_MA.alphabetSize-1))];
-		}
+		// cannot include $
+		for(int i=0;i<len;i++)
+			test += Mod2_MA.alphabet[(int)(Math.random()*(Mod2_MA.alphabet.length-1))];
 		return test;
 	}
 	
-	public static boolean finalCheck() {
-		// creates 40 tests of length 1 to 50
-		// checks whether the SUBA and learned mod-2-MA either both accept or reject the words
-		for(int i=1;i<=40;i++) {
+	public static boolean finalCheck(int maxTestLen, int numTests) {
+		// creates numTests tests of length at most maxTestLen
+		// checks if the SUBA and learned mod-2-MA either both accept or reject the words
+		for(int i=1;i<=numTests;i++) {
 			// SUBA: ultimately periodic words of the form u(v)^w
-			// u and v have length <= 25, so length(u+v) <= 50
-			String u = genTest((int)(Math.random()*25)+1);
-			String v = genTest((int)(Math.random()*25)+1);
-			boolean SUBA_accepts = acceptsWord(u,v,1,false,-1);
+			int lenU = (int)(Math.random()*(maxTestLen+1));
+			int lenV = (int) (Math.random()*(maxTestLen-lenU+1));
+			String u = genTest(lenU);
+			String v = genTest(lenV);
+			boolean SUBA_accepts = MQ_SUBA(u,v,1,false,1);
 			
 			// mod-2-MA: words of the form u$v
-			int mod2_MA_accepts = Mod2_MA.MQResults(u+'$'+v);
+			int mod2_MA_accepts = Mod2_MA.MQH(Mod2_MA.resulty, Mod2_MA.resultu, u+'$'+v);
 			
-			if((SUBA_accepts&&mod2_MA_accepts==0) || (!SUBA_accepts&&mod2_MA_accepts==1))
+			if((SUBA_accepts&&mod2_MA_accepts==0) || (!SUBA_accepts&&mod2_MA_accepts==1)) {
+				System.out.println("u: " + u);
+				System.out.println("v: " + v);
 				return false;
+			}
 		}
 		return true;
 	}

@@ -3,8 +3,6 @@
 // SUBA for the language ((a+b)* (a (a+b) a (a+b) c + b (a+b) b (a+b) d))^ω
 // number of states
 9
-// alphabet size
-4
 // alphabet
 a b c d
 // final states

@@ -1,16 +1,14 @@
 /*
  * Author: Nevin George
  * Advisor: Dana Angluin
- * Program Description: The algorithm takes in as input a mod-2-MA and prints to stdout the MA obtained after 
- * learning the input function through a series of membership and equivalence queries. The motivation behind this 
- * algorithm originally arose from Angluin's exact learning model described in her paper "Learning regular sets 
- * from queries and counterexamples."
+ * Program Description: The program takes in as input a mod-2-MA and prints to stdout the MA obtained after 
+ * learning the input function through a series of membership and equivalence queries.
  * 
  * References:
  * 1 Amos Beimel, Francesco Bergadano, Nader H. Bshouty, Eyal Kushilevitz, Stefano Varric- chio. Learning 
  *   functions represented as multiplicity automata. J. ACM, 47(3):506–530, May 2000.
  * 2 Dana Angluin. Learning regular sets from queries and counterexamples. Inf. Comput., 75(2):87–106, 1987.
- * 3 Dana Angluin, Timos Antonopoulos, Dana Fisman. Strongly Unambiguous Büchi Automata Are Polynomially 
+ * 3 Dana Angluin, Timos Antonopoulos, Dana Fis`man. Strongly Unambiguous Büchi Automata Are Polynomially 
  *   Predictable with Membership Queries. 28th International Conference on Computer Science Logic, 8:1–8:17, 2020.
  * 4 Michael Thon and Herbert Jaeger. Links Between Multiplicity Automata, Observable Operator Models and 
  *   Predictive State Representations — a Unified Learning Framework. Journal of Machine Learning Research, 
@@ -24,6 +22,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
 import java.util.StringTokenizer;
+
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.DecompositionSolver;
@@ -38,16 +37,15 @@ public class Mod2_MA {
 	public static boolean verbose;
 	
 	// alphabet
-	public static int alphabetSize;
 	public static Character[] alphabet;
-	// maps letters in alphabet to a corresponding index
+	// maps each letter in the alphabet to an index
 	public static HashMap<Character, Integer> letterToIndex;
 	
-	// γ of target function
+	// γ of the target function
 	public static double[] fy;
-	// set of nxn μ's of target function
+	// set of nxn μ's of the target function
 	public static double[][][] fu;
-	// size of target function
+	// size of the target function
 	public static int r;
 	
 	// Hankel matrix
@@ -72,17 +70,25 @@ public class Mod2_MA {
 	public static Scanner in;
 	
 	public static void main(String[] args) throws Exception {
+		// reads in the mod-2-MA
 		initialize();
+		
+		// runs the learning algorithm
 		run();
 		
+		// statistical final check of equivalence
+		if(finalCheck(50,40))
+			displayResults();
+		else
+			throwException(null,"Algorithm failed: failed final check.");
+		
 		// performs desired operations with the learned mod-2-MA
-		operations(true);
+		operations(false);
 	}
 	
 	public static void initialize() throws Exception {
-		/* The input file must have the following form (no line separation, characters are space separated, 
+		/* The input file must have the following format (no line separation, entries are space separated, 
 		 * and lines beginning with // are ignored):
-		 * <alphabet size>
 		 * <characters in the alphabet>
 		 * <size of the target function (r)>
 		 * <γ of the target function (fy)>
@@ -92,33 +98,37 @@ public class Mod2_MA {
 		 */
 		
 		// reads in file name + optional flag -v from stdin
-		System.out.println("Input file name and optional flag -v (e.g. input1.txt or input1.txt -v)");
+		System.out.println("Input file name and optional flag -v (e.g. Mod2_MA_input1.txt or Mod2_MA_input1.txt -v)");
 		in = new Scanner(System.in);
 		String[] arrInput = in.nextLine().split(" ");
 		verbose = false;
-		if(arrInput.length == 2 && arrInput[1].equals("-v"))
-			verbose = true;
+		if(arrInput.length > 2)
+			throwException(null,"Invalid input: too many inputs passed");
+		if(arrInput.length == 2) {
+			if(arrInput[1].equals("-v"))
+				verbose = true;
+			else
+				throwException(null,"Invalid input: invalid flag");
+		}
 		BufferedReader f = new BufferedReader(new FileReader(arrInput[0]));
 		System.out.println();
 		
-		// alphabet size
-		alphabetSize = Integer.parseInt(readInput(f));
-		
 		// alphabet
 		StringTokenizer st = new StringTokenizer(readInput(f));
-		alphabet = new Character[alphabetSize];
-		for(int i=0;i<alphabetSize;i++) {
+		ArrayList<Character> tempAlphabet = new ArrayList<Character>();
+		while(st.hasMoreTokens()) {
 			String letter = st.nextToken();
 			if(letter.length()!=1)
 				throwException(f,"Invalid input: invalid character in the alphabet");
-			alphabet[i] = letter.charAt(0);
+			tempAlphabet.add(letter.charAt(0));
 		}
-		if(st.hasMoreTokens())
-			throwException(f,"Invalid input: alphabet size exceeds the specified size");
+		alphabet = new Character[tempAlphabet.size()];
+		for(int i=0;i<tempAlphabet.size();i++)
+			alphabet[i] = tempAlphabet.get(i);
 		
-		// maps each letter in alphabet to an index
+		// maps each letter in the alphabet to an index
 		letterToIndex = new HashMap<Character, Integer>();
-		for(int i=0;i<alphabetSize;i++)
+		for(int i=0;i<alphabet.length;i++)
 			letterToIndex.put(alphabet[i], i);
 		
 		// size of the target function
@@ -133,8 +143,8 @@ public class Mod2_MA {
 			throwException(f,"Invalid input: γ length exceeds the specified size");
 		
 		// set of μ's for the target function
-		fu = new double[alphabetSize][r][r];
-		for(int i=0;i<alphabetSize;i++) {
+		fu = new double[alphabet.length][r][r];
+		for(int i=0;i<alphabet.length;i++) {
 			for(int j=0;j<r;j++) {
 				st = new StringTokenizer(readInput(f));
 				for(int k=0;k<r;k++)
@@ -147,6 +157,9 @@ public class Mod2_MA {
 			throwException(f,"Invalid input: μ size exceeds the specified size");
 		
 		f.close();
+		
+		// used in arbitrary.java
+		arbitrary.inputType = -1;
 	}
 	
 	public static String readInput(BufferedReader f) throws IOException {
@@ -199,12 +212,6 @@ public class Mod2_MA {
 		
 		// runs the algorithm
 		learnMA();
-		
-		// statistical final check of equivalence
-		if(finalCheck())
-			displayResults();
-		else
-			throwException(null,"Algorithm failed: failed final check.");
 	}
 	
 	public static void learnMA() throws Exception {
@@ -220,7 +227,8 @@ public class Mod2_MA {
 			return;
 		}
 		
-		// attempts to calculate ω, σ, and y, if it cannot find a y that works it throws an exception
+		// attempts to calculate ω, σ, and y
+		// if it cannot find a y that works it throws an exception
 		calcWSigY(hu);
 		
 		learnMA();
@@ -241,8 +249,8 @@ public class Mod2_MA {
 		 * to F_xl are linearly independent).
 		*/
 		
-		double[][][] setOfU = new double[alphabetSize][l][l];
-		for(int c=0;c<alphabetSize;c++) {
+		double[][][] setOfU = new double[alphabet.length][l][l];
+		for(int c=0;c<alphabet.length;c++) {
 			// calculuates μ_c
 			char sig = alphabet[c];
 			
@@ -272,7 +280,6 @@ public class Mod2_MA {
 						setOfU[c][i][j] = 0;
 				}
 			}
-			
 		}
 		return setOfU;
 	}
@@ -284,23 +291,32 @@ public class Mod2_MA {
 		if(F.get(w) != null)
 			return F.get(w);
 		
-		// initializes cur as the rxr identity matrix
-		RealMatrix cur = MatrixUtils.createRealIdentityMatrix(r);
+		int out = 0;
 		
-		// multiplies cur by the corresponding μ for each letter in ω
-		for(int i=0;i<w.length();i++) {
-			cur = cur.multiply(MatrixUtils.createRealMatrix(fu[letterToIndex.get(w.charAt(i))]));
-			// accounts for rounding issues with larger words
-			if(i!=0 && i%25==0) {
-				for(int j=0;j<r;j++) {
-					for(int k=0;k<r;k++)
-						cur.setEntry(j, k, mod2(cur.getEntry(j, k)));
+		// MQ.java currently has 1 different methods of calculating membership queries
+		if(arbitrary.inputType>=0) {
+			if(arbitrary.inputType==0)
+				out = MQ.ex0(w);
+		}
+		else {
+			// initializes cur as the rxr identity matrix
+			RealMatrix cur = MatrixUtils.createRealIdentityMatrix(r);
+			
+			// multiplies cur by the corresponding μ for each letter in ω
+			for(int i=0;i<w.length();i++) {
+				cur = cur.multiply(MatrixUtils.createRealMatrix(fu[letterToIndex.get(w.charAt(i))]));
+				// accounts for rounding issues with larger words
+				if(i!=0 && i%25==0) {
+					for(int j=0;j<r;j++) {
+						for(int k=0;k<r;k++)
+							cur.setEntry(j, k, mod2(cur.getEntry(j, k)));
+					}
 				}
 			}
+			
+			// multiplies the final result with γ
+			out = mod2(cur.getRowVector(0).dotProduct(new ArrayRealVector(fy)));
 		}
-		
-		// multiplies the final result with γ
-		int out = mod2(cur.getRowVector(0).dotProduct(new ArrayRealVector(fy)));
 		
 		// adds MQ(ω) to the Hankel matrix
 		F.put(w, out);
@@ -308,15 +324,15 @@ public class Mod2_MA {
 		return out;
 	}
 	
-	public static int MQResults(String w) {
-		// MQ for the learned function
+	public static int MQH(double[] hy, double[][][] hu, String w) {
+		// MQ for the current hypothesis
 		
 		// initializes cur as the lxl identity matrix
 		RealMatrix cur = MatrixUtils.createRealIdentityMatrix(l);
 		
 		// multiplies cur by the corresponding μ for each letter in ω
 		for(int i=0;i<w.length();i++) {
-			cur = cur.multiply(MatrixUtils.createRealMatrix(resultu[letterToIndex.get(w.charAt(i))]));
+			cur = cur.multiply(MatrixUtils.createRealMatrix(hu[letterToIndex.get(w.charAt(i))]));
 			// accounts for rounding issues with larger words
 			if(i!=0 && i%25==0) {
 				for(int j=0;j<l;j++) {
@@ -327,10 +343,13 @@ public class Mod2_MA {
 		}
 		
 		// multiplies the final result with γ
-		return mod2(cur.getRowVector(0).dotProduct(new ArrayRealVector(resulty)));
+		return mod2(cur.getRowVector(0).dotProduct(new ArrayRealVector(hy)));
 	}
 	
-	public static boolean EQ(double[] hy, double[][][] hu) {		 
+	public static boolean EQ(double[] hy, double[][][] hu) {
+		if(arbitrary.inputType>=0)
+			return arbitrary.EQapprox(hy, hu);
+		
 		/* EQ constructs the MA formed by combining the target function and hypothesis.
 		 * 
 		 * Each μ(ω) of the combined MA has the following form (the 0's representing block 0 matrices):
@@ -350,8 +369,8 @@ public class Mod2_MA {
 		 */
 		
 		// set of μ for the combined MA
-		double[][][] setOfU = new double[alphabetSize][r+l][r+l];
-		for(int i=0;i<alphabetSize;i++) {
+		double[][][] setOfU = new double[alphabet.length][r+l][r+l];
+		for(int i=0;i<alphabet.length;i++) {
 			for(int j=0;j<r+l;j++) {
 				for(int k=0;k<r+l;k++) {
 					// fu forms the upper left block of μ
@@ -411,10 +430,12 @@ public class Mod2_MA {
 				WB.add(s);
 				
 				// adds {μ(σ)ω | σ∈Σ} to C
-				for(int i=0;i<alphabetSize;i++) {
+				for(int i=0;i<alphabet.length;i++) {
 					RealMatrix m = MatrixUtils.createRealMatrix(setOfU[i]);
 					RealVector p = MatrixUtils.createRealVector(w);
 					double[] v = m.operate(p).toArray();
+					for(int j=0;j<v.length;j++)
+						v[j] = mod2(v[j]);
 					C.add(v);
 					WC.add(alphabet[i]+s);
 					sizeC++;
@@ -425,7 +446,7 @@ public class Mod2_MA {
 		// v[0] + v[r] == 0 for every vector v in the basis, so the target and hypothesis are equivalent
 		return true;
 	}
-	
+
 	public static boolean linInd(double[] w, double[][] B, int sizeB) {
 		if(sizeB==0)
 			return true;
@@ -484,9 +505,95 @@ public class Mod2_MA {
 		
 		// linearly independent
 		return true;
+		
+		// version that calculates linear independence using orthogonal projections
+		/*
+		if(sizeB==0)
+			return true;
+
+		// forms the matrix where the columns are the vectors in the basis B
+		RealMatrix m = MatrixUtils.createRealMatrix(w.length, sizeB);
+		for(int i=0;i<sizeB;i++)
+			m.setColumn(i,B[i]);
+		
+		// calculates the orthogonal projection matrix P of the basis B
+		RealMatrix P = m.multiply(MatrixUtils.inverse(m.transpose().multiply(m))).multiply(m.transpose());
+		
+		// if Pω = ω, ω is linearly dependent with B
+		RealVector Pw = P.operate(MatrixUtils.createRealVector(w)); 
+		for(int i=0;i<w.length;i++) {
+			if(Math.round(Pw.getEntry(i)) != Math.round(w[i]))
+				return true;
+		}
+		
+		return false;
+		*/
 	}
 	
 	public static void calcWSigY(double[][][] hu) throws Exception {
+		// prefix of z = ω + σ
+		String w = "";
+		char sig = 0;
+		// experiment
+		String y = "";
+		
+		// goes through every possible prefix of z starting with ω = "" and σ = (first character of ω)
+		for(int i=0;i<z.length();i++) {
+			if(i!=0)
+				w = z.substring(0,i);
+			sig = z.charAt(i);
+			
+			// calculates μ(ω)
+			RealMatrix u = MatrixUtils.createRealIdentityMatrix(l);
+			for(int n=0;n<w.length();n++)
+				u = u.multiply(MatrixUtils.createRealMatrix(hu[letterToIndex.get(w.charAt(n))]));
+			
+			// checks if F_ω = sum(μ(ω)_1,i * F_xi)
+			boolean failed = false;
+			for(int j=0;j<l;j++) {
+				int sum = 0;
+				for(int k=0;k<l;k++)
+					sum = mod2(sum + u.getEntry(0, k)*MQ(X.get(k)+Y.get(j)));
+				
+				if(MQ(w+Y.get(j)) != sum) {
+					failed = true;
+					break;
+				}
+			}
+			if(failed)
+				continue;
+			
+			// goes through every possible value of y in Y
+			// checks if F_{ω+σ}(y) != sum(μ(ω)_1,i * F_{xi+σ}(y))
+			for(int j=0;j<l;j++) {
+				y = Y.get(j);
+			
+				int sum = 0;
+				for(int k=0;k<l;k++)
+					sum = mod2(sum + u.getEntry(0, k)*MQ(X.get(k) + sig + y));
+				
+				// found a solution
+				if(MQ(w+sig+y) != sum) {		
+					if(l==r)
+						throwException(null,"Algorithm failed: size of the hypothesis exceeds that of the target function.");
+					// updates l, X, and Y
+					l++;
+					X.add(w);
+					Y.add(sig+y);
+					
+					// displays the updated observation table
+					if(verbose)
+						displayQueries();
+					
+					return;
+				}
+			}
+		}
+
+		throwException(null,"Algorithm failed: didn't find a suitable omega, sigma, and gamma.");
+		
+		// version that traverses through all prefixes of z before calling a new equivalence query
+		/*
 		// prefix of z = ω + σ
 		String w = "";
 		char sig = 0;
@@ -551,6 +658,7 @@ public class Mod2_MA {
 		
 		if(noSoln)
 			throwException(null,"Algorithm failed: didn't find a suitable omega, sigma, and gamma.");
+		*/
 	}
 
 	public static void displayResults() {
@@ -602,32 +710,32 @@ public class Mod2_MA {
 		// adds len number of random characters in alphabet to test
 		String test = "";
 		for(int i=0;i<len;i++)
-			test += alphabet[(int)(Math.random()*alphabetSize)];
+			test += alphabet[(int)(Math.random()*alphabet.length)];
 		return test;
 	}
 	
-	public static boolean finalCheck() {
-		// creates 40 tests of length 1-50
+	public static boolean finalCheck(int maxWordLen, int numTests) {
+		// creates numTests tests of length at most maxWordLen
 		// checks whether the learned function and target function have the same output
-		for(int i=1;i<=40;i++) {
-			String test = genTest((int)(Math.random()*50)+1);
-			if(MQ(test)!=MQResults(test))
+		for(int i=1;i<=numTests;i++) {
+			String test = genTest((int)(Math.random()*(maxWordLen+1)));
+			if(MQ(test)!=MQH(resulty, resultu, test))
 				return false;
 		}
 		return true;
 	}
-	
-	public static void operations(boolean inMod2MA) {
+
+	public static void operations(boolean inSUBA) {
 		System.out.println("Available operations for the learned Mod-2-MA (enter \"quit\" to terminate):");
-		if(inMod2MA)
-			System.out.println("- Test whether a word is accepted: \"-a <word>\"");
-		else
+		if(inSUBA)
 			System.out.println("- Test whether a word of the form u$v in (L)_$ is accepted: \"-a <word>\"");
+		else
+			System.out.println("- Test whether a word is accepted: \"-a <word>\"");
 		while(true) {
 			// reads in cmd
 			String line = in.nextLine();
 			
-			// terminate the program
+			// terminates the program
 			if(line.equals("quit")) {
 				in.close();
 				break;
@@ -647,9 +755,9 @@ public class Mod2_MA {
 					if(input.length==2)
 						test = input[1];
 					
-					if(!inAlphabet(test, inMod2MA))
+					if(!inAlphabet(test, inSUBA))
 						System.out.println("Inputted word is not in the language.");
-					else if(MQResults(test) == 1)
+					else if(MQH(resulty, resultu, test) == 1)
 						System.out.println("Accepted");
 					else
 						System.out.println("Not accepted");
@@ -660,20 +768,20 @@ public class Mod2_MA {
 		}
 	}
 	
-	public static boolean inAlphabet(String word, boolean inMod2MA) {
+	public static boolean inAlphabet(String word, boolean inSUBA) {
 		// a word in (L)_$ must contain exactly one '$'
 		boolean containsDollar = false;
 		for(int i=0;i<word.length();i++) {
 			if(letterToIndex.get(word.charAt(i)) == null)
 				return false;
-			if(!inMod2MA && word.charAt(i) == '$') {
+			if(inSUBA && word.charAt(i) == '$') {
 				if(containsDollar)
 					return false;
 				else
 					containsDollar = true;
 			}
 		}
-		if(!inMod2MA && !containsDollar)
+		if(inSUBA && !containsDollar)
 			return false;
 		return true;
 	}

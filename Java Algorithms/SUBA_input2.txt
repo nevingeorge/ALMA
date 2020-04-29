@@ -3,8 +3,6 @@
 // SUBA for the language Σ* a Σ^5 a b^ω
 // number of states
 8
-// alphabet size
-2
 // alphabet
 a b
 // final states
