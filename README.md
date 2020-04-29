@@ -17,7 +17,7 @@ Lines 4-end: List of μ's for each character in the alphabet, with each μ appea
 Example input files can be found in the repository.
 
 ## Algorithm for learning strongly unambiguous Büchi automata (SUBA)
-SUBA.java takes in as input a SUBA of n states and converts it into an equivalent UFA of 2n^2+n states. The UFA is then converted into an equivalent mod-2-MA of the same size and learned using Mod2_MA.java.
+SUBA.java takes in as input a SUBA of n states and converts it into an equivalent UFA of 2n<sup>2</sup>+n states. The UFA is then converted into an equivalent mod-2-MA of the same size and learned using Mod2_MA.java.
 
 ### Format of Input File
 The input file is a text document containing the specifications of a SUBA of the form (Q, Σ, ∆, F). The file must have the following format (no line separation, entries are space separated, and lines beginning with // are ignored):
