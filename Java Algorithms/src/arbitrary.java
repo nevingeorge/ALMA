@@ -18,6 +18,7 @@
 
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
@@ -25,13 +26,17 @@ import java.util.StringTokenizer;
 
 public class arbitrary {
 	
-	// specifies which membership query method in MQ.java to call
-	public static int inputType;
+	// membership query function to call in MQ.java
+	public static Method MQarbitrary;
 	
 	// maximum length of a test in the statistical equivalence query
 	public static int maxTestLen;
 	// number of tests the statistical equivalence query will check
 	public static int numTests;
+	// limit on the number of equivalence queries to run
+	public static int EQlimit;
+	// number of equivalence queries performed
+	public static int EQcur;
 
 	public static void main(String[] args) throws Exception {
 		// reads in the input file
@@ -51,8 +56,10 @@ public class arbitrary {
 		/* The input file must have the following format (no line separation, entries are space separated, 
 		 * and lines beginning with // are ignored):
 		 * <characters in the alphabet>
-		 * <membership query function number (found in MQ.java)>
-		 * <max word length and number of tests>
+		 * <name of the desired membership query function in MQ.java>
+		 * <maximum length of a test in the statistical equivalence query>
+		 * <number of tests the statistical equivalence query will check>
+		 * <limit on the number of equivalence queries to run>
 		 * 
 		 * Example input files can be found in the GitHub repository.
 		 */
@@ -91,26 +98,31 @@ public class arbitrary {
 		for(int i=0;i<Mod2_MA.alphabet.length;i++)
 			Mod2_MA.letterToIndex.put(Mod2_MA.alphabet[i], i);
 		
-		// specifies which membership query function in MQ.java to call
-		inputType = Integer.parseInt(Mod2_MA.readInput(f));
-		// currently supports non-negative method numbers <= 0
-		if(inputType<0 || inputType>0)
-			Mod2_MA.throwException(f, "Invalid input: invalid membership query number");
+		// membership query function to call in MQ.java
+		try {
+			MQarbitrary = (new MQ()).getClass().getMethod(Mod2_MA.readInput(f), String.class);
+		}
+		catch(Exception e) {
+			Mod2_MA.throwException(f, "Invalid input: invalid membership query function name");
+		}
 		
-		st = new StringTokenizer(Mod2_MA.readInput(f));
 		// maximum length of a test in the statistical equivalence query
-		maxTestLen = Integer.parseInt(st.nextToken());
+		maxTestLen = Integer.parseInt(Mod2_MA.readInput(f));
+		
 		// number of tests the statistical equivalence query will check
-		numTests = Integer.parseInt(st.nextToken());
-		if(st.hasMoreTokens())
-			Mod2_MA.throwException(f, "Invalid input: too many inputs passed");
+		numTests = Integer.parseInt(Mod2_MA.readInput(f));
+		
+		// limit on the number of equivalence queries to run
+		EQlimit = Integer.parseInt(Mod2_MA.readInput(f));
+		EQcur = 0;
 		
 		f.close();
 	}
 	
-	public static boolean EQapprox(double[] hy, double[][][] hu) {
-		// creates numTests tests of length at most maxWordLen
+	public static boolean EQapprox(double[] hy, double[][][] hu) throws Exception {
+		// creates numTests tests of length at most maxTestLen
 		// checks if the hypothesis and target function have the same output
+		int numFail = 0;
 		for(int i=0;i<numTests;i++) {
 			// generates a random length for the test from 0-maxWordLen
 			int len = (int)(Math.random()*(maxTestLen+1));
@@ -120,12 +132,31 @@ public class arbitrary {
 			for(int j=0;j<len;j++)
 				test += Mod2_MA.alphabet[(int)(Math.random()*Mod2_MA.alphabet.length)];
 			
+			// found a counter-example
 			if(Mod2_MA.MQ(test)!=Mod2_MA.MQH(hy,hu,test)) {
-				// found a counter-example
-				Mod2_MA.z = test;
-				return false;
+				// counts the number of counter-examples
+				if(EQcur == EQlimit-1)
+					numFail++;
+				else {
+					EQcur++;
+					Mod2_MA.z = test;
+					return false;
+				}
 			}
 		}
+		
+		// performed EQlimit equivalence queries
+		if(EQcur==EQlimit-1 && numFail!=0) {
+			// displays what was learned so far
+			Mod2_MA.resulty = hy;
+			Mod2_MA.resultu = hu;
+			Mod2_MA.displayResults();
+			
+			// displays statistics for the final equivalence query
+			System.out.println("Reached equivalence query limit.\nFinal equivalence query failed on " + numFail + " out of " + numTests + " tests.");
+			System.exit(0);
+		}
+
 		return true;
 	}
 }

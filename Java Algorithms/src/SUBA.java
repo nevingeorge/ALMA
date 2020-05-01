@@ -27,6 +27,7 @@ import java.util.Scanner;
 import java.util.StringTokenizer;
 
 public class SUBA {
+	
 	// SUBA = (Q, Σ, ∆, F)
 	
 	// Q has states q_1 to q_(Q_SUBA)
@@ -228,9 +229,6 @@ public class SUBA {
 			Mod2_MA.throwException(f,"Invalid input: more transitions inputted than specified");
 
 		f.close();
-		
-		// used in arbitrary.java
-		arbitrary.inputType = -1;
 	}
 
 	public static void UFAtoMod2MA() {

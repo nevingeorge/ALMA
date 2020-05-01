@@ -17,9 +17,16 @@
 
 public class MQ {
 	
-	// MQ #0
-	public static int ex0(String w) {
+	// MQ #1
+	public static int MQ1(String w) {
 		if(w.length()%2 == 0)
+			return 1;
+		return 0;
+	}
+	
+	// MQ #2
+	public static int MQ2(String w) {
+		if(w.length()%10 == 0)
 			return 1;
 		return 0;
 	}

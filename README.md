@@ -44,9 +44,13 @@ The input file is a text document that specifies the desired membership query fu
 
 Line 1: characters in the alphabet
 
-Line 2: membership query function number (found in MQ.java)
+Line 2: name of the desired membership query function in MQ.java
 
-Line 3: maximum test length and number of tests for the statistical equivalence query
+Line 3: maximum length of a test in the statistical equivalence query
+
+Line 4: number of tests the statistical equivalence query will check
+
+Line 5: limit on the number of equivalence queries to run
 
 Example input files can be found in the repository.
 

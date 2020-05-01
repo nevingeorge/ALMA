@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
 import java.util.StringTokenizer;
-
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.DecompositionSolver;
@@ -157,9 +156,6 @@ public class Mod2_MA {
 			throwException(f,"Invalid input: μ size exceeds the specified size");
 		
 		f.close();
-		
-		// used in arbitrary.java
-		arbitrary.inputType = -1;
 	}
 	
 	public static String readInput(BufferedReader f) throws IOException {
@@ -234,7 +230,7 @@ public class Mod2_MA {
 		learnMA();
 	}
 	
-	public static double[] createHY() {
+	public static double[] createHY() throws Exception {
 		// γ is the set of results obtained after performing membership queries on the indices in X
 		double[] y = new double[l];
 		for(int i=0;i<l;i++)
@@ -242,7 +238,7 @@ public class Mod2_MA {
 		return y;
 	}
 	
-	public static double[][][] createHU() {
+	public static double[][][] createHU() throws Exception {
 		/*
 		 * For every s, define a matrix μ by letting its i-th row be the coefficients of the vector F_{xi+σ}(y) 
 		 * when expressed as a linear combination of the vectors F_x1 to F_xl (such coefficients exist as F_x1 
@@ -284,7 +280,7 @@ public class Mod2_MA {
 		return setOfU;
 	}
 	
-	public static int MQ(String w) {
+	public static int MQ(String w) throws Exception {
 		// MQ for the target function
 		
 		// MQ(ω) was previously calculated and is in the Hankel matrix
@@ -293,10 +289,13 @@ public class Mod2_MA {
 		
 		int out = 0;
 		
-		// MQ.java currently has 1 different methods of calculating membership queries
-		if(arbitrary.inputType>=0) {
-			if(arbitrary.inputType==0)
-				out = MQ.ex0(w);
+		// uses a membership query function defined in MQ.java
+		if(arbitrary.MQarbitrary!=null) {
+			try {
+				out = (int) arbitrary.MQarbitrary.invoke(null,w);
+			} catch (Exception e) {
+				throwException(null, "Invalid input: invalid membership query function");
+			} 
 		}
 		else {
 			// initializes cur as the rxr identity matrix
@@ -346,8 +345,9 @@ public class Mod2_MA {
 		return mod2(cur.getRowVector(0).dotProduct(new ArrayRealVector(hy)));
 	}
 	
-	public static boolean EQ(double[] hy, double[][][] hu) {
-		if(arbitrary.inputType>=0)
+	public static boolean EQ(double[] hy, double[][][] hu) throws Exception {
+		// uses a statistical equivalence query
+		if(arbitrary.MQarbitrary!=null)
 			return arbitrary.EQapprox(hy, hu);
 		
 		/* EQ constructs the MA formed by combining the target function and hypothesis.
@@ -685,7 +685,7 @@ public class Mod2_MA {
 		}
 	}
 	
-	public static void displayQueries() {
+	public static void displayQueries() throws Exception {
 		// displays the observation table
 		System.out.println("l = " + l);
 		System.out.print("Rows: ɛ ");
@@ -714,11 +714,11 @@ public class Mod2_MA {
 		return test;
 	}
 	
-	public static boolean finalCheck(int maxWordLen, int numTests) {
-		// creates numTests tests of length at most maxWordLen
+	public static boolean finalCheck(int maxTestLen, int numTests) throws Exception {
+		// creates numTests tests of length at most maxTestLen
 		// checks whether the learned function and target function have the same output
 		for(int i=1;i<=numTests;i++) {
-			String test = genTest((int)(Math.random()*(maxWordLen+1)));
+			String test = genTest((int)(Math.random()*(maxTestLen+1)));
 			if(MQ(test)!=MQH(resulty, resultu, test))
 				return false;
 		}
