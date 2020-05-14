@@ -174,6 +174,12 @@ public class NBA {
 		String u = w.substring(0, dollarIndex);
 		String v = w.substring(dollarIndex+1);
 		
+		/*
+		 * States are represented as length-2 integer arrays.
+		 * The first element is the state number.
+		 * The second element is either 0 or 1, with 1 indicating that a final state was passed to reach the state (or if the state itself is final).
+		 */
+		
 		// the initial state by default is q_1
 		ArrayList<int[]> initialState = new ArrayList<int[]>();
 		int[] state = {1, 0};
@@ -240,14 +246,13 @@ public class NBA {
 		boolean[][] visited = new boolean[Q+1][2];
 		
 		// updates nextStates with all of the states reachable from startStates on the first letter of str
-		// the states in nextStates are marked with either 0 or 1 to indicate passing a final state
 		for(int i=0;i<startStates.size();i++) {
 			ArrayList<Integer> curTransition = transition[startStates.get(i)[0]][Mod2_MA.letterToIndex.get(str.charAt(0))];
 			for(int j=0;j<curTransition.size();j++) {
 				int nextState = curTransition.get(j);
 				int mark = 0;
 				
-				// either came from a final state or is a final state itself
+				// either came from a state that has passed a final state or is a final state itself
 				if(startStates.get(i)[1] == 1 || F[nextState])
 					mark = 1;
 				
