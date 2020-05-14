@@ -248,7 +248,7 @@ public class NBA {
 				int mark = 0;
 				
 				// either came from a final state or is a final state itself
-				if(startStates.get(j)[1] == 1 || F[nextState])
+				if(startStates.get(i)[1] == 1 || F[nextState])
 					mark = 1;
 				
 				if(!visited[nextState][1] && (!visited[nextState][0] || mark==1)) {
