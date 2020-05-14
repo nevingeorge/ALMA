@@ -1,6 +1,6 @@
 To run the programs, in Terminal/Command Prompt change your current directory to the Java Algorithms folder and input the command "java -jar" followed by "Mod2_MA.jar", "SUBA.jar", "NBA.jar", or "arbitrary.jar". The program will then ask for the input file name and an optional flag -v. Make sure the desired input file is in the same folder as the jar file. If the optional flag is entered, the program will display the observation table as it is being constructed.
 
-Each input file must be a text document following the format required of its intended program (specific details described below). Additionally, each file must have no line separation, entries must be space separated, and lines beginning with // are ignored. Example input files for all of the programs can be found in the repository.
+Each input file must be a text document following the format required of its intended program (specific details described below). Each file must have no line separation, entries must be space separated, and lines beginning with // are ignored. Example input files for all of the programs can be found in the repository.
 
 ## Algorithm for learning mod-2-multiplicity automata
 Mod2_MA.java takes in as input a mod-2-MA and prints to stdout the mod-2-MA obtained after learning the input function through a series of membership and equivalence queries.
