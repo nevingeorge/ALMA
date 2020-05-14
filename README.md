@@ -1,24 +1,28 @@
-To run the programs, in Terminal/Command Prompt change your current directory to the Java Algorithms folder and input the command "java -jar" followed by "Mod2_MA.jar", "SUBA.jar", "NBA.jar", or "arbitrary.jar". The program will then ask for the input file name and an optional flag -v. Make sure the desired input file is in the same folder as the jar file. Example input files for all of the programs can be found in the repository. If the optional flag is entered, the program will display the observation table as it is being constructed.
+To run the programs, in Terminal/Command Prompt change your current directory to the Java Algorithms folder and input the command "java -jar" followed by "Mod2_MA.jar", "SUBA.jar", "NBA.jar", or "arbitrary.jar". The program will then ask for the input file name and an optional flag -v. Make sure the desired input file is in the same folder as the jar file. If the optional flag is entered, the program will display the observation table as it is being constructed.
+
+Each input file must be a text document following the format required of its intended program (specific details described below). Additionally, each file must have no line separation, entries must be space separated, and lines beginning with // are ignored. Example input files for all of the programs can be found in the repository.
 
 ## Algorithm for learning mod-2-multiplicity automata
 Mod2_MA.java takes in as input a mod-2-MA and prints to stdout the mod-2-MA obtained after learning the input function through a series of membership and equivalence queries.
 
-### Format of Input File
-The input file is a text document containing the specifications of the target function. It must have the following format (no line separation, entries are space separated, and lines beginning with // are ignored):
+### Input File Format
+Contains the specifications of a mod-2-MA.
 
 Line 1: characters in the alphabet
 
-Line 2: size of the target function (r)
+Line 2: size (r)
 
-Line 3: γ of the target function (fy)
+Line 3: final vector/γ (fy)
 
 Lines 4-end: List of μ's for each character in the alphabet, with each μ appearing in a rxr grid
+
+By default, the initial vector is (1,0,0,...,0).
 
 ## Algorithm for learning strongly unambiguous Büchi automata (SUBA)
 SUBA.java takes in as input a SUBA of n states and converts it into an equivalent UFA of 2n<sup>2</sup>+n states. The UFA is then converted into an equivalent mod-2-MA of the same size and learned using Mod2_MA.java.
 
-### Format of Input File
-The input file is a text document containing the specifications of a SUBA of the form (Q, Σ, ∆, F). The file must have the following format (no line separation, entries are space separated, and lines beginning with // are ignored):
+### Input File Format
+Contains the specifications of a SUBA of the form (Q, Σ, ∆, F).
 
 Line 1: number of states (Q)
 
@@ -30,13 +34,13 @@ Line 4: number of transitions
 
 Lines 5-end: transitions - each line has the form q_i a q_j, where q_i,q_j∈Q and a∈Σ.
 
-By default the only initial state of the SUBA (and therefore also the UFA) is q_1.
+By default, the only initial state of the SUBA (and therefore also the UFA) is q_1.
 
 ## Algorithm for learning non-deterministic Büchi automata (NBA)
 NBA.java takes in as input a NBA and prints to stdout the mod-2-MA obtained after learning the NBA through a series of membership and statistical equivalence queries.
 
-### Format of Input File
-The input file is a text document containing the specifications of a NBA of the form (Q, Σ, ∆, F) and the desired level of approximation for the statistical equivalence queries. The file must have the following format (no line separation, entries are space separated, and lines beginning with // are ignored):
+### Input File Format
+Contains the specifications of a NBA of the form (Q, Σ, ∆, F) and the desired level of approximation for the statistical equivalence queries.
 
 Line 1: maximum length of a test in the statistical equivalence query
 
@@ -59,8 +63,8 @@ By default the only initial state of the NBA is q_1.
 ## Algorithm for learning arbitrary automata
 arbitrary.java displays to stdout the mod-2-MA learned using a membership query method specified in MQ.java and statistical equivalence queries. The program can be used to approximately learn any type of automata, provided that MQ.java contains the desired automata's membership query function.
 
-### Format of Input File
-The input file is a text document that specifies the desired membership query function in MQ.java and level of approximation for the statistical equivalence queries. The file must have the following format (no line separation, entries are space separated, and lines beginning with // are ignored):
+### Input File Format
+Contains the name of the desired membership query function in MQ.java and level of approximation for the statistical equivalence queries.
 
 Line 1: name of the desired membership query function in MQ.java
 
