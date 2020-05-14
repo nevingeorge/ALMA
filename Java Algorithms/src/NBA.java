@@ -53,6 +53,9 @@ public class NBA {
 	public static void initialize() throws Exception {
 		/* The input file containing the NBA (Q, Σ, ∆, F) must have the following format (no line 
 		 * separation, entries are space separated, and lines beginning with // are ignored):
+		 * <maximum length of a test in the statistical equivalence query>
+		 * <number of tests the statistical equivalence query will check>
+		 * <limit on the number of equivalence queries to run>
 		 * <number of states (Q)>
 		 * <characters in the alphabet>
 		 * <final states (F)>
@@ -223,7 +226,7 @@ public class NBA {
 	
 	// returns an ArrayList with all of the states reachable from a state in states on a positive number of v's
 	public static ArrayList<int[]> readV(String v, ArrayList<int[]> states) {
-		// read one v (must read a positive number of v's)
+		// reads one v (must read a positive number of v's)
 		ArrayList<int[]> reachable = readStr(v, states);
 		
 		// keep reading v's until we find no new states upon reading another v
