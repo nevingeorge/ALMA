@@ -1,9 +1,9 @@
 // maximum length of a test in the statistical equivalence query
 25
 // number of tests the statistical equivalence query will check
-100
+1000
 // limit on the number of equivalence queries to run
-5
+30
 // number of states
 4
 // alphabet
