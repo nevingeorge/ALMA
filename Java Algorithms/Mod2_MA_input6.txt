@@ -1,0 +1,11 @@
+// alphabet
+a b
+// size of the target function
+1
+// γ of the target function
+0
+// set of μ's for the target function
+// μ(a)
+1
+// μ(b)
+0

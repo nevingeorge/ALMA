@@ -1,5 +1,3 @@
-// alphabet
-a b
 // name of the desired membership query function in MQ.java
 MQ2
 // max equivalence query test length
@@ -8,3 +6,5 @@ MQ2
 100
 // limit on the number of equivalence queries to run
 5
+// alphabet
+a b

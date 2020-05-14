@@ -59,6 +59,9 @@ public class SUBA {
 		// converts the UFA into an equivalent mod-2-MA
 		UFAtoMod2MA();
 		
+		// minimizes the mod-2-MA using algorithm 2 in Thon and Jaeger
+		Mod2_MA.minimize();
+		
 		// runs Mod2_MA.java on the mod-2-MA
 		Mod2_MA.run();
 		
@@ -69,7 +72,7 @@ public class SUBA {
 			Mod2_MA.throwException(null,"Failed final check");
 		
 		// performs desired operations with the learned mod-2-MA
-		Mod2_MA.operations(true);
+		Mod2_MA.operations();
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -104,7 +107,7 @@ public class SUBA {
 		BufferedReader f = new BufferedReader(new FileReader(arrInput[0]));
 		System.out.println("");
 
-		// number of states
+		// states
 		// Q' = Q U (Q x Q x {0,1})
 		Q_SUBA = Integer.parseInt(Mod2_MA.readInput(f));
 		Q_UFA = Q_SUBA + Q_SUBA*Q_SUBA*2;
@@ -233,22 +236,22 @@ public class SUBA {
 
 	public static void UFAtoMod2MA() {
 		// size of the target function equals the number of states in the UFA
-		Mod2_MA.r = Q_UFA;
+		Mod2_MA.inputR = Q_UFA;
 		
 		// fy is the characteristic vector of F
-		Mod2_MA.fy = new double[Mod2_MA.r];
+		Mod2_MA.inputY = new double[Mod2_MA.inputR];
 		for(int i=1;i<=Q_UFA;i++) {
 			if(F_UFA[i])
-				Mod2_MA.fy[i-1] = 1;
+				Mod2_MA.inputY[i-1] = 1;
 		}
 		
 		// for each σ∈Σ, [μ_σ]i,j = 1 if and only if (q_i,σ,q_j)∈∆
-		Mod2_MA.fu = new double[Mod2_MA.alphabet.length][Mod2_MA.r][Mod2_MA.r];
+		Mod2_MA.inputU = new double[Mod2_MA.alphabet.length][Mod2_MA.inputR][Mod2_MA.inputR];
 		for(int i=0;i<Mod2_MA.alphabet.length;i++) {
-			for(int j=1;j<=Mod2_MA.r;j++) {
-				for(int k=1;k<=Mod2_MA.r;k++) {
+			for(int j=1;j<=Mod2_MA.inputR;j++) {
+				for(int k=1;k<=Mod2_MA.inputR;k++) {
 					if(transition_UFA[j][i][k])
-						Mod2_MA.fu[i][j-1][k-1] = 1;
+						Mod2_MA.inputU[i][j-1][k-1] = 1;
 				}
 			}
 		}
@@ -326,7 +329,7 @@ public class SUBA {
 			boolean SUBA_accepts = MQ_SUBA(u,v,1,false,1);
 			
 			// mod-2-MA: words of the form u$v
-			int mod2_MA_accepts = Mod2_MA.MQH(Mod2_MA.resulty, Mod2_MA.resultu, u+'$'+v);
+			int mod2_MA_accepts = Mod2_MA.MQH(Mod2_MA.resultY, Mod2_MA.resultU, u+'$'+v);
 			
 			if((SUBA_accepts&&mod2_MA_accepts==0) || (!SUBA_accepts&&mod2_MA_accepts==1)) {
 				System.out.println("u: " + u);

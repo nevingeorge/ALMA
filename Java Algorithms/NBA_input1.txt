@@ -1,10 +1,19 @@
-// name of the desired membership query function in MQ.java
-MQ1
 // maximum length of a test in the statistical equivalence query
 25
 // number of tests the statistical equivalence query will check
 100
 // limit on the number of equivalence queries to run
 5
+// number of states
+2
 // alphabet
 a b
+// final states
+1
+// number of transitions
+4
+// transitions
+1 a 1
+1 b 2
+2 a 1
+2 b 2

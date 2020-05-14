@@ -49,7 +49,7 @@ public class arbitrary {
 		Mod2_MA.displayResults();
 		
 		// performs desired operations with the learned mod-2-MA
-		Mod2_MA.operations(false);
+		Mod2_MA.operations();
 	}
 	
 	public static void initialize() throws Exception {
@@ -80,24 +80,6 @@ public class arbitrary {
 		BufferedReader f = new BufferedReader(new FileReader(arrInput[0]));
 		System.out.println();
 		
-		// alphabet
-		StringTokenizer st = new StringTokenizer(Mod2_MA.readInput(f));
-		ArrayList<Character> tempAlphabet = new ArrayList<Character>();
-		while(st.hasMoreTokens()) {
-			String letter = st.nextToken();
-			if(letter.length()!=1)
-				Mod2_MA.throwException(f,"Invalid input: invalid character in the alphabet");
-			tempAlphabet.add(letter.charAt(0));
-		}
-		Mod2_MA.alphabet = new Character[tempAlphabet.size()];
-		for(int i=0;i<tempAlphabet.size();i++)
-			Mod2_MA.alphabet[i] = tempAlphabet.get(i);
-		
-		// maps each letter in the alphabet to an index
-		Mod2_MA.letterToIndex = new HashMap<Character, Integer>();
-		for(int i=0;i<Mod2_MA.alphabet.length;i++)
-			Mod2_MA.letterToIndex.put(Mod2_MA.alphabet[i], i);
-		
 		// membership query function to call in MQ.java
 		try {
 			MQarbitrary = (new MQ()).getClass().getMethod(Mod2_MA.readInput(f), String.class);
@@ -115,7 +97,25 @@ public class arbitrary {
 		// limit on the number of equivalence queries to run
 		EQlimit = Integer.parseInt(Mod2_MA.readInput(f));
 		EQcur = 0;
+
+		// alphabet
+		StringTokenizer st = new StringTokenizer(Mod2_MA.readInput(f));
+		ArrayList<Character> tempAlphabet = new ArrayList<Character>();
+		while(st.hasMoreTokens()) {
+			String letter = st.nextToken();
+			if(letter.length()!=1)
+				Mod2_MA.throwException(f,"Invalid input: invalid character in the alphabet");
+			tempAlphabet.add(letter.charAt(0));
+		}
+		Mod2_MA.alphabet = new Character[tempAlphabet.size()];
+		for(int i=0;i<tempAlphabet.size();i++)
+			Mod2_MA.alphabet[i] = tempAlphabet.get(i);
 		
+		// maps each letter in the alphabet to an index
+		Mod2_MA.letterToIndex = new HashMap<Character, Integer>();
+		for(int i=0;i<Mod2_MA.alphabet.length;i++)
+			Mod2_MA.letterToIndex.put(Mod2_MA.alphabet[i], i);
+				
 		f.close();
 	}
 	
@@ -148,8 +148,8 @@ public class arbitrary {
 		// performed EQlimit equivalence queries
 		if(EQcur==EQlimit-1 && numFail!=0) {
 			// displays what was learned so far
-			Mod2_MA.resulty = hy;
-			Mod2_MA.resultu = hu;
+			Mod2_MA.resultY = hy;
+			Mod2_MA.resultU = hu;
 			Mod2_MA.displayResults();
 			
 			// displays statistics for the final equivalence query
