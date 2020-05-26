@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.Scanner;
 import java.util.StringTokenizer;
 
+import org.apache.commons.math3.exception.OutOfRangeException;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.DecompositionSolver;
@@ -84,7 +85,7 @@ public class Mod2_MA {
 				
 		// runs the learning algorithm
 		run();
-		
+
 		// statistical final check of equivalence
 		if(finalCheck(50,40))
 			displayResults();
@@ -185,223 +186,158 @@ public class Mod2_MA {
 		throw new Exception(message);
 	}
 	
-	public static void minimize() {
+	public static void minimize() throws OutOfRangeException, Exception {
+		// follows an adapted version of algorithm 2 in Thon and Jaeger
+		
+		// basis for the state space
+		ArrayList<String> stateIndices = new ArrayList<String>();
+		RealMatrix B_1 = basis(inputY, inputU, stateIndices, true);
+		// basis for the co-state space
+		ArrayList<String> co_stateIndices = new ArrayList<String>();
+		RealMatrix B_2 = basis(inputY, inputU, co_stateIndices, false);
+		
+		// observation table B_1 x B_2
+		RealMatrix T_1 = MatrixUtils.createRealMatrix(B_1.getRowDimension(), B_2.getRowDimension());
+		for(int i=0;i<B_1.getRowDimension();i++) {
+			for(int j=0;j<B_2.getRowDimension();j++)
+				T_1.setEntry(i, j, B_1.getRowVector(i).dotProduct(B_2.getRowVector(j)));
+		}
+		
+		// obtains the smallest set of linearly independent rows and columns from T
+		ArrayList<String> rowIndices = new ArrayList<String>();
+		RealMatrix T_2 = basisT(T_1, stateIndices, rowIndices, true);
+		ArrayList<String> colIndices = new ArrayList<String>();
+		RealMatrix T_3 = basisT(T_2, co_stateIndices, colIndices, false);
+		
+		// case where T_3 = [[0]] (T_3 is singular, must be treated separately)
+		if(T_3.getRowDimension()==1 && T_3.getEntry(0, 0)==0) {
+			minR = 1;
+			minY = new double[1];
+			minY[0] = 0;
+			minU = new double[alphabet.length][1][1];
+			for(int i=0;i<alphabet.length;i++)
+				minU[i][0][0] = 1;
+			return;
+		}
+		
+		DecompositionSolver solver = new solver(T_3).getSolver();
+		RealMatrix Tinverse = solver.getInverse();
+		
+		// minU = xSigma*Tinverse, where xSigma is the matrix where row_i = row of the observation table indexed by x_i+σ
+		// temporarily sets the minimized values to the input values because MQ relies on the minimized values
 		minR = inputR;
 		minY = inputY;
 		minU = inputU;
-		
-		// TODO
-		
-		/*
-		// follows algorithm 2 detailed in Thon and Jaeger
-		
-		// basis for the state space
-		RealMatrix phi = basis1(inputY, inputU);
-		// pseudo-inverse
-		DecompositionSolver solver1 = new mod2LUDecomposition(phi.multiply(phi.transpose())).getSolver();
-		RealMatrix phiInverse = phi.transpose().multiply(solver1.getInverse());
-		
-		// (phi-inverse)*M*(phi)
-		RealVector sig2 = phi.getRowVector(0);
-		RealMatrix[] hu2 = new RealMatrix[inputU.length];
-		for(int i=0;i<inputU.length;i++) {
-			RealMatrix u = MatrixUtils.createRealMatrix(inputU[i]);
-			hu2[i] = phiInverse.multiply(u).multiply(phi);
-		}
-		RealVector y2 = phiInverse.operate(MatrixUtils.createRealVector(inputY));
-		
-		// basis for the co-state space
-		RealMatrix pi = basis2(sig2, hu2);
-		// pseudo-inverse
-		DecompositionSolver solver2 = new mod2LUDecomposition(pi.transpose().multiply(pi)).getSolver();
-		RealMatrix piInverse = solver2.getInverse().multiply(pi.transpose());
-		
-		
-		// (pi)*M'*(pi-inverse)
-		RealVector sig3 = piInverse.preMultiply(sig2);
-		RealMatrix[] hu3 = new RealMatrix[inputU.length];
-		for(int i=0;i<inputU.length;i++)
-			hu3[i] = pi.multiply(hu2[i]).multiply(piInverse);
-		RealVector y3 = pi.operate(y2);
-		*/
-		
-		/*
-		// basis for the state space
-		RealMatrix phi = basis1(inputY, inputU);
-		// pseudo-inverse
-		RealMatrix phiInverse = (new solver(phi).getSolver()).getInverse();
-		
-		// (phi-inverse)*M*(phi)
-		RealVector sig2 = phi.getRowVector(0);
-		RealMatrix[] hu2 = new RealMatrix[inputU.length];
-		for(int i=0;i<inputU.length;i++) {
-			RealMatrix u = MatrixUtils.createRealMatrix(inputU[i]);
-			hu2[i] = phiInverse.multiply(u).multiply(phi);
-		}
-		RealVector y2 = phiInverse.operate(MatrixUtils.createRealVector(inputY));
-		
-		// basis for the co-state space
-		RealMatrix pi = basis2(sig2, hu2);
-		// pseudo-inverse
-		RealMatrix piInverse = (new solver(pi.transpose()).getSolver()).getInverse().transpose();
-		
-		// (pi)*M'*(pi-inverse)
-		RealVector sig3 = piInverse.preMultiply(sig2);
-		RealMatrix[] hu3 = new RealMatrix[inputU.length];
-		for(int i=0;i<inputU.length;i++)
-			hu3[i] = pi.multiply(hu2[i]).multiply(piInverse);
-		RealVector y3 = pi.operate(y2);
-		
-		// size of the minimized mod-2-MA
-		minR = sig3.getDimension();
-		
-		// checks if σ = (1,0,0,...,0)
-		boolean correct = true;
-		for(int i=0;i<minR;i++) {
-			if((i==0 && sig3.getEntry(0)==0) || (i!=0 && sig3.getEntry(0)==1)) {
-				correct = false;
-				break;
-			}
-		}
-		// need to change σ to (1,0,0,...,0)
-		if(!correct) {
-			// basis for (F_2)^minR satisfying σ*col_0(rho)=1 and σ*col_i(rho)=0 for 1<=i<minR
-			RealMatrix rho = MatrixUtils.createRealMatrix(minR, minR);
-			
-			boolean first = true;
-			int curCol = 1;
-			int firstOnePos = -1;
-			for(int i=0;i<minR;i++) {
-				if(sig3.getEntry(i) == 0) {
-					// adds the standard basis vector e_i to rho
-					for(int j=0;j<minR;j++) {
-						if(j==i)
-							rho.setEntry(j, curCol, 1);
-						else
-							rho.setEntry(j, curCol, 0);
-					}
-					curCol++;
-				}
-				else if(first) {
-					// sets the first column of rho to the standard basis vector e_i
-					for(int j=0;j<minR;j++) {
-						if(j==i)
-							rho.setEntry(j, 0, 1);
-						else
-							rho.setEntry(j, 0, 0);
-					}
-					first = false;
-					firstOnePos = i;
-				}
-				else {
-					// adds to rho the vector with all 0's except for a 1 at indices firstOnePos and i
-					for(int j=0;j<minR;j++) {
-						if(j==firstOnePos || j==i)
-							rho.setEntry(j, curCol, 1);
-						else
-							rho.setEntry(j, curCol, 0);
-					}
-					curCol++;
-				}
+		double[][][] tempMinU = new double[alphabet.length][T_3.getRowDimension()][T_3.getRowDimension()];
+		for(int i=0;i<alphabet.length;i++) {
+			RealMatrix xSigma = MatrixUtils.createRealMatrix(T_3.getRowDimension(), T_3.getRowDimension());
+			for(int j=0;j<T_3.getRowDimension();j++) {
+				for(int k=0;k<T_3.getRowDimension();k++)
+					xSigma.setEntry(j, k, MQ(rowIndices.get(j)+alphabet[i]+colIndices.get(k)));
 			}
 			
-			// pseudo-inverse
-			RealMatrix rhoInverse = (new solver(rho).getSolver()).getInverse();
-			
-			// (rho)*M''*(rho-inverse)
-			for(int i=0;i<inputU.length;i++) {
-				RealMatrix u = rhoInverse.multiply(hu3[i]).multiply(rho);
-				minU[i] = new double[u.getColumnDimension()][u.getColumnDimension()];
-				for(int j=0;j<u.getColumnDimension();j++) {
-					for(int k=0;k<u.getColumnDimension();k++)
-						minU[i][j][k] = u.getEntry(j, k);
-				}
-			}
-			minY = rhoInverse.operate(y3).toArray();
+			tempMinU[i] = xSigma.multiply(Tinverse).getData();
 		}
-		else {
-			for(int i=0;i<inputU.length;i++) {
-				int size = hu3[0].getColumnDimension();
-				minU[i] = new double[size][size];
-				for(int j=0;j<size;j++) {
-					for(int k=0;k<size;k++)
-						minU[i][j][k] = hu3[i].getEntry(j, k);
-				}
+		
+		minU = new double[alphabet.length][T_3.getRowDimension()][T_3.getRowDimension()];
+		for(int i=0;i<alphabet.length;i++) {
+			for(int j=0;j<T_3.getRowDimension();j++) {
+				for(int k=0;k<T_3.getRowDimension();k++)
+					minU[i][j][k] = mod2(tempMinU[i][j][k]);
 			}
-			minY = y3.toArray();
 		}
-		*/
+		
+		minR = T_3.getRowDimension();
+		
+		// γ = T_3*e_1, where e_1 is a standard unit basis vector
+		double[] temp = new double[minR];
+		temp[0] = 1;
+		RealVector e_1 = MatrixUtils.createRealVector(temp);
+		minY = T_3.operate(e_1).toArray();
+		for(int i=0;i<minR;i++)
+			minY[i] = mod2(minY[i]);
 	}
 	
-	public static RealMatrix basis1(double[] hy, double[][][] hu) {
+	public static RealMatrix basis(double[] hy, double[][][] hu, ArrayList<String> indices, boolean stateSpace) {
 		// To form the basis, we will follow algorithm 1 detailed in the paper by Thon and Jaeger.
-		// basis for the set span(μ(ω)γ : ω∈Σ*)
 		double[][] B = new double[hy.length][hy.length];
 		int sizeB = 0;
 		
-		// Set with elements to try to add to B, begin with y
+		// Set with elements to try to add to B
 		ArrayList<double[]> C = new ArrayList<double[]>();
-		C.add(hy);
+		// begin with ω_i = (1,0,0,...,0)
+		if(stateSpace) {
+			double[] w_i = new double[hy.length];
+			w_i[0] = 1;
+			C.add(w_i);
+		}
+		// begin with γ
+		else
+			C.add(hy);
 		int sizeC = 1;
+		
+		// Contains the corresponding ω for every element in C
+		ArrayList<String> WC = new ArrayList<String>();
+		WC.add("");
 		
 		while(sizeC>0) {
 			// element to test
 			double[] w = C.remove(0);
+			String s = WC.remove(0);
 			sizeC--;
 			
 			// tests if ω is linearly independent of B
 			if(linInd(w, B, sizeB)) {	
 				// extends B
 				B[sizeB++] = w;
+				indices.add(s);
 				
-				// adds {μ(σ)ω | σ∈Σ} to C
+				// adds {ωμ(σ) | σ∈Σ} to C
 				for(int i=0;i<alphabet.length;i++) {
 					RealMatrix m = MatrixUtils.createRealMatrix(hu[i]);
 					RealVector p = MatrixUtils.createRealVector(w);
-					double[] v = m.operate(p).toArray();
+					double[] v;
+					// basis for the set span(ω_iμ(ω) : ω∈Σ*)
+					if(stateSpace) {
+						v = m.preMultiply(p).toArray();
+						WC.add(s+alphabet[i]);
+					}
+					// basis for the set span(μ(ω)γ : ω∈Σ*)
+					else {
+						v = m.operate(p).toArray();
+						WC.add(alphabet[i]+s);
+					}
 					for(int j=0;j<v.length;j++)
 						v[j] = mod2(v[j]);
 					C.add(v);
+					sizeC++;
 				}
 			}
 		}
 		
-		return MatrixUtils.createRealMatrix(B).transpose().getSubMatrix(0, hy.length-1, 0, sizeB-1);
+		return MatrixUtils.createRealMatrix(B).getSubMatrix(0, sizeB-1, 0, hy.length-1);
 	}
 	
-	public static RealMatrix basis2(RealVector sig2, RealMatrix[] hu2) {
-		// To form the basis, we will follow algorithm 1 detailed in the paper by Thon and Jaeger.
-		// basis for the set span(σ'μ'(ω) : ω∈Σ*)
-		double[][] B = new double[sig2.getDimension()][sig2.getDimension()];
-		int sizeB = 0;
+	public static RealMatrix basisT(RealMatrix T, ArrayList<String> oldIndices, ArrayList<String> newIndices, boolean rows) {
+		// will find a maximal subset of linearly independent rows/columns of T
+		if(!rows)
+			T = T.transpose();
 		
-		// Set with elements to try to add to B, begin with σ'
-		ArrayList<double[]> C = new ArrayList<double[]>();
-		C.add(sig2.toArray());
-		int sizeC = 1;
+		double[][] newT = new double[T.getRowDimension()][T.getColumnDimension()];
+		int sizeT = 0;
 		
-		while(sizeC>0) {
-			// element to test
-			double[] w = C.remove(0);
-			sizeC--;
-			
-			// tests if ω is linearly independent of B
-			if(linInd(w, B, sizeB)) {	
-				// extends B
-				B[sizeB++] = w;
-				
-				// adds {ωμ'(σ) | σ∈Σ} to C
-				for(int i=0;i<alphabet.length;i++) {
-					RealVector p = MatrixUtils.createRealVector(w);
-					double[] v = hu2[i].preMultiply(p).toArray();
-					for(int j=0;j<v.length;j++)
-						v[j] = mod2(v[j]);
-					C.add(v);
-				}
+		for(int i=0;i<T.getRowDimension();i++) {
+			// extends the current subset of linearly independent rows/columns
+			if(linInd(T.getRow(i), newT, sizeT)) {
+				newT[sizeT++] = T.getRow(i);
+				newIndices.add(oldIndices.get(i));
 			}
 		}
 		
-		return MatrixUtils.createRealMatrix(B).getSubMatrix(0, sizeB-1, 0, sig2.getDimension()-1);
+		if(rows)
+			return MatrixUtils.createRealMatrix(newT).getSubMatrix(0, sizeT-1, 0, T.getColumnDimension()-1);
+		else
+			return MatrixUtils.createRealMatrix(newT).getSubMatrix(0, sizeT-1, 0, T.getColumnDimension()-1).transpose();
 	}
 	
 	public static void run() throws Exception {	
@@ -513,7 +449,7 @@ public class Mod2_MA {
 		// MQ for the target function
 		
 		// MQ(ω) was previously calculated and is in the Hankel matrix
-		if(F.get(w) != null)
+		if(F!=null && F.get(w) != null)
 			return F.get(w);
 		
 		int out = 0;
@@ -553,7 +489,8 @@ public class Mod2_MA {
 		}
 		
 		// adds MQ(ω) to the Hankel matrix
-		F.put(w, out);
+		if(F!=null)
+			F.put(w, out);
 		
 		return out;
 	}
@@ -740,29 +677,6 @@ public class Mod2_MA {
 		
 		// linearly independent
 		return true;
-		
-		// version that calculates linear independence using orthogonal projections
-		/*
-		if(sizeB==0)
-			return true;
-
-		// forms the matrix where the columns are the vectors in the basis B
-		RealMatrix m = MatrixUtils.createRealMatrix(w.length, sizeB);
-		for(int i=0;i<sizeB;i++)
-			m.setColumn(i,B[i]);
-		
-		// calculates the orthogonal projection matrix P of the basis B
-		RealMatrix P = m.multiply(MatrixUtils.inverse(m.transpose().multiply(m))).multiply(m.transpose());
-		
-		// if Pω = ω, ω is linearly dependent with B
-		RealVector Pw = P.operate(MatrixUtils.createRealVector(w)); 
-		for(int i=0;i<w.length;i++) {
-			if(Math.round(Pw.getEntry(i)) != Math.round(w[i]))
-				return true;
-		}
-		
-		return false;
-		*/
 	}
 	
 	public static void calcWSigY(double[][][] hu) throws Exception {
@@ -826,74 +740,6 @@ public class Mod2_MA {
 		}
 
 		throwException(null,"Algorithm failed: didn't find a suitable omega, sigma, and gamma.");
-		
-		// version that traverses through all prefixes of z before calling a new equivalence query
-		/*
-		// prefix of z = ω + σ
-		String w = "";
-		char sig = 0;
-		// experiment
-		String y = "";
-		boolean noSoln = true;
-		
-		// goes through every possible prefix of z starting with ω = "" and σ = (first character of ω)
-		for(int i=0;i<z.length();i++) {
-			if(i!=0)
-				w = z.substring(0,i);
-			sig = z.charAt(i);
-			
-			// calculates μ(ω)
-			RealMatrix u = MatrixUtils.createRealIdentityMatrix(l);
-			for(int n=0;n<w.length();n++)
-				u = u.multiply(MatrixUtils.createRealMatrix(hu[letterToIndex.get(w.charAt(n))]));
-			
-			// checks if F_ω = sum(μ(ω)_1,i * F_xi)
-			boolean failed = false;
-			for(int j=0;j<l;j++) {
-				int sum = 0;
-				for(int k=0;k<l;k++)
-					sum = mod2(sum + u.getEntry(0, k)*MQ(X.get(k)+Y.get(j)));
-				
-				if(MQ(w+Y.get(j)) != sum) {
-					failed = true;
-					break;
-				}
-			}
-			if(failed)
-				continue;
-			
-			// goes through every possible value of y in Y
-			// checks if F_{ω+σ}(y) != sum(μ(ω)_1,i * F_{xi+σ}(y))
-			for(int j=0;j<l;j++) {
-				y = Y.get(j);
-			
-				int sum = 0;
-				for(int k=0;k<l;k++)
-					sum = mod2(sum + u.getEntry(0, k)*MQ(X.get(k) + sig + y));
-				
-				// found a solution
-				if(MQ(w+sig+y) != sum) {		
-					if(l==r)
-						throwException(null,"Algorithm failed: size of the hypothesis exceeds that of the target function.");
-					// updates l, X, and Y
-					l++;
-					X.add(w);
-					Y.add(sig+y);
-					
-					// displays the updated observation table
-					if(verbose)
-						displayQueries();
-					
-					noSoln = false;
-					hu = createHU();
-					break;
-				}
-			}
-		}
-		
-		if(noSoln)
-			throwException(null,"Algorithm failed: didn't find a suitable omega, sigma, and gamma.");
-		*/
 	}
 
 	public static void displayResults() {
