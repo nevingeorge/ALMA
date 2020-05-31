@@ -39,16 +39,16 @@ public class arbitrary {
 	public static int EQcur;
 
 	public static void main(String[] args) throws Exception {
-		// reads in the input file
+		// read in the input file
 		initialize();
 		
-		// runs the learning algorithm using the specified membership query function in MQ.java
+		// run the learning algorithm using the specified membership query function in MQ.java
 		Mod2_MA.run();
 		
-		// displays the learned mod-2-MA
+		// display the learned mod-2-MA
 		Mod2_MA.displayResults();
 		
-		// performs desired operations with the learned mod-2-MA
+		// perform operations on the learned mod-2-MA
 		Mod2_MA.operations();
 	}
 	
@@ -64,7 +64,7 @@ public class arbitrary {
 		 * Example input files can be found in the GitHub repository.
 		 */
 		
-		// reads in file name + optional flag -v from stdin
+		// read in file name + optional flag -v from stdin
 		System.out.println("Input file name and optional flag -v (e.g. arb_input1.txt or arb_input1.txt -v)");
 		Mod2_MA.in = new Scanner(System.in);
 		String[] arrInput = Mod2_MA.in.nextLine().split(" ");
@@ -111,7 +111,7 @@ public class arbitrary {
 		for(int i=0;i<tempAlphabet.size();i++)
 			Mod2_MA.alphabet[i] = tempAlphabet.get(i);
 		
-		// maps each letter in the alphabet to an index
+		// map each letter in the alphabet to an index
 		Mod2_MA.letterToIndex = new HashMap<Character, Integer>();
 		for(int i=0;i<Mod2_MA.alphabet.length;i++)
 			Mod2_MA.letterToIndex.put(Mod2_MA.alphabet[i], i);
@@ -119,22 +119,23 @@ public class arbitrary {
 		f.close();
 	}
 	
+	// perform a statistical check of equivalence
 	public static boolean EQapprox(double[] hy, double[][][] hu) throws Exception {
-		// creates numTests tests of length at most maxTestLen
-		// checks if the hypothesis and target function have the same output
+		// create numTests tests of length at most maxTestLen
+		// check if the hypothesis and target function have the same output
 		int numFail = 0;
 		for(int i=0;i<numTests;i++) {
-			// generates a random length for the test from 0-maxWordLen
+			// generate a random length for the test from 0-maxWordLen
 			int len = (int)(Math.random()*(maxTestLen+1));
 			
-			// adds len number of random characters in alphabet to test
+			// add len number of random characters in alphabet to test
 			String test = "";
 			for(int j=0;j<len;j++)
 				test += Mod2_MA.alphabet[(int)(Math.random()*Mod2_MA.alphabet.length)];
 			
 			// found a counter-example
 			if(Mod2_MA.MQ(test)!=Mod2_MA.MQH(hy,hu,test)) {
-				// counts the number of counter-examples
+				// count the number of counter-examples
 				if(EQcur == EQlimit-1)
 					numFail++;
 				else {
@@ -145,14 +146,14 @@ public class arbitrary {
 			}
 		}
 		
-		// performed EQlimit equivalence queries
+		// perform EQlimit equivalence queries
 		if(EQcur==EQlimit-1 && numFail!=0) {
-			// displays what was learned so far
+			// display what was learned so far
 			Mod2_MA.resultY = hy;
 			Mod2_MA.resultU = hu;
 			Mod2_MA.displayResults();
 			
-			// displays statistics for the final equivalence query
+			// display statistics for the final equivalence query
 			System.out.println("Reached equivalence query limit.\nFinal equivalence query failed on " + numFail + " out of " + numTests + " tests.");
 			System.exit(0);
 		}

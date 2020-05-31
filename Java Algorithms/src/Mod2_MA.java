@@ -33,12 +33,12 @@ import org.apache.commons.math3.linear.RealVector;
 
 public class Mod2_MA {
 	
-	// if true, displays the observation table as it is being constructed
+	// if true, display the observation table as it is constructed
 	public static boolean verbose;
 	
 	// alphabet
 	public static Character[] alphabet;
-	// maps each letter in the alphabet to an index
+	// map each letter in the alphabet to an index
 	public static HashMap<Character, Integer> letterToIndex;
 	
 	// γ of the target function
@@ -77,21 +77,21 @@ public class Mod2_MA {
 	// set of nxn μ's of the learned function
 	public static double[][][] resultU;
 	
-	// used in EQ to avoid testing the same word
+	// use in EQ to avoid testing the same word
 	public static int rowStartIndex;
 	public static int colStartIndex;
 	
-	// takes in user input
+	// take in user input
 	public static Scanner in;
 	
 	public static void main(String[] args) throws Exception {
-		// reads in the mod-2-MA
+		// read in the mod-2-MA
 		initialize();
 		
-		// minimizes the mod-2-MA
+		// minimize the mod-2-MA
 		minimize();
 				
-		// runs the learning algorithm
+		// run the learning algorithm
 		run();
 
 		// statistical final check of equivalence
@@ -100,7 +100,7 @@ public class Mod2_MA {
 		else
 			throwException(null,"Algorithm failed: failed final check.");
 		
-		// performs desired operations with the learned mod-2-MA
+		// perform operations on the learned mod-2-MA
 		operations();
 	}
 	
@@ -115,7 +115,7 @@ public class Mod2_MA {
 		 * Example input files can be found in the GitHub repository.
 		 */
 		
-		// reads in file name + optional flag -v from stdin
+		// read in file name + optional flag -v from stdin
 		System.out.println("Input file name and optional flag -v (e.g. Mod2_MA_input1.txt or Mod2_MA_input1.txt -v)");
 		in = new Scanner(System.in);
 		String[] arrInput = in.nextLine().split(" ");
@@ -144,7 +144,7 @@ public class Mod2_MA {
 		for(int i=0;i<tempAlphabet.size();i++)
 			alphabet[i] = tempAlphabet.get(i);
 		
-		// maps each letter in the alphabet to an index
+		// map each letter in the alphabet to an index
 		letterToIndex = new HashMap<Character, Integer>();
 		for(int i=0;i<alphabet.length;i++)
 			letterToIndex.put(alphabet[i], i);
@@ -179,14 +179,14 @@ public class Mod2_MA {
 	
 	public static String readInput(BufferedReader f) throws IOException {
 		String line = f.readLine();
-		// ignores lines beginning with "//"
+		// ignore lines beginning with "//"
 		while(line != null && line.charAt(0) == '/' && line.charAt(1) == '/')
 			line = f.readLine();
 		return line;
 	}
 	
+	// properly close input streams
 	public static void throwException(BufferedReader f, String message) throws Exception {
-		// properly closes input streams
 		if(f != null)
 			f.close();
 		if(in != null)
@@ -194,9 +194,8 @@ public class Mod2_MA {
 		throw new Exception(message);
 	}
 	
+	// follow an adapted version of algorithm 2 in Thon and Jaeger to minimize the target function
 	public static void minimize() throws OutOfRangeException, Exception {
-		// follows an adapted version of algorithm 2 in Thon and Jaeger
-		
 		// basis for the state space
 		ArrayList<String> stateIndices = new ArrayList<String>();
 		RealMatrix B_1 = basis(inputY, inputU, stateIndices, true);
@@ -211,7 +210,7 @@ public class Mod2_MA {
 				T_1.setEntry(i, j, B_1.getRowVector(i).dotProduct(B_2.getRowVector(j)));
 		}
 		
-		// obtains the smallest set of linearly independent rows and columns from T
+		// obtain the smallest set of linearly independent rows and columns from T
 		rowIndices = new ArrayList<String>();
 		RealMatrix T_2 = basisT(T_1, stateIndices, rowIndices, true);
 		colIndices = new ArrayList<String>();
@@ -232,7 +231,7 @@ public class Mod2_MA {
 		RealMatrix Tinverse = solver.getInverse();
 		
 		// minU = xSigma*Tinverse, where xSigma is the matrix where row_i = row of the observation table indexed by x_i+σ
-		// temporarily sets the minimized values to the input values because MQ relies on the minimized values
+		// temporarily set the minimized values to the input values because MQ relies on the minimized values
 		minR = inputR;
 		minY = inputY;
 		minU = inputU;
@@ -265,17 +264,18 @@ public class Mod2_MA {
 		for(int i=0;i<minR;i++)
 			minY[i] = mod2(minY[i]);
 		
-		// used in EQ to avoid testing the same word
+		// use in EQ to avoid testing the same word
 		rowStartIndex = 0;
 		colStartIndex = 0;
 	}
 	
+	// follow algorithm 1 detailed in Thon and Jaeger to form the basis for the state/co-state space
 	public static RealMatrix basis(double[] hy, double[][][] hu, ArrayList<String> indices, boolean stateSpace) {
-		// To form the basis, we will follow algorithm 1 detailed in the paper by Thon and Jaeger.
+		// basis
 		double[][] B = new double[hy.length][hy.length];
 		int sizeB = 0;
 		
-		// Set with elements to try to add to B
+		// set with elements to try to add to B
 		ArrayList<double[]> C = new ArrayList<double[]>();
 		// begin with ω_i = (1,0,0,...,0)
 		if(stateSpace) {
@@ -288,7 +288,7 @@ public class Mod2_MA {
 			C.add(hy);
 		int sizeC = 1;
 		
-		// Contains the corresponding ω for every element in C
+		// contain the corresponding ω for every element in C
 		ArrayList<String> WC = new ArrayList<String>();
 		WC.add("");
 		
@@ -298,13 +298,13 @@ public class Mod2_MA {
 			String s = WC.remove(0);
 			sizeC--;
 			
-			// tests if ω is linearly independent of B
+			// test if ω is linearly independent of B
 			if(linInd(w, B, sizeB)) {	
-				// extends B
+				// extend B
 				B[sizeB++] = w;
 				indices.add(s);
 				
-				// adds {ωμ(σ) | σ∈Σ} to C
+				// add {ωμ(σ) | σ∈Σ} to C
 				for(int i=0;i<alphabet.length;i++) {
 					RealMatrix m = MatrixUtils.createRealMatrix(hu[i]);
 					RealVector p = MatrixUtils.createRealVector(w);
@@ -330,8 +330,8 @@ public class Mod2_MA {
 		return MatrixUtils.createRealMatrix(B).getSubMatrix(0, sizeB-1, 0, hy.length-1);
 	}
 	
-	public static RealMatrix basisT(RealMatrix T, ArrayList<String> oldIndices, ArrayList<String> newIndices, boolean rows) {
-		// will find a maximal subset of linearly independent rows/columns of T
+	// find a maximal subset of linearly independent rows/columns of T
+	public static RealMatrix basisT(RealMatrix T, ArrayList<String> oldIndices, ArrayList<String> newIndices, boolean rows) {	
 		if(!rows)
 			T = T.transpose();
 		
@@ -339,7 +339,7 @@ public class Mod2_MA {
 		int sizeT = 0;
 		
 		for(int i=0;i<T.getRowDimension();i++) {
-			// extends the current subset of linearly independent rows/columns
+			// extend the current subset of linearly independent rows/columns
 			if(linInd(T.getRow(i), newT, sizeT)) {
 				newT[sizeT++] = T.getRow(i);
 				newIndices.add(oldIndices.get(i));
@@ -352,11 +352,12 @@ public class Mod2_MA {
 			return MatrixUtils.createRealMatrix(newT).getSubMatrix(0, sizeT-1, 0, T.getColumnDimension()-1).transpose();
 	}
 	
+	// test whether the vector w is in the span of the set B
 	public static boolean linInd(double[] w, double[][] B, int sizeB) {
 		if(sizeB==0)
 			return true;
 		
-		// forms the augmented matrix B|w
+		// form the augmented matrix B|w
 		int numRows = w.length;
 		int numCols = sizeB+1;
 		
@@ -389,7 +390,7 @@ public class Mod2_MA {
 			r++;
 		}
 		
-		// finds the index of the last 1 in the last column (if exists)
+		// find the index of the last 1 in the last column (if exists)
 		int index = -1;
 		for(int i=numRows-1;i>=0;i--) {
 			if(mod2(m.getEntry(i, numCols-1)) == 1) {
@@ -402,7 +403,7 @@ public class Mod2_MA {
 		if(index == -1)
 			return false;
 		
-		// checks whether in span
+		// check whether in span
 		for(int j=0;j<numCols-1;j++) {
 			if(mod2(m.getEntry(index, j)) == 1)
 				return false;
@@ -413,14 +414,14 @@ public class Mod2_MA {
 	}
 	
 	public static void run() throws Exception {	
-		// initializes the rows and columns of the observation table
+		// initialize the rows and columns of the observation table
 		X = new ArrayList<String>();
 		Y = new ArrayList<String>();
 		X.add("");
 		Y.add("");
 		l = 1;
 		
-		// initializes the Hankel matrix
+		// initialize the Hankel matrix
 		F = new HashMap<String, Integer>();
 		
 		/* f("") cannot equal 0 (otherwise can't form a linearly independent basis of elements in X).
@@ -430,7 +431,7 @@ public class Mod2_MA {
 			double[] hy = createHY();
 			double[][][] hu = createHU();
 			
-			// generates a counter-example z
+			// generate a counter-example z
 			if(!EQ(hy, hu)) {
 				l++;
 				X.add(z);
@@ -440,28 +441,28 @@ public class Mod2_MA {
 		
 		if(verbose) {
 			System.out.println("Results after individual queries\n--------------------------------");
-			displayQueries();
+			displayTable();
 		}
 		
-		// runs the algorithm
+		// run the algorithm
 		learnMA();
 	}
 	
 	public static void learnMA() throws Exception {
-		// creates the γ for the hypothesis
+		// create the γ for the hypothesis
 		double[] hy = createHY();
-		// creates the set of μ's for the hypothesis
+		// create the set of μ's for the hypothesis
 		double[][][] hu = createHU();
 		
-		// sees if the hypothesis = target function, if so returns the hypothesis
+		// see if the hypothesis = target function, if so return the hypothesis
 		if(EQ(hy, hu)) {
 			resultY = hy;
 			resultU = hu;
 			return;
 		}
 		
-		// attempts to calculate ω, σ, and y
-		// if it cannot find a y that works it throws an exception
+		// attempt to calculate ω, σ, and y
+		// if there is no y that works throw an exception
 		calcWSigY(hu);
 		
 		learnMA();
@@ -484,10 +485,10 @@ public class Mod2_MA {
 		
 		double[][][] hu = new double[alphabet.length][l][l];
 		for(int c=0;c<alphabet.length;c++) {
-			// calculuates μ_c
+			// calculuate μ_c
 			char sigma = alphabet[c];
 			
-			// calculates the vectors F_xi and F_{xi+σ}
+			// calculate the vectors F_xi and F_{xi+σ}
 			double[][] F_xi = new double[l][l];
 			double[][] F_xi_sigma = new double[l][l];
 			for(int i=0;i<l;i++) {
@@ -497,7 +498,7 @@ public class Mod2_MA {
 				}
 			}
 			
-			// solves the matrix equation using LU Decomposition
+			// solve the matrix equation using LU Decomposition
 			RealMatrix coefficients = new Array2DRowRealMatrix(F_xi);
 			DecompositionSolver solver = new solver(coefficients).getSolver();
 			for(int i=0;i<l;i++) {
@@ -526,11 +527,11 @@ public class Mod2_MA {
 		
 		int out = 0;
 		
-		// uses the membership query function for NBA's defined in NBA.java
+		// use a membership query function defined in NBA.java
 		if(NBA.F!=null)
 			out = NBA.MQ(w);
 		
-		// uses a membership query function defined in MQ.java
+		// use a membership query function defined in MQ.java
 		else if(arbitrary.MQarbitrary!=null) {
 			try {
 				out = (int) arbitrary.MQarbitrary.invoke(null,w);
@@ -539,15 +540,15 @@ public class Mod2_MA {
 			} 
 		}
 		
-		// performs the membership query on the target mod-2-MA
+		// perform the membership query on the target mod-2-MA
 		else {
-			// initializes cur as the rxr identity matrix
+			// initialize cur as the rxr identity matrix
 			RealMatrix cur = MatrixUtils.createRealIdentityMatrix(minR);
 			
-			// multiplies cur by the corresponding μ for each letter in ω
+			// multiply cur by the corresponding μ for each letter in ω
 			for(int i=0;i<w.length();i++) {
 				cur = cur.multiply(MatrixUtils.createRealMatrix(minU[letterToIndex.get(w.charAt(i))]));
-				// accounts for rounding issues with larger words
+				// account for rounding issues with larger words
 				if(i!=0 && i%25==0) {
 					for(int j=0;j<minR;j++) {
 						for(int k=0;k<minR;k++)
@@ -556,27 +557,26 @@ public class Mod2_MA {
 				}
 			}
 			
-			// multiplies the final result with γ
+			// multiply the final result with γ
 			out = mod2(cur.getRowVector(0).dotProduct(new ArrayRealVector(minY)));
 		}
 		
-		// adds MQ(ω) to the Hankel matrix
+		// add MQ(ω) to the Hankel matrix
 		if(F!=null)
 			F.put(w, out);
 		
 		return out;
 	}
 	
-	public static int MQH(double[] hy, double[][][] hu, String w) {
-		// MQ for the current hypothesis
-		
-		// initializes cur as the lxl identity matrix
+	// MQ for the current hypothesis
+	public static int MQH(double[] hy, double[][][] hu, String w) {		
+		// initialize cur as the lxl identity matrix
 		RealMatrix cur = MatrixUtils.createRealIdentityMatrix(hy.length);
 		
-		// multiplies cur by the corresponding μ for each letter in ω
+		// multiply cur by the corresponding μ for each letter in ω
 		for(int i=0;i<w.length();i++) {
 			cur = cur.multiply(MatrixUtils.createRealMatrix(hu[letterToIndex.get(w.charAt(i))]));
-			// accounts for rounding issues with larger words
+			// account for rounding issues with larger words
 			if(i!=0 && i%25==0) {
 				for(int j=0;j<hy.length;j++) {
 					for(int k=0;k<hy.length;k++)
@@ -585,16 +585,16 @@ public class Mod2_MA {
 			}
 		}
 		
-		// multiplies the final result with γ
+		// multiply the final result with γ
 		return mod2(cur.getRowVector(0).dotProduct(new ArrayRealVector(hy)));
 	}
 	
 	public static boolean EQ(double[] hy, double[][][] hu) throws Exception {
-		// uses a statistical equivalence query
+		// use a statistical equivalence query
 		if(NBA.F!=null || arbitrary.MQarbitrary!=null)
 			return arbitrary.EQapprox(hy, hu);
 		
-		// tests every element in T_3, the observation table for the minimized target function
+		// test every element in T_3, the observation table for the minimized target function
 		for(int i=rowStartIndex;i<rowIndices.size();i++) {
 			for(int j=colStartIndex;j<colIndices.size();j++) {
 				String test = rowIndices.get(i)+colIndices.get(j);
@@ -625,18 +625,18 @@ public class Mod2_MA {
 		// experiment
 		String y = "";
 		
-		// goes through every possible prefix of z starting with ω = "" and σ = (first character of ω)
+		// go through every possible prefix of z starting with ω = "" and σ = (first character of ω)
 		for(int i=0;i<z.length();i++) {
 			if(i!=0)
 				w = z.substring(0,i);
 			sigma = z.charAt(i);
 			
-			// calculates μ(ω)
+			// calculate μ(ω)
 			RealMatrix mu = MatrixUtils.createRealIdentityMatrix(l);
 			for(int n=0;n<w.length();n++)
 				mu = mu.multiply(MatrixUtils.createRealMatrix(hu[letterToIndex.get(w.charAt(n))]));
 			
-			// checks if F_ω = sum(μ(ω)_1,i * F_xi)
+			// check if F_ω = sum(μ(ω)_1,i * F_xi)
 			boolean failed = false;
 			for(int j=0;j<l;j++) {
 				int sum = 0;
@@ -651,8 +651,8 @@ public class Mod2_MA {
 			if(failed)
 				continue;
 			
-			// goes through every possible value of y in Y
-			// checks if F_{ω+σ}(y) != sum(μ(ω)_1,i * F_{xi+σ}(y))
+			// go through every possible value of y in Y
+			// check if F_{ω+σ}(y) != sum(μ(ω)_1,i * F_{xi+σ}(y))
 			for(int j=0;j<l;j++) {
 				y = Y.get(j);
 			
@@ -664,14 +664,14 @@ public class Mod2_MA {
 				if(MQ(w+sigma+y) != sum) {		
 					if(l==minR)
 						throwException(null,"Algorithm failed: size of the hypothesis exceeds that of the target function.");
-					// updates l, X, and Y
+					// update l, X, and Y
 					l++;
 					X.add(w);
 					Y.add(sigma+y);
 					
-					// displays the updated observation table
+					// display the updated observation table
 					if(verbose)
-						displayQueries();
+						displayTable();
 					
 					return;
 				}
@@ -684,14 +684,14 @@ public class Mod2_MA {
 	public static void displayResults() {
 		System.out.println("Learned mod-2-MA");
 		System.out.println("----------------");
-		// prints γ
+		// print γ
 		System.out.print("y: ");
 		String s = "";
 		for(int i=0;i<resultY.length;i++)
 			s += mod2(resultY[i]) + " ";
 		System.out.println(s + "\n");
 		
-		// prints the μ's
+		// print the μ's
 		System.out.println("Set of u:\n");
 		for(int i=0;i<resultU.length;i++) {
 			System.out.println("Letter " + alphabet[i]);
@@ -705,8 +705,7 @@ public class Mod2_MA {
 		}
 	}
 	
-	public static void displayQueries() throws Exception {
-		// displays the observation table
+	public static void displayTable() throws Exception {
 		System.out.println("l = " + l);
 		System.out.print("Rows: ɛ ");
 		for(int i=1;i<X.size();i++)
@@ -727,16 +726,16 @@ public class Mod2_MA {
 	}
 
 	public static String genTest(int len) {
-		// adds len number of random characters in alphabet to test
+		// add len number of random characters in alphabet to test
 		String test = "";
 		for(int i=0;i<len;i++)
 			test += alphabet[(int)(Math.random()*alphabet.length)];
 		return test;
 	}
-	
+
+	// perform a statistical equivalence query between the target and learned mod-2-MA's as a final safety check
 	public static boolean finalCheck(int maxTestLen, int numTests) throws Exception {
-		// creates numTests tests of length at most maxTestLen
-		// checks whether the learned function and target function have the same output
+		// create numTests tests of length at most maxTestLen
 		for(int i=1;i<=numTests;i++) {
 			String test = genTest((int)(Math.random()*(maxTestLen+1)));
 			if(MQH(inputY,inputU,test)!=MQH(resultY, resultU, test))
@@ -744,15 +743,16 @@ public class Mod2_MA {
 		}
 		return true;
 	}
-
+	
+	// perform operations on the learned mod-2-MA
 	public static void operations() {
 		System.out.println("Available operations for the learned Mod-2-MA (enter \"quit\" to terminate):");
 		System.out.println("- Test whether a word is accepted: \"-a <word>\"\n  If the language is (L)_$, words must be of the form u$v.");
 		while(true) {
-			// reads in cmd
+			// read in cmd
 			String line = in.nextLine();
 			
-			// terminates the program
+			// terminate the program
 			if(line.equals("quit")) {
 				in.close();
 				break;
@@ -762,7 +762,7 @@ public class Mod2_MA {
 			if(input.length == 0)
 				System.out.println("Invalid cmd");
 			
-			// tests whether a word is accepted
+			// test whether a word is accepted
 			if(input[0].equals("-a")) {
 				if(input.length>2)
 					System.out.println("Invalid cmd");

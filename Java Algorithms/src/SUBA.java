@@ -53,16 +53,16 @@ public class SUBA {
 	public static boolean[] F_UFA;
 
 	public static void main(String[] args) throws Exception {
-		// converts the input SUBA into an equivalent UFA
+		// convert the input SUBA into an equivalent UFA
 		SUBAtoUFA();
 		
-		// converts the UFA into an equivalent mod-2-MA
+		// convert the UFA into an equivalent mod-2-MA
 		UFAtoMod2MA();
 		
-		// minimizes the mod-2-MA using algorithm 2 in Thon and Jaeger
+		// minimize the mod-2-MA using algorithm 2 in Thon and Jaeger
 		Mod2_MA.minimize();
 		
-		// runs Mod2_MA.java on the mod-2-MA
+		// run Mod2_MA.java on the mod-2-MA
 		Mod2_MA.run();
 		
 		// statistical final check of equivalence
@@ -71,7 +71,7 @@ public class SUBA {
 		else
 			Mod2_MA.throwException(null,"Failed final check");
 		
-		// performs desired operations with the learned mod-2-MA
+		// perform operations on the learned mod-2-MA
 		Mod2_MA.operations();
 	}
 	
@@ -89,9 +89,9 @@ public class SUBA {
 		 * Example input files can be found in the repository.
 		 */
 		
-		// converts the input SUBA into the UFA described in Bousquet and Löding of the form (Q',ΣU{$},∆',F')
+		// convert the input SUBA into the UFA described in Bousquet and Löding of the form (Q',ΣU{$},∆',F')
 
-		// reads in file name + optional flag -v from stdin
+		// read in file name + optional flag -v from stdin
 		System.out.println("Input file name and optional flag -v (e.g. SUBA_input1.txt or SUBA_input1.txt -v)");
 		Mod2_MA.in = new Scanner(System.in);
 		String[] arrInput = Mod2_MA.in.nextLine().split(" ");
@@ -128,7 +128,7 @@ public class SUBA {
 		for(int i=0;i<tempAlphabet.size();i++)
 			Mod2_MA.alphabet[i] = tempAlphabet.get(i);
 		
-		// maps each letter in alphabet to an index
+		// map each letter in alphabet to an index
 		Mod2_MA.letterToIndex = new HashMap<Character, Integer>();
 		for(int i=0;i<Mod2_MA.alphabet.length;i++)
 			Mod2_MA.letterToIndex.put(Mod2_MA.alphabet[i], i);
@@ -245,7 +245,7 @@ public class SUBA {
 				Mod2_MA.inputY[i-1] = 1;
 		}
 		
-		// for each σ∈Σ, [μ_σ]i,j = 1 if and only if (q_i,σ,q_j)∈∆
+		// for each σ∈Σ, [μ_σ]i,j = 1 iff (q_i,σ,q_j)∈∆
 		Mod2_MA.inputU = new double[Mod2_MA.alphabet.length][Mod2_MA.inputR][Mod2_MA.inputR];
 		for(int i=0;i<Mod2_MA.alphabet.length;i++) {
 			for(int j=1;j<=Mod2_MA.inputR;j++) {
@@ -309,7 +309,7 @@ public class SUBA {
 	}
 	
 	public static String genTest(int len) {		
-		// adds len number of random characters in alphabet to test
+		// add len number of random characters in alphabet to test
 		String test = "";
 		// cannot include $
 		for(int i=0;i<len;i++)
@@ -317,9 +317,9 @@ public class SUBA {
 		return test;
 	}
 	
+	// perform a statistical equivalence query between the input SUBA and learned mod-2-MA as a final safety check
 	public static boolean finalCheck(int maxTestLen, int numTests) {
-		// creates numTests tests of length at most maxTestLen
-		// checks if the SUBA and learned mod-2-MA either both accept or reject the words
+		// create numTests tests of length at most maxTestLen
 		for(int i=1;i<=numTests;i++) {
 			// SUBA: ultimately periodic words of the form u(v)^w
 			int lenU = (int)(Math.random()*(maxTestLen+1));

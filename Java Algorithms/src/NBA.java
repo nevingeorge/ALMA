@@ -36,16 +36,16 @@ public class NBA {
 	public static boolean[] F;
 
 	public static void main(String[] args) throws Exception {
-		// reads in the input file
+		// read in the input file
 		initialize();
 
-		// runs the learning algorithm using the membership query function in this class
+		// run the learning algorithm using the membership query function in this class
 		Mod2_MA.run();
 		
-		// displays the learned mod-2-MA
+		// display the learned mod-2-MA
 		Mod2_MA.displayResults();
 		
-		// performs desired operations with the learned mod-2-MA
+		// perform operations on the learned mod-2-MA
 		Mod2_MA.operations();
 	}
 	
@@ -66,7 +66,7 @@ public class NBA {
 		 * Example input files can be found in the repository.
 		 */
 
-		// reads in file name + optional flag -v from stdin
+		// read in file name + optional flag -v from stdin
 		System.out.println("Input file name and optional flag -v (e.g. NBA_input1.txt or NBA_input1.txt -v)");
 		Mod2_MA.in = new Scanner(System.in);
 		String[] arrInput = Mod2_MA.in.nextLine().split(" ");
@@ -109,7 +109,7 @@ public class NBA {
 		for(int i=0;i<tempAlphabet.size();i++)
 			Mod2_MA.alphabet[i] = tempAlphabet.get(i);
 		
-		// maps each letter in alphabet to an index
+		// map each letter in alphabet to an index
 		Mod2_MA.letterToIndex = new HashMap<Character, Integer>();
 		for(int i=0;i<Mod2_MA.alphabet.length;i++)
 			Mod2_MA.letterToIndex.put(Mod2_MA.alphabet[i], i);
@@ -183,7 +183,7 @@ public class NBA {
 		 * The second element is either 0 or 1, with 1 indicating that a final state was passed to reach the state (or if the state itself is final).
 		 */
 		
-		// the initial state by default is q_1
+		// initial state by default is q_1
 		ArrayList<int[]> initialState = new ArrayList<int[]>();
 		int[] state = {1, 0};
 		initialState.add(state);
@@ -204,7 +204,7 @@ public class NBA {
 		return 0;
 	}
 	
-	// returns true if, starting at state, after reading some positive number of v's it returns to state while having passed a final state
+	// return true if, starting at state, after reading some positive number of v's it returns to state while having passed a final state
 	public static boolean acceptingLoop(int[] state, String v) {
 		if(F[state[0]])
 			state[1] = 1;
@@ -213,10 +213,10 @@ public class NBA {
 		ArrayList<int[]> initialState = new ArrayList<int[]>();
 		initialState.add(state);
 		
-		// finds all of the states reachable from state on a positive number of v's
+		// find all of the states reachable from state on a positive number of v's
 		ArrayList<int[]> reachable = readV(v, initialState);
 		
-		// sees if reachable contains (state, 1), which indicates an accepting loop
+		// see if reachable contains (state, 1), which indicates an accepting loop
 		for(int i=0;i<reachable.size();i++) {
 			if((state[0] == reachable.get(i)[0]) && (reachable.get(i)[1] == 1))
 				return true;
@@ -224,23 +224,23 @@ public class NBA {
 		return false;
 	}
 	
-	// returns an ArrayList with all of the states reachable from a state in states on a positive number of v's
+	// return an ArrayList with all of the states reachable from a state in states on a positive number of v's
 	public static ArrayList<int[]> readV(String v, ArrayList<int[]> states) {
-		// reads one v (must read a positive number of v's)
+		// read one v (must read a positive number of v's)
 		ArrayList<int[]> reachable = readStr(v, states);
 		
 		// keep reading v's until we find no new states upon reading another v
 		while(true)	{
 			ArrayList<int[]> readNextV = readStr(v, reachable);
 			
-			// checks if readNextV has states not found in reachable
+			// check if readNextV has states not found in reachable
 			if(subset(readNextV, reachable))
 				return reachable;
 			refine(reachable);
 		}
 	}
 	
-	// returns an ArrayList with all of the states reachable from startStates on str
+	// return an ArrayList with all of the states reachable from startStates on str
 	public static ArrayList<int[]> readStr(String str, ArrayList<int[]> startStates) {
 		if(str.length()==0)
 			return refine(startStates);
@@ -248,7 +248,7 @@ public class NBA {
 		ArrayList<int[]> nextStates = new ArrayList<int[]>();
 		boolean[][] visited = new boolean[Q+1][2];
 		
-		// updates nextStates with all of the states reachable from startStates on the first letter of str
+		// update nextStates with all of the states reachable from startStates on the first letter of str
 		for(int i=0;i<startStates.size();i++) {
 			ArrayList<Integer> curTransition = transition[startStates.get(i)[0]][Mod2_MA.letterToIndex.get(str.charAt(0))];
 			for(int j=0;j<curTransition.size();j++) {
@@ -270,14 +270,14 @@ public class NBA {
 		return readStr(str.substring(1), nextStates);
 	}
 	
-	// refines states so that it contains unique values 
+	// refine states so that it contains unique values 
 	// if both (state, 0) and (state, 1) are in states, only (state, 1) is kept
 	public static ArrayList<int[]> refine(ArrayList<int[]> states) {
 		// nothing to refine, makes reading u="" more efficient
 		if(states.size()<=1)
 			return states;
 		
-		// places the elements of states in a boolean array
+		// place the elements of states in a boolean array
 		boolean[][] seen = new boolean[Q+1][2];
 		for(int i=0;i<states.size();i++) {
 			if(states.get(i)[1] == 0)
@@ -286,7 +286,7 @@ public class NBA {
 				seen[states.get(i)[0]][1] = true; 
 		}
 		
-		// adds unique, "maximal" states to out
+		// add unique, "maximal" states to out
 		ArrayList<int[]> out = new ArrayList<int[]>();
 		for(int i=1;i<=Q;i++) {
 			if(seen[i][1]) {
@@ -301,12 +301,12 @@ public class NBA {
 		return out;
 	}
 
-	// returns true if arr1 is a subset of arr2
-	// adds the elements in arr1 that are not in arr2 to arr2
+	// return true if arr1 is a subset of arr2
+	// add the elements in arr1 that are not in arr2 to arr2
 	public static boolean subset(ArrayList<int[]> arr1, ArrayList<int[]> arr2) {
 		boolean out = true;
 		
-		// places the elements of arr1 in a boolean array
+		// place the elements of arr1 in a boolean array
 		boolean[][] inArr2 = new boolean[Q+1][2];
 		for(int i=0;i<arr2.size();i++) {
 			if(arr2.get(i)[1] == 0)
