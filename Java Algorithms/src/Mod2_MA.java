@@ -54,6 +54,10 @@ public class Mod2_MA {
 	public static double[][][] minU;
 	// size of the minimized target function
 	public static int minR;
+	// row indices of the observation table of the minimized target function
+	public static ArrayList<String> rowIndices;
+	// column indices/experiments of the observation table of the minimized target function
+	public static ArrayList<String> colIndices;
 	
 	// Hankel matrix
 	public static HashMap<String, Integer> F;
@@ -72,6 +76,10 @@ public class Mod2_MA {
 	public static double[] resultY;
 	// set of nxn μ's of the learned function
 	public static double[][][] resultU;
+	
+	// used in EQ to avoid testing the same word
+	public static int rowStartIndex;
+	public static int colStartIndex;
 	
 	// takes in user input
 	public static Scanner in;
@@ -204,9 +212,9 @@ public class Mod2_MA {
 		}
 		
 		// obtains the smallest set of linearly independent rows and columns from T
-		ArrayList<String> rowIndices = new ArrayList<String>();
+		rowIndices = new ArrayList<String>();
 		RealMatrix T_2 = basisT(T_1, stateIndices, rowIndices, true);
-		ArrayList<String> colIndices = new ArrayList<String>();
+		colIndices = new ArrayList<String>();
 		RealMatrix T_3 = basisT(T_2, co_stateIndices, colIndices, false);
 		
 		// case where T_3 = [[0]] (T_3 is singular, must be treated separately)
@@ -256,6 +264,10 @@ public class Mod2_MA {
 		minY = T_3.operate(e_1).toArray();
 		for(int i=0;i<minR;i++)
 			minY[i] = mod2(minY[i]);
+		
+		// used in EQ to avoid testing the same word
+		rowStartIndex = 0;
+		colStartIndex = 0;
 	}
 	
 	public static RealMatrix basis(double[] hy, double[][][] hu, ArrayList<String> indices, boolean stateSpace) {
@@ -338,6 +350,66 @@ public class Mod2_MA {
 			return MatrixUtils.createRealMatrix(newT).getSubMatrix(0, sizeT-1, 0, T.getColumnDimension()-1);
 		else
 			return MatrixUtils.createRealMatrix(newT).getSubMatrix(0, sizeT-1, 0, T.getColumnDimension()-1).transpose();
+	}
+	
+	public static boolean linInd(double[] w, double[][] B, int sizeB) {
+		if(sizeB==0)
+			return true;
+		
+		// forms the augmented matrix B|w
+		int numRows = w.length;
+		int numCols = sizeB+1;
+		
+		RealMatrix m = MatrixUtils.createRealMatrix(numRows, numCols);
+		for(int i=0;i<sizeB;i++)
+			m.setColumn(i,B[i]);
+		m.setColumn(numCols-1, w);
+		
+		// put the augmented matrix in rref
+		int r=0;
+		for(int c=0;c<numCols && r<numRows;c++) {
+			int j = r;
+			for(int i=r+1;i<numRows;i++)
+				if(mod2(m.getEntry(i, c))>mod2(m.getEntry(j, c)))
+					j = i;
+			if(mod2(m.getEntry(j, c)) == 0)
+				continue;
+
+			RealMatrix temp = m.getRowMatrix(j);
+			m.setRowMatrix(j,m.getRowMatrix(r));
+			m.setRowMatrix(r,temp);
+
+			for(int i=0;i<numRows;i++) {
+				if(i!=r) {
+					int t = mod2(m.getEntry(i, c));
+					for(j=0;j<numCols;j++)
+						m.setEntry(i, j, mod2(m.getEntry(i,j) - (t * m.getEntry(r, j))));
+				}
+			}
+			r++;
+		}
+		
+		// finds the index of the last 1 in the last column (if exists)
+		int index = -1;
+		for(int i=numRows-1;i>=0;i--) {
+			if(mod2(m.getEntry(i, numCols-1)) == 1) {
+				index = i;
+				break;
+			}
+		}
+		
+		// last vector is the 0 vector, in span(B)
+		if(index == -1)
+			return false;
+		
+		// checks whether in span
+		for(int j=0;j<numCols-1;j++) {
+			if(mod2(m.getEntry(index, j)) == 1)
+				return false;
+		}
+		
+		// linearly independent
+		return true;
 	}
 	
 	public static void run() throws Exception {	
@@ -522,160 +594,27 @@ public class Mod2_MA {
 		if(NBA.F!=null || arbitrary.MQarbitrary!=null)
 			return arbitrary.EQapprox(hy, hu);
 		
-		/* EQ constructs the MA formed by combining the target function and hypothesis.
-		 * 
-		 * Each μ(ω) of the combined MA has the following form (the 0's representing block 0 matrices):
-		 * |fu(ω)   0  |
-		 * |  0   hu(ω)|
-		 * 
-		 * γ has the form [fy hy] (fy and hy are joined together in the same vector).
-		 * 
-		 * The initial vector is the initial vectors of the target and hypothesis joined together.
-		 * 
-		 * This MA represents the XOR of the target function and hypothesis.
-		 * We will construct a basis for the set span(μ(ω)γ : ω∈Σ*).
-		 * If for every vector v in the basis v[0] + v[r] == 0, then the MA outputs 0 for every possible input 
-		 * word and hence the target and hypothesis are equivalent.
-		 * If there exists a vector v in the basis such that v[0] + v[r] == 1, the corresponding ω of v will be 
-		 * returned as the counter-example.
-		 */
-		
-		// set of μ for the combined MA
-		double[][][] mu = new double[alphabet.length][minR+l][minR+l];
-		for(int i=0;i<alphabet.length;i++) {
-			for(int j=0;j<minR+l;j++) {
-				for(int k=0;k<minR+l;k++) {
-					// fu forms the upper left block of μ
-					if(j<minR && k<minR)
-						mu[i][j][k] = minU[i][j][k];
-					// hu forms the lower right block of μ
-					else if(j>=minR && k>=minR)
-						mu[i][j][k] = hu[i][j-minR][k-minR];
-					// everything else is 0
-					else
-						mu[i][j][k] = 0;
-				}
-			}
-		}
-		
-		// γ for the combined MA
-		double[] y = new double[minR+l];
-		for(int i=0;i<minR+l;i++) {
-			// γ has the form [fy hy]
-			if(i<minR)
-				y[i] = minY[i];
-			else
-				y[i] = hy[i-minR];
-		}
-		
-		// To form the basis, we will follow algorithm 1 detailed in the paper by Thon and Jaeger.
-		// Basis for the set span(μ(ω)γ : ω∈Σ*)
-		double[][] B = new double[minR+l][minR+l];
-		int sizeB = 0;
-		// Contains the corresponding ω for every element in B
-		ArrayList<String> WB = new ArrayList<String>();
-		
-		// Set with elements to try to add to B, begin with y
-		ArrayList<double[]> C = new ArrayList<double[]>();
-		// Contains the corresponding ω for every element in C
-		ArrayList<String> WC = new ArrayList<String>();
-		C.add(y);
-		WC.add("");
-		int sizeC = 1;
-		
-		while(sizeC>0) {
-			// element to test
-			double[] w = C.remove(0);
-			String s = WC.remove(0);
-			sizeC--;
-			
-			// tests if ω is linearly independent of B
-			if(linInd(w, B, sizeB)) {
-				// found a counter-example
-				if(mod2(w[0]+w[minR]) == 1) {
-					z = s;
+		// tests every element in T_3, the observation table for the minimized target function
+		for(int i=rowStartIndex;i<rowIndices.size();i++) {
+			for(int j=colStartIndex;j<colIndices.size();j++) {
+				String test = rowIndices.get(i)+colIndices.get(j);
+				if(MQ(test)!=MQH(hy, hu, test)) {
+					// update rowStartIndex and colStartIndex to avoid testing the same words in the next EQ
+					if(j==colIndices.size()-1) {
+						rowStartIndex = i+1;
+						colStartIndex = 0;
+					}
+					else {
+						rowStartIndex = i;
+						colStartIndex = j+1;
+					}
+					
+					z = test;
 					return false;
 				}
-				
-				// extends B
-				B[sizeB++] = w;
-				WB.add(s);
-				
-				// adds {μ(σ)ω | σ∈Σ} to C
-				for(int i=0;i<alphabet.length;i++) {
-					RealMatrix m = MatrixUtils.createRealMatrix(mu[i]);
-					RealVector p = MatrixUtils.createRealVector(w);
-					double[] v = m.operate(p).toArray();
-					for(int j=0;j<v.length;j++)
-						v[j] = mod2(v[j]);
-					C.add(v);
-					WC.add(alphabet[i]+s);
-					sizeC++;
-				}
 			}
 		}
 		
-		// v[0] + v[r] == 0 for every vector v in the basis, so the target and hypothesis are equivalent
-		return true;
-	}
-
-	public static boolean linInd(double[] w, double[][] B, int sizeB) {
-		if(sizeB==0)
-			return true;
-		
-		// forms the augmented matrix B|w
-		int numRows = w.length;
-		int numCols = sizeB+1;
-		
-		RealMatrix m = MatrixUtils.createRealMatrix(numRows, numCols);
-		for(int i=0;i<sizeB;i++)
-			m.setColumn(i,B[i]);
-		m.setColumn(numCols-1, w);
-		
-		// put the augmented matrix in rref
-		int r=0;
-		for(int c=0;c<numCols && r<numRows;c++) {
-			int j = r;
-			for(int i=r+1;i<numRows;i++)
-				if(mod2(m.getEntry(i, c))>mod2(m.getEntry(j, c)))
-					j = i;
-			if(mod2(m.getEntry(j, c)) == 0)
-				continue;
-
-			RealMatrix temp = m.getRowMatrix(j);
-			m.setRowMatrix(j,m.getRowMatrix(r));
-			m.setRowMatrix(r,temp);
-
-			for(int i=0;i<numRows;i++) {
-				if(i!=r) {
-					int t = mod2(m.getEntry(i, c));
-					for(j=0;j<numCols;j++)
-						m.setEntry(i, j, mod2(m.getEntry(i,j) - (t * m.getEntry(r, j))));
-				}
-			}
-			r++;
-		}
-		
-		// finds the index of the last 1 in the last column (if exists)
-		int index = -1;
-		for(int i=numRows-1;i>=0;i--) {
-			if(mod2(m.getEntry(i, numCols-1)) == 1) {
-				index = i;
-				break;
-			}
-		}
-		
-		// last vector is the 0 vector, in span(B)
-		if(index == -1)
-			return false;
-		
-		// checks whether in span
-		for(int j=0;j<numCols-1;j++) {
-			if(mod2(m.getEntry(index, j)) == 1)
-				return false;
-		}
-		
-		// linearly independent
 		return true;
 	}
 	
