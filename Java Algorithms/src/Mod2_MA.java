@@ -230,6 +230,9 @@ public class Mod2_MA {
 		DecompositionSolver solver = new solver(T_3).getSolver();
 		RealMatrix Tinverse = solver.getInverse();
 		
+		// initialize the Hankel matrix
+		F = new HashMap<String, Integer>();
+		
 		// minU = xSigma*Tinverse, where xSigma is the matrix where row_i = row of the observation table indexed by x_i+σ
 		// temporarily set the minimized values to the input values because MQ relies on the minimized values
 		minR = inputR;
@@ -422,7 +425,8 @@ public class Mod2_MA {
 		l = 1;
 		
 		// initialize the Hankel matrix
-		F = new HashMap<String, Integer>();
+		if(F==null)
+			F = new HashMap<String, Integer>();
 		
 		/* f("") cannot equal 0 (otherwise can't form a linearly independent basis of elements in X).
 		 * The algorithm instead begins with a 2x2 matrix of full rank.
@@ -518,11 +522,10 @@ public class Mod2_MA {
 		return hu;
 	}
 	
-	public static int MQ(String w) throws Exception {
-		// MQ for the target function
-		
+	// MQ for the target function
+	public static int MQ(String w) throws Exception {		
 		// MQ(ω) was previously calculated and is in the Hankel matrix
-		if(F!=null && F.get(w) != null)
+		if(F.get(w) != null)
 			return F.get(w);
 		
 		int out = 0;
@@ -562,8 +565,7 @@ public class Mod2_MA {
 		}
 		
 		// add MQ(ω) to the Hankel matrix
-		if(F!=null)
-			F.put(w, out);
+		F.put(w, out);
 		
 		return out;
 	}
