@@ -65,6 +65,10 @@ public class SUBA {
 		// run Mod2_MA.java on the mod-2-MA
 		Mod2_MA.run();
 		
+		// the learned mod-2-MA must have the same size as the minimized mod-2-MA 
+		if(Mod2_MA.minR!=Mod2_MA.l)
+			Mod2_MA.throwException(null,"Algorithm failed: the learned mod-2-MA has a different dimension than the minimized mod-2-MA.");
+		
 		// statistical final check of equivalence
 		if(finalCheck(50,40))
 			Mod2_MA.displayResults();
