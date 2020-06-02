@@ -33,12 +33,12 @@ import org.apache.commons.math3.linear.RealVector;
 
 public class Mod2_MA {
 	
-	// if true, display the observation table as it is constructed
+	// if true, displays the observation table as it is constructed
 	public static boolean verbose;
 	
 	// alphabet
 	public static Character[] alphabet;
-	// map each letter in the alphabet to an index
+	// maps each letter in the alphabet to an index
 	public static HashMap<Character, Integer> letterToIndex;
 	
 	// γ of the target function
@@ -77,11 +77,11 @@ public class Mod2_MA {
 	// set of nxn μ's of the learned function
 	public static double[][][] resultU;
 	
-	// use in EQ to avoid testing the same word
+	// used in EQ to avoid testing the same word
 	public static int rowStartIndex;
 	public static int colStartIndex;
 	
-	// take in user input
+	// takes in user input
 	public static Scanner in;
 	
 	public static void main(String[] args) throws Exception {
@@ -99,7 +99,7 @@ public class Mod2_MA {
 			throwException(null,"Algorithm failed: the learned mod-2-MA has a different dimension than the minimized mod-2-MA.");
 
 		// statistical final check of equivalence
-		if(finalCheck(50,40))
+		if(finalCheck(25,10000))
 			displayResults();
 		else
 			throwException(null,"Algorithm failed: failed final check.");
@@ -189,7 +189,7 @@ public class Mod2_MA {
 		return line;
 	}
 	
-	// properly close input streams
+	// properly closes input streams
 	public static void throwException(BufferedReader f, String message) throws Exception {
 		if(f != null)
 			f.close();
@@ -198,7 +198,7 @@ public class Mod2_MA {
 		throw new Exception(message);
 	}
 	
-	// follow an adapted version of algorithm 2 in Thon and Jaeger to minimize the target function
+	// follows an adapted version of algorithm 2 in Thon and Jaeger to minimize the target function
 	public static void minimize() throws OutOfRangeException, Exception {
 		// basis for the state space
 		ArrayList<String> stateIndices = new ArrayList<String>();
@@ -271,12 +271,12 @@ public class Mod2_MA {
 		for(int i=0;i<minR;i++)
 			minY[i] = mod2(minY[i]);
 		
-		// use in EQ to avoid testing the same word
+		// used in EQ to avoid testing the same word
 		rowStartIndex = 0;
 		colStartIndex = 0;		
 	}
 	
-	// follow algorithm 1 detailed in Thon and Jaeger to form the basis for the state/co-state space
+	// follows algorithm 1 detailed in Thon and Jaeger to form the basis for the state/co-state space
 	public static RealMatrix basis(double[] hy, double[][][] hu, ArrayList<String> indices, boolean stateSpace) {
 		// basis
 		double[][] B = new double[hy.length][hy.length];
@@ -337,7 +337,7 @@ public class Mod2_MA {
 		return MatrixUtils.createRealMatrix(B).getSubMatrix(0, sizeB-1, 0, hy.length-1);
 	}
 	
-	// find a maximal subset of linearly independent rows/columns of T
+	// finds a maximal subset of linearly independent rows/columns of T
 	public static RealMatrix basisT(RealMatrix T, ArrayList<String> oldIndices, ArrayList<String> newIndices, boolean rows) {	
 		if(!rows)
 			T = T.transpose();
@@ -359,7 +359,7 @@ public class Mod2_MA {
 			return MatrixUtils.createRealMatrix(newT).getSubMatrix(0, sizeT-1, 0, T.getColumnDimension()-1).transpose();
 	}
 	
-	// test whether the vector w is in the span of the set B
+	// tests whether the vector w is in the span of the set B
 	public static boolean linInd(double[] w, double[][] B, int sizeB) {
 		if(sizeB==0)
 			return true;
@@ -606,7 +606,7 @@ public class Mod2_MA {
 	}
 	
 	// uses the minimized function to perform an approximate EQ and obtain counter-examples
-	// it's not a true EQ (doesn't catch every counter-example); however, it efficiently catches a significant number of them
+	// not a true EQ (doesn't catch every counter-example); however, it efficiently catches a significant number of them
 	public static boolean EQmin(double[] hy, double[][][] hu) throws Exception {
 		// test every element in T_3, the observation table for the minimized target function
 		for(int i=rowStartIndex;i<rowIndices.size();i++) {
@@ -846,7 +846,7 @@ public class Mod2_MA {
 		return test;
 	}
 
-	// perform a statistical equivalence query between the target and learned mod-2-MA's as a final safety check
+	// performs a statistical equivalence query between the target and learned mod-2-MA's as a final safety check
 	public static boolean finalCheck(int maxTestLen, int numTests) throws Exception {
 		// create numTests tests of length at most maxTestLen
 		for(int i=1;i<=numTests;i++) {
@@ -857,7 +857,7 @@ public class Mod2_MA {
 		return true;
 	}
 	
-	// perform operations on the learned mod-2-MA
+	// performs operations on the learned mod-2-MA
 	public static void operations() {
 		System.out.println("Available operations for the learned Mod-2-MA (enter \"quit\" to terminate):");
 		System.out.println("- Test whether a word is accepted: \"-a <word>\"\n  If the language is (L)_$, words must be of the form u$v.");

@@ -204,7 +204,7 @@ public class NBA {
 		return 0;
 	}
 	
-	// return true if, starting at state, after reading some positive number of v's it returns to state while having passed a final state
+	// returns true if, starting at state, after reading some positive number of v's it returns to state while having passed a final state
 	public static boolean acceptingLoop(int[] state, String v) {
 		if(F[state[0]])
 			state[1] = 1;
@@ -224,7 +224,7 @@ public class NBA {
 		return false;
 	}
 	
-	// return an ArrayList with all of the states reachable from a state in states on a positive number of v's
+	// returns an ArrayList with all of the states reachable from a state in states on a positive number of v's
 	public static ArrayList<int[]> readV(String v, ArrayList<int[]> states) {
 		// read one v (must read a positive number of v's)
 		ArrayList<int[]> reachable = readStr(v, states);
@@ -240,7 +240,7 @@ public class NBA {
 		}
 	}
 	
-	// return an ArrayList with all of the states reachable from startStates on str
+	// returns an ArrayList with all of the states reachable from startStates on str
 	public static ArrayList<int[]> readStr(String str, ArrayList<int[]> startStates) {
 		if(str.length()==0)
 			return refine(startStates);
@@ -270,7 +270,7 @@ public class NBA {
 		return readStr(str.substring(1), nextStates);
 	}
 	
-	// refine states so that it contains unique values 
+	// refines states so that it contains unique values 
 	// if both (state, 0) and (state, 1) are in states, only (state, 1) is kept
 	public static ArrayList<int[]> refine(ArrayList<int[]> states) {
 		// nothing to refine, makes reading u="" more efficient
@@ -301,8 +301,8 @@ public class NBA {
 		return out;
 	}
 
-	// return true if arr1 is a subset of arr2
-	// add the elements in arr1 that are not in arr2 to arr2
+	// returns true if arr1 is a subset of arr2
+	// adds the elements in arr1 that are not in arr2 to arr2
 	public static boolean subset(ArrayList<int[]> arr1, ArrayList<int[]> arr2) {
 		boolean out = true;
 		

@@ -119,7 +119,7 @@ public class arbitrary {
 		f.close();
 	}
 	
-	// perform a statistical check of equivalence
+	// performs a statistical check of equivalence
 	public static boolean EQapprox(double[] hy, double[][][] hu) throws Exception {
 		// create numTests tests of length at most maxTestLen
 		// check if the hypothesis and target function have the same output
@@ -146,7 +146,7 @@ public class arbitrary {
 			}
 		}
 		
-		// perform EQlimit equivalence queries
+		// performs EQlimit equivalence queries
 		if(EQcur==EQlimit-1 && numFail!=0) {
 			// display what was learned so far
 			Mod2_MA.resultY = hy;
