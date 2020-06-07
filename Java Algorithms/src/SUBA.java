@@ -70,7 +70,7 @@ public class SUBA {
 			Mod2_MA.throwException(null,"Algorithm failed: the learned mod-2-MA has a different dimension than the minimized mod-2-MA.");
 		
 		// statistical final check of equivalence
-		if(finalCheck(25,10000))
+		if(finalCheck(25,1000))
 			Mod2_MA.displayResults();
 		else
 			Mod2_MA.throwException(null,"Failed final check");

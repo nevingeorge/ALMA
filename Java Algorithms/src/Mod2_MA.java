@@ -99,7 +99,7 @@ public class Mod2_MA {
 			throwException(null,"Algorithm failed: the learned mod-2-MA has a different dimension than the minimized mod-2-MA.");
 
 		// statistical final check of equivalence
-		if(finalCheck(25,10000))
+		if(finalCheck(25,1000))
 			displayResults();
 		else
 			throwException(null,"Algorithm failed: failed final check.");
@@ -797,6 +797,10 @@ public class Mod2_MA {
 	public static void displayResults() {
 		System.out.println("Learned mod-2-MA");
 		System.out.println("----------------");
+		
+		// print the dimension
+		System.out.println("Dimension: " + l + '\n');
+		
 		// print γ
 		System.out.print("y: ");
 		String s = "";
