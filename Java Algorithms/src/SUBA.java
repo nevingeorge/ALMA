@@ -58,7 +58,7 @@ public class SUBA {
 		
 		// convert the UFA into an equivalent mod-2-MA
 		UFAtoMod2MA();
-		
+
 		// minimize the mod-2-MA using algorithm 2 in Thon and Jaeger
 		Mod2_MA.minimize();
 		
@@ -276,8 +276,10 @@ public class SUBA {
 				int newState = transition_SUBA[curState][Mod2_MA.letterToIndex.get(c)].get(i);
 				
 				// ready to read v
-				if(u.length()==1 && MQ_SUBA("",v,newState,false,newState))
-					return true;
+				if(u.length()==1) {
+					if(MQ_SUBA("",v,newState,false,newState))
+						return true;
+				}
 				// more left to read in u
 				else if(MQ_SUBA(u.substring(1),v,newState,false,q_u))
 					return true;
@@ -338,6 +340,7 @@ public class SUBA {
 			if((SUBA_accepts&&mod2_MA_accepts==0) || (!SUBA_accepts&&mod2_MA_accepts==1)) {
 				System.out.println("u: " + u);
 				System.out.println("v: " + v);
+				System.out.println("SUBA_accepts: " + SUBA_accepts);
 				return false;
 			}
 		}
