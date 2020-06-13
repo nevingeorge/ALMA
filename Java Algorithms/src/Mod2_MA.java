@@ -79,7 +79,6 @@ public class Mod2_MA {
 	
 	// used in EQ to avoid testing the same word
 	public static int rowStartIndex;
-	public static int colStartIndex;
 	
 	// takes in user input
 	public static Scanner in;
@@ -272,8 +271,7 @@ public class Mod2_MA {
 			minY[i] = mod2(minY[i]);
 		
 		// used in EQ to avoid testing the same word
-		rowStartIndex = 0;
-		colStartIndex = 0;		
+		rowStartIndex = 0;	
 	}
 	
 	// follows algorithm 1 detailed in Thon and Jaeger to form the basis for the state/co-state space
@@ -600,134 +598,19 @@ public class Mod2_MA {
 		if(NBA.F!=null || arbitrary.MQarbitrary!=null)
 			return arbitrary.EQapprox(hy, hu);
 		
-		if(EQmin(hy, hu) && EQcombine(hy, hu))
-			return true;
-		return false;
-	}
-	
-	// uses the minimized function to perform an approximate EQ and obtain counter-examples
-	// not a true EQ (doesn't catch every counter-example); however, it efficiently catches a significant number of them
-	public static boolean EQmin(double[] hy, double[][][] hu) throws Exception {
-		// test every element in T_3, the observation table for the minimized target function
+		// test every element in the observation table for the minimized target function
 		for(int i=rowStartIndex;i<rowIndices.size();i++) {
-			for(int j=colStartIndex;j<colIndices.size();j++) {
+			for(int j=0;j<colIndices.size();j++) {
 				String test = rowIndices.get(i)+colIndices.get(j);
 				if(MQ(test)!=MQH(hy, hu, test)) {
-					// update rowStartIndex and colStartIndex to avoid testing the same words in the next EQ
-					if(j==colIndices.size()-1) {
-						rowStartIndex = i+1;
-						colStartIndex = 0;
-					}
-					else {
-						rowStartIndex = i;
-						colStartIndex = j+1;
-					}
-					
+					// update rowStartIndex to avoid testing the same words in the next EQ
+					rowStartIndex = i;
+
 					z = test;
 					return false;
 				}
 			}
 		}
-		
-		return true;
-	}
-	
-	// true/exact EQ used as a final check of equivalence to get any counter-examples not already found through EQmin
-	public static boolean EQcombine(double[] hy, double[][][] hu) throws Exception {
-		/* EQ constructs the MA formed by combining the target function and hypothesis.
-		 * 
-		 * Each μ(ω) of the combined MA has the following form (the 0's representing block 0 matrices):
-		 * |fu(ω)   0  |
-		 * |  0   hu(ω)|
-		 * 
-		 * γ has the form [fy hy] (fy and hy are joined together in the same vector).
-		 * 
-		 * The initial vector is the initial vectors of the target and hypothesis joined together.
-		 * 
-		 * This MA represents the XOR of the target function and hypothesis.
-		 * We will construct a basis for the set span(μ(ω)γ : ω∈Σ*).
-		 * If for every vector v in the basis v[0] + v[r] == 0, then the MA outputs 0 for every possible input 
-		 * word and hence the target and hypothesis are equivalent.
-		 * If there exists a vector v in the basis such that v[0] + v[r] == 1, the corresponding ω of v will be 
-		 * returned as the counter-example.
-		 */
-		
-		// set of μ for the combined MA
-		double[][][] mu = new double[alphabet.length][minR+l][minR+l];
-		for(int i=0;i<alphabet.length;i++) {
-			for(int j=0;j<minR+l;j++) {
-				for(int k=0;k<minR+l;k++) {
-					// fu forms the upper left block of μ
-					if(j<minR && k<minR)
-						mu[i][j][k] = minU[i][j][k];
-					// hu forms the lower right block of μ
-					else if(j>=minR && k>=minR)
-						mu[i][j][k] = hu[i][j-minR][k-minR];
-					// everything else is 0
-					else
-						mu[i][j][k] = 0;
-				}
-			}
-		}
-		
-		// γ for the combined MA
-		double[] y = new double[minR+l];
-		for(int i=0;i<minR+l;i++) {
-			// γ has the form [fy hy]
-			if(i<minR)
-				y[i] = minY[i];
-			else
-				y[i] = hy[i-minR];
-		}
-		
-		// To form the basis, we will follow algorithm 1 detailed in the paper by Thon and Jaeger.
-		// basis for the set span(μ(ω)γ : ω∈Σ*)
-		double[][] B = new double[minR+l][minR+l];
-		int sizeB = 0;
-		// contains the corresponding ω for every element in B
-		ArrayList<String> WB = new ArrayList<String>();
-		
-		// set with elements to try to add to B, begin with y
-		ArrayList<double[]> C = new ArrayList<double[]>();
-		// contains the corresponding ω for every element in C
-		ArrayList<String> WC = new ArrayList<String>();
-		C.add(y);
-		WC.add("");
-		int sizeC = 1;
-		
-		while(sizeC>0) {
-			// element to test
-			double[] w = C.remove(0);
-			String s = WC.remove(0);
-			sizeC--;
-			
-			// test if ω is linearly independent of B
-			if(linInd(w, B, sizeB)) {
-				// found a counter-example
-				if(mod2(w[0]+w[minR]) == 1) {
-					z = s;
-					return false;
-				}
-				
-				// extend B
-				B[sizeB++] = w;
-				WB.add(s);
-				
-				// add {μ(σ)ω | σ∈Σ} to C
-				for(int i=0;i<alphabet.length;i++) {
-					RealMatrix m = MatrixUtils.createRealMatrix(mu[i]);
-					RealVector p = MatrixUtils.createRealVector(w);
-					double[] v = m.operate(p).toArray();
-					for(int j=0;j<v.length;j++)
-						v[j] = mod2(v[j]);
-					C.add(v);
-					WC.add(alphabet[i]+s);
-					sizeC++;
-				}
-			}
-		}
-		
-		// v[0] + v[r] == 0 for every vector v in the basis, so the target and hypothesis are equivalent
 		return true;
 	}
 	
