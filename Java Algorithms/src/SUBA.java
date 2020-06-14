@@ -52,7 +52,7 @@ public class SUBA {
 	// final states F'
 	public static boolean[] F_UFA;
 
-	public static void main(String[] args) throws Exception {
+	public static void main(String[] args) throws Exception {		
 		// convert the input SUBA into an equivalent UFA
 		SUBAtoUFA();
 		
@@ -74,6 +74,8 @@ public class SUBA {
 			Mod2_MA.displayResults();
 		else
 			Mod2_MA.throwException(null,"Failed final check");
+		
+		Mod2_MA.displayRuntime();
 		
 		// perform operations on the learned mod-2-MA
 		Mod2_MA.operations();
@@ -99,6 +101,7 @@ public class SUBA {
 		System.out.println("Input file name and optional flag -v (e.g. SUBA_input1.txt or SUBA_input1.txt -v)");
 		Mod2_MA.in = new Scanner(System.in);
 		String[] arrInput = Mod2_MA.in.nextLine().split(" ");
+		Mod2_MA.startTime = System.nanoTime();
 		Mod2_MA.verbose = false;
 		if(arrInput.length > 2)
 			Mod2_MA.throwException(null,"Invalid input: too many inputs passed");

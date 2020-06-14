@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
 import java.util.StringTokenizer;
+import java.text.DecimalFormat;
 
 import org.apache.commons.math3.exception.OutOfRangeException;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
@@ -83,7 +84,9 @@ public class Mod2_MA {
 	// takes in user input
 	public static Scanner in;
 	
-	public static void main(String[] args) throws Exception {
+	public static long startTime;
+	
+	public static void main(String[] args) throws Exception {		
 		// read in the mod-2-MA
 		initialize();
 		
@@ -102,6 +105,8 @@ public class Mod2_MA {
 			displayResults();
 		else
 			throwException(null,"Algorithm failed: failed final check.");
+		
+		displayRuntime();
 		
 		// perform operations on the learned mod-2-MA
 		operations();
@@ -122,6 +127,7 @@ public class Mod2_MA {
 		System.out.println("Input file name and optional flag -v (e.g. Mod2_MA_input1.txt or Mod2_MA_input1.txt -v)");
 		in = new Scanner(System.in);
 		String[] arrInput = in.nextLine().split(" ");
+		startTime = System.nanoTime();
 		verbose = false;
 		if(arrInput.length > 2)
 			throwException(null,"Invalid input: too many inputs passed");
@@ -742,6 +748,13 @@ public class Mod2_MA {
 				return false;
 		}
 		return true;
+	}
+	
+	public static void displayRuntime() {
+		long endTime = System.nanoTime();
+		double totalTime = (endTime - startTime)/Math.pow(10, 9);
+		DecimalFormat df = new DecimalFormat("0.00");
+		System.out.println("Ran in " + df.format(totalTime) + "s.\n");
 	}
 	
 	// performs operations on the learned mod-2-MA

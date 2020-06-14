@@ -45,6 +45,8 @@ public class NBA {
 		// display the learned mod-2-MA
 		Mod2_MA.displayResults();
 		
+		Mod2_MA.displayRuntime();
+		
 		// perform operations on the learned mod-2-MA
 		Mod2_MA.operations();
 	}
@@ -70,6 +72,7 @@ public class NBA {
 		System.out.println("Input file name and optional flag -v (e.g. NBA_input1.txt or NBA_input1.txt -v)");
 		Mod2_MA.in = new Scanner(System.in);
 		String[] arrInput = Mod2_MA.in.nextLine().split(" ");
+		Mod2_MA.startTime = System.nanoTime();
 		Mod2_MA.verbose = false;
 		if(arrInput.length > 2)
 			Mod2_MA.throwException(null,"Invalid input: too many inputs passed");
