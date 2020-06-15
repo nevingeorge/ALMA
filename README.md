@@ -1,4 +1,4 @@
-To run the programs, in Terminal/Command Prompt change your current directory to the Java Algorithms folder and input the command "java -jar" followed by "Mod2_MA.jar", "SUBA.jar", "NBA.jar", or "arbitrary.jar". The program will then ask for the input file name and an optional flag -v. Make sure the desired input file is in the same folder as the jar file. If the optional flag is entered, the program will display the observation table as it is being constructed.
+To run the programs, in Terminal/Command Prompt change your current directory to the Java Algorithms folder and input the command "java -jar" followed by "Mod2_MA.jar", "SUBA.jar", "NBA.jar", or "arbitrary.jar". The program will then ask for the input file name and optional flag -v. Make sure the desired input file is in the same folder as the jar file. If the optional flag -v is entered, the program will display the observation table as it is being constructed. Mod2_MA.jar and SUBA.jar also allow you to enter the optional flag -m, which displays the progress of the minimization algorithm.
 
 Each input file must be a text document following the format required of its intended program (specific details described below). Each file must have no line separation, entries must be space separated, and lines beginning with // are ignored. Example input files for all of the programs can be found in the repository.
 
@@ -8,13 +8,13 @@ Mod2_MA.java takes in as input a mod-2-MA and prints to stdout the mod-2-MA obta
 ### Input File Format
 Contains the specifications of a mod-2-MA.
 
-Line 1: characters in the alphabet
+Line 1: alphabet
 
-Line 2: size (r)
+Line 2: size
 
-Line 3: final vector/γ (fy)
+Line 3: final vector
 
-Lines 4-end: List of μ's for each character in the alphabet, with each μ appearing in a rxr grid
+Lines 4-end: transition matrices for each character in the alphabet
 
 By default, the initial vector is (1,0,0,...,0).
 
@@ -24,11 +24,11 @@ SUBA.java takes in as input a SUBA of n states and converts it into an equivalen
 ### Input File Format
 Contains the specifications of a SUBA of the form (Q, Σ, ∆, F).
 
-Line 1: number of states (Q)
+Line 1: number of states
 
-Line 2: characters in the alphabet
+Line 2: alphabet
 
-Line 3: final states (F)
+Line 3: final states
 
 Line 4: number of transitions
 
@@ -48,11 +48,11 @@ Line 2: number of tests the statistical equivalence query will check
 
 Line 3: limit on the number of equivalence queries to run
 
-Line 4: number of states (Q)
+Line 4: number of states
 
-Line 5: characters in the alphabet
+Line 5: alphabet
 
-Line 6: final states (F)
+Line 6: final states
 
 Line 7: number of transitions
 
@@ -74,7 +74,7 @@ Line 3: number of tests the statistical equivalence query will check
 
 Line 4: limit on the number of equivalence queries to run
 
-Line 5: characters in the alphabet
+Line 5: alphabet
 
 ## Author: Nevin George
 
