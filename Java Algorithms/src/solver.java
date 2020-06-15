@@ -29,27 +29,30 @@ public class solver {
      * @throws NonSquareMatrixException if matrix is not square
      */
     public solver(RealMatrix matrix) {
-    	if (!matrix.isSquare())
+    	if (!matrix.isSquare()) {
             throw new NonSquareMatrixException(matrix.getRowDimension(), matrix.getColumnDimension());
+    	}
 
         final int m = matrix.getColumnDimension();
         lu = matrix.getData();
         pivot = new int[m];
 
         // Initialize permutation array and parity
-        for (int row = 0; row < m; row++)
+        for (int row=0; row<m; row++) {
             pivot[row] = row;
-        even     = true;
+        }
+        even = true;
         singular = false;
 
         // Loop over columns
-        for (int col = 0; col < m; col++) {
+        for (int col=0; col<m; col++) {
             // upper
-            for (int row = 0; row < col; row++) {
+            for (int row=0; row<col; row++) {
                 final double[] luRow = lu[row];
                 double sum = luRow[col];
-                for (int i = 0; i < row; i++)
+                for (int i=0; i<row; i++) {
                     sum -= luRow[i] * lu[i][col];
+                }
                 sum = Mod2_MA.mod2(sum);
                 luRow[col] = sum;
             }
@@ -58,11 +61,12 @@ public class solver {
             // permutation row
             int max = col;
             double largest = Double.NEGATIVE_INFINITY;
-            for (int row = col; row < m; row++) {
+            for (int row=col; row<m; row++) {
                 final double[] luRow = lu[row];
                 double sum = luRow[col];
-                for (int i = 0; i < col; i++)
+                for (int i=0; i<col; i++) {
                     sum -= luRow[i] * lu[i][col];
+                }
                 sum = Mod2_MA.mod2(sum);
                 luRow[col] = sum;
 
@@ -74,7 +78,7 @@ public class solver {
             }
 
             // Singularity check
-            if (lu[max][col]==0) {
+            if (lu[max][col] == 0) {
                 singular = true;
                 return;
             }
@@ -84,7 +88,7 @@ public class solver {
                 double tmp = 0;
                 final double[] luMax = lu[max];
                 final double[] luCol = lu[col];
-                for (int i = 0; i < m; i++) {
+                for (int i=0; i<m; i++) {
                     tmp = luMax[i];
                     luMax[i] = luCol[i];
                     luCol[i] = tmp;
@@ -135,73 +139,82 @@ public class solver {
 
         public RealVector solve(RealVector b) {
             final int m = pivot.length;
-            if (b.getDimension() != m)
+            if (b.getDimension() != m) {
                 throw new DimensionMismatchException(b.getDimension(), m);
-            if (singular)
+            }
+            if (singular) {
                 throw new SingularMatrixException();
+            }
 
             final double[] bp = new double[m];
 
             // Apply permutations to b
-            for (int row = 0; row < m; row++)
+            for (int row=0; row<m; row++) {
                 bp[row] = b.getEntry(pivot[row]);
+            }
 
             // Solve LY = b
-            for (int col = 0; col < m; col++) {
+            for (int col=0; col<m; col++) {
                 final double bpCol = bp[col];
-                for (int i = col + 1; i < m; i++)
+                for (int i=col+1; i<m; i++) {
                     bp[i] = Mod2_MA.mod2(bp[i] - bpCol * lu[i][col]);
+                }
             }
 
             // Solve UX = Y
-            for (int col = m - 1; col >= 0; col--) {
+            for (int col=m-1; col>=0; col--) {
                 bp[col] /= lu[col][col];
                 final double bpCol = bp[col];
-                for (int i = 0; i < col; i++)
+                for (int i=0; i<col; i++) {
                 	bp[i] = Mod2_MA.mod2(bp[i] - bpCol * lu[i][col]);
+                }
             }
 
             return new ArrayRealVector(bp, false);
         }
 
         public RealMatrix solve(RealMatrix b) {
-
             final int m = pivot.length;
-            if (b.getRowDimension() != m)
+            if (b.getRowDimension() != m) {
                 throw new DimensionMismatchException(b.getRowDimension(), m);
-            if (singular)
+            }
+            if (singular) {
                 throw new SingularMatrixException();
+            }
 
             final int nColB = b.getColumnDimension();
 
             // Apply permutations to b
             final double[][] bp = new double[m][nColB];
-            for (int row = 0; row < m; row++) {
+            for (int row=0; row<m; row++) {
                 final double[] bpRow = bp[row];
                 final int pRow = pivot[row];
-                for (int col = 0; col < nColB; col++)
+                for (int col=0; col<nColB; col++) {
                     bpRow[col] = b.getEntry(pRow, col);
+                }
             }
 
             // Solve LY = b
-            for (int col = 0; col < m; col++) {
+            for (int col=0; col<m; col++) {
                 final double[] bpCol = bp[col];
-                for (int i = col + 1; i < m; i++) {
+                for (int i=col+1; i<m; i++) {
                     final double[] bpI = bp[i];
                     final double luICol = lu[i][col];
-                    for (int j = 0; j < nColB; j++)
+                    for (int j=0; j<nColB; j++) {
                         bpI[j] = Mod2_MA.mod2(bpI[j] - bpCol[j] * luICol);
+                    }
                 }
             }
 
             // Solve UX = Y
-            for (int col = m - 1; col >= 0; col--) {
+            for (int col=m-1; col>=0; col--) {
                 final double[] bpCol = bp[col];
-                for (int i = 0; i < col; i++) {
+                for (int i=0; i<col; i++) {
                     final double[] bpI = bp[i];
                     final double luICol = lu[i][col];
-                    for (int j = 0; j < nColB; j++)
+                    for (int j=0; j<nColB; j++) {
                     	bpI[j] = Mod2_MA.mod2(bpI[j] - bpCol[j] * luICol);
+                    }
                 }
             }
 
