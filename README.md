@@ -1,3 +1,4 @@
+# Learning Automata
 To run the programs, in Terminal/Command Prompt change your current directory to the Java Algorithms folder and input the command "java -jar" followed by "Mod2_MA.jar", "SUBA.jar", "NBA.jar", or "arbitrary.jar". The program will then ask for the input file name and optional flag -v. Make sure the desired input file is in the same folder as the jar file. If the optional flag -v is entered, the program will display the observation table as it is being constructed. Mod2_MA.jar and SUBA.jar also allow you to enter the optional flag -m, which displays the progress of the minimization algorithm.
 
 Each input file must be a text document following the format required of its intended program (specific details described below). Each file must have no line separation, entries must be space separated, and lines beginning with // are ignored. Example input files for all of the programs can be found in the repository.
