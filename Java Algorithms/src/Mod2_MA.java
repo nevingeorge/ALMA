@@ -82,7 +82,8 @@ public class Mod2_MA {
 		learn();
 		
 		if (minSize != learnedSize) {
-			throwException(null,"Algorithm failed: the learned mod-2-MA has a different dimension than the minimized mod-2-MA.");
+			throwException(null, "Algorithm failed: the learned mod-2-MA has a different dimension "
+					+ "(" + learnedSize + ") than the minimized mod-2-MA (" + minSize + ").");
 		}
 
 		if (finalCheck(25,1000)) {
@@ -193,14 +194,22 @@ public class Mod2_MA {
 	
 	// follows an adapted version of algorithm 2 in Thon and Jaeger to minimize the input mod-2-MA
 	public static void minimize() throws OutOfRangeException, Exception {
+		double[] progressTimes = new double[2];
+		progressTimes[0] = System.nanoTime();
+		
 		if (minProgressFlag) {
 			System.out.println("Minimization in progress.");
 		}
 		
 		ArrayList<String> stateSpaceBasisIndices = new ArrayList<String>();
 		RealMatrix stateSpaceBasis = basis(inputFinalVector, inputTransitionMatrices, stateSpaceBasisIndices, true);
+		
+		displayMinimizationStatus(progressTimes, 5, false, 0);
+		
 		ArrayList<String> coStateSpaceBasisIndices = new ArrayList<String>();
 		RealMatrix coStateSpaceBasis = basis(inputFinalVector, inputTransitionMatrices, coStateSpaceBasisIndices, false);
+		
+		displayMinimizationStatus(progressTimes, 5, false, 0);
 		
 		// (state space x co-state space) observation table
 		RealMatrix observationTable = MatrixUtils.createRealMatrix(stateSpaceBasis.getRowDimension(), coStateSpaceBasis.getRowDimension());
@@ -214,7 +223,9 @@ public class Mod2_MA {
 		minRowIndices = new ArrayList<String>();
 		RealMatrix linIndRowsObservationTable = linIndSubMatrix(observationTable, stateSpaceBasisIndices, minRowIndices, true);
 		minColIndices = new ArrayList<String>();
-		RealMatrix minObservationTable = linIndSubMatrix(linIndRowsObservationTable, coStateSpaceBasisIndices, minColIndices, false);
+		RealMatrix minObservationTable = linIndSubMatrix(linIndRowsObservationTable, coStateSpaceBasisIndices, minColIndices, false);	
+		
+		displayMinimizationStatus(progressTimes, 5, false, 0);
 		
 		// case where minObservationTable = [[0]] (singular, must be treated separately)
 		if (minObservationTable.getRowDimension() == 1 && minObservationTable.getEntry(0, 0) == 0) {
@@ -234,6 +245,8 @@ public class Mod2_MA {
 		DecompositionSolver solver = new solver(minObservationTable).getSolver();
 		RealMatrix tableInverse = solver.getInverse();
 		
+		displayMinimizationStatus(progressTimes, 5, false, 0);
+		
 		Hankel = new HashMap<String, Integer>();
 		
 		// temporarily set the minimized values to the input values because MQ relies on the minimized values
@@ -243,21 +256,19 @@ public class Mod2_MA {
 		
 		// minTransitionMatrices = xSigma*tableInverse, where xSigma is the matrix where row_i = row_(x_i+σ) of the observation table
 		double[][][] tempMinTransitionMatrices = new double[alphabet.length][minObservationTable.getRowDimension()][minObservationTable.getRowDimension()];
-		for (int i=0; i<alphabet.length; i++) {
+		for (int i=0; i<alphabet.length; i++) {	
 			RealMatrix xSigma = MatrixUtils.createRealMatrix(minObservationTable.getRowDimension(), minObservationTable.getRowDimension());
 			for (int j=0; j<minObservationTable.getRowDimension(); j++) {
+				// almost all of the minimization runtime is spent in this for loop, so percentComplete is an accurate approximation
+				double percentComplete = ((int) (1000 * (i + (j / (double) minObservationTable.getRowDimension())))/alphabet.length) / 10.0; 		
+				displayMinimizationStatus(progressTimes, 10, true, percentComplete);
+				
 				for (int k=0; k<minObservationTable.getRowDimension(); k++) {
 					xSigma.setEntry(j, k, MQ(minRowIndices.get(j) + alphabet[i] + minColIndices.get(k)));
 				}
 			}
 			
 			tempMinTransitionMatrices[i] = xSigma.multiply(tableInverse).getData();
-			
-			if (minProgressFlag) {
-				// almost all of the minimization runtime is spent in this for loop, so percentComplete is an accurate approximation
-				int percentComplete = (100 * (i + 1))/alphabet.length;
-				System.out.println(percentComplete + "% complete.");
-			}
 		}
 		
 		minTransitionMatrices = new double[alphabet.length][minObservationTable.getRowDimension()][minObservationTable.getRowDimension()];
@@ -285,6 +296,20 @@ public class Mod2_MA {
 		
 		if (minProgressFlag) {
 			System.out.println("Minimization completed.\n");
+			System.out.println("Minimized dimension: " + minSize + "\n");
+		}
+	}
+	
+	public static void displayMinimizationStatus(double[] progressTimes, int secInterval, boolean inLoop, double percentComplete) {
+		progressTimes[1] = System.nanoTime();
+		if (minProgressFlag && ((progressTimes[1] - progressTimes[0]) / Math.pow(10, 9)) >= secInterval) {
+			progressTimes[0] = progressTimes[1];
+			
+			if (inLoop) {
+				System.out.println(percentComplete + "% complete.");
+			} else {
+				System.out.println("Preparing minimization...");
+			}
 		}
 	}
 	

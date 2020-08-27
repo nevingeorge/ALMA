@@ -1,4 +1,5 @@
 // SUBA for the language a Σ* (Σ* b Σ*)^ω
+// learned mod-2-MA dimension = 5
 // number of states
 2
 // alphabet

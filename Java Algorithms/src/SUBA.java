@@ -48,7 +48,8 @@ public class SUBA {
 		Mod2_MA.learn();
 		
 		if (Mod2_MA.minSize != Mod2_MA.learnedSize) {
-			Mod2_MA.throwException(null,"Algorithm failed: the learned mod-2-MA has a different dimension than the minimized mod-2-MA.");
+			Mod2_MA.throwException(null, "Algorithm failed: the learned mod-2-MA has a different dimension "
+					+ "(" + Mod2_MA.learnedSize + ") than the minimized mod-2-MA (" + Mod2_MA.minSize + ").");
 		}
 		
 		if (finalCheck(25,1000)) {
