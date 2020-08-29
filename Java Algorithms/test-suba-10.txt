@@ -1,0 +1,30 @@
+// id = test-suba-10.txt
+// number of states
+10
+// alphabet
+a b c 
+// final states
+9 2 4 
+// number of transitions
+20
+// transitions
+6 c 1
+4 b 2
+5 c 2
+4 b 3
+8 a 4
+7 b 4
+8 a 5
+9 b 5
+8 c 5
+1 a 6
+10 c 6
+8 a 7
+2 a 8
+1 c 8
+5 a 9
+7 b 9
+5 c 9
+3 a 10
+2 b 10
+7 c 10

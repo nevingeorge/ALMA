@@ -69,7 +69,8 @@ public class Mod2_MA {
 	public static double[][][] resultTransitionMatrices;
 	
 	// used in EQ to avoid testing the same word
-	public static int rowStartIndex;
+	public static boolean[][] tested;
+	public static boolean[][][][] testedExtension;
 	
 	public static Scanner in;
 	public static long startTime;
@@ -292,7 +293,7 @@ public class Mod2_MA {
 		}
 		
 		// used in EQ to avoid testing the same word
-		rowStartIndex = 0;	
+		tested = new boolean[minRowIndices.size()][minColIndices.size()];
 		
 		if (minProgressFlag) {
 			System.out.println("Minimization completed.\n");
@@ -627,18 +628,63 @@ public class Mod2_MA {
 		}
 		
 		// test every element in the observation table of the minimized mod-2-MA
-		for (int i=rowStartIndex; i<minRowIndices.size(); i++) {
+		for (int i=0; i<minRowIndices.size(); i++) {
 			for (int j=0; j<minColIndices.size(); j++) {
-				String test = minRowIndices.get(i) + minColIndices.get(j);
-				if (MQ(test) != MQArbitrary(hypothesisFinalVector, hypothesisTransitionMatrices, test)) {
-					// update rowStartIndex to avoid testing the same words in the next EQ
-					rowStartIndex = i;
-
-					counterExample = test;
-					return false;
+				if (!tested[i][j]) {
+					tested[i][j] = true;
+					String test = minRowIndices.get(i) + minColIndices.get(j);
+					
+					if (MQ(test) != MQArbitrary(hypothesisFinalVector, hypothesisTransitionMatrices, test)) {
+						counterExample = test;
+						return false;
+					}
+				}
+				
+				// update tested to avoid testing the same words in the next EQ
+			}
+		}
+		
+		if (learnedSize == minSize) {
+			return true;
+		}
+		
+		System.out.println("Testing one-letter extensions.");
+		
+		testedExtension = new boolean[minRowIndices.size()][minColIndices.size()][alphabet.length+1][alphabet.length+1];
+		
+		// test the one-letter extensions of the row and column indices of the observation table
+		for (int i=0; i<minRowIndices.size(); i++) {
+			for (int j=0; j<minColIndices.size(); j++) {
+				for (int a1=0; a1<=alphabet.length; a1++) {
+					String letter1;
+					if (a1 == alphabet.length) {
+						letter1 = ""; 
+					} else {
+						letter1 = Character.toString(alphabet[a1]);
+					}
+					
+					for (int a2=0; a2<=alphabet.length; a2++) {
+						if (!testedExtension[i][j][a1][a2] && (a1 != alphabet.length || a2 != alphabet.length)) {
+							testedExtension[i][j][a1][a2] = true;
+							
+							String letter2;
+							if (a2 == alphabet.length) {
+								letter2 = ""; 
+							} else {
+								letter2 = Character.toString(alphabet[a2]);
+							}
+							
+							String test = minRowIndices.get(i) + letter1 + minColIndices.get(j) + letter2;
+							if (MQ(test) != MQArbitrary(hypothesisFinalVector, hypothesisTransitionMatrices, test)) {
+								counterExample = test;
+								return false;
+							}
+						}
+					}
 				}
 			}
 		}
+		
 		return true;
 	}
 	
@@ -685,7 +731,7 @@ public class Mod2_MA {
 				// found a solution
 				if (MQ(w + sigma + y) != sum) {		
 					if (learnedSize == minSize) {
-						throwException(null,"Algorithm failed: size of the hypothesis exceeds that of the target function.");
+						throwException(null, "Algorithm failed: size of the hypothesis exceeds that of the target function.");
 					}
 
 					learnedSize++;
@@ -701,7 +747,7 @@ public class Mod2_MA {
 			}
 		}
 
-		throwException(null,"Algorithm failed: didn't find a suitable omega, sigma, and gamma.");
+		throwException(null, "Algorithm failed: didn't find a suitable omega, sigma, and gamma.");
 	}
 
 	public static void displayResults() {
