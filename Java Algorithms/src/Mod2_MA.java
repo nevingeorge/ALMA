@@ -232,7 +232,9 @@ public class Mod2_MA {
 		minRowIndices = new ArrayList<String>();
 		RealMatrix linIndRowsObservationTable = linIndSubMatrix(observationTable, stateSpaceBasisIndices, minRowIndices, true);
 		minColIndices = new ArrayList<String>();
-		RealMatrix minObservationTable = linIndSubMatrix(linIndRowsObservationTable, coStateSpaceBasisIndices, minColIndices, false);	
+		RealMatrix minObservationTable = linIndSubMatrix(linIndRowsObservationTable, coStateSpaceBasisIndices, minColIndices, false);
+		
+		System.out.println("Minimized dimension: " + minObservationTable.getRowDimension());
 		
 		displayMinimizationStatus(progressTimes, 5, false, 0);
 		
@@ -276,7 +278,7 @@ public class Mod2_MA {
 					xSigma.setEntry(j, k, MQ(minRowIndices.get(j) + alphabet[i] + minColIndices.get(k)));
 				}
 			}
-			
+
 			tempMinTransitionMatrices[i] = xSigma.multiply(tableInverse).getData();
 		}
 		
@@ -595,8 +597,9 @@ public class Mod2_MA {
 				// account for rounding issues with larger words
 				if (i != 0 && i%25 == 0) {
 					for (int j=0; j<minSize; j++) {
-						for (int k=0; k<minSize; k++)
+						for (int k=0; k<minSize; k++) {
 							current.setEntry(j, k, mod2(current.getEntry(j, k)));
+						}
 					}
 				}
 			}

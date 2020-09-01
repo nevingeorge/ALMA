@@ -77,6 +77,9 @@ Line 4: limit on the number of equivalence queries to run
 
 Line 5: alphabet
 
+## Algorithm for minimizing automata
+minimize.java takes in as input a mod-2-MA or SUBA and prints to stdout the mod-2-MA obtained after minimizing the input function (in the SUBA case, it first converts the function into an equivalent UFA then mod-2-MA). The format for the mod-2-MA/SUBA inputs were described earlier.
+
 ## Author: Nevin George
 
 ## Advisor: Dana Angluin
