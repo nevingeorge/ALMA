@@ -64,8 +64,12 @@ public class SUBA {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static void SUBAtoUFA() throws Exception {		
-		System.out.println("Input file name and optional flag -vm (e.g. SUBA_input1.txt -v or SUBA_input1.txt -vm)");
+	public static void SUBAtoUFA() throws Exception {	
+		if (Mod2_MA.inMinimize) {
+			System.out.println("Input file name and optional flag -v (e.g. SUBA_input1.txt, SUBA_input1.txt -m)");
+		} else {
+			System.out.println("Input file name and optional flag -vm (e.g. SUBA_input1.txt -v, SUBA_input1.txt -m, SUBA_input1.txt -vm)");
+		}
 		Mod2_MA.in = new Scanner(System.in);
 		String[] arrInput = Mod2_MA.in.nextLine().split(" ");
 		Mod2_MA.startTime = System.nanoTime();
@@ -314,7 +318,7 @@ public class SUBA {
 	}
 	
 	// performs a statistical EQ between the input SUBA and learned mod-2-MA
-	public static boolean finalCheck(int maxTestLen, int numTests) {
+	public static boolean finalCheck(int maxTestLen, int numTests) {		
 		for (int i=1; i<=numTests; i++) {
 			// SUBA: ultimately periodic words of the form u(v)^w
 			int lenU = (int) (Math.random() * (maxTestLen + 1));

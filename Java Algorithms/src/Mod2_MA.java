@@ -75,6 +75,9 @@ public class Mod2_MA {
 	public static Scanner in;
 	public static long startTime;
 	
+	// true if running minimize.java
+	public static boolean inMinimize = false;
+	
 	public static void main(String[] args) throws Exception {
 		readInput();
 		
@@ -99,7 +102,12 @@ public class Mod2_MA {
 	}
 	
 	public static void readInput() throws Exception {	
-		System.out.println("Input file name and optional flags -vm (e.g. Mod2_MA_input1.txt -v or Mod2_MA_input1.txt -vm)");
+		if (inMinimize) {
+			System.out.println("Input file name and optional flags -vm (e.g. Mod2_MA_input1.txt, Mod2_MA_input1.txt -m)");;
+		} else {
+			System.out.println("Input file name and optional flags -vm (e.g. Mod2_MA_input1.txt -v, Mod2_MA_input1.txt -m, Mod2_MA_input1.txt -vm)");;
+		}
+		
 		in = new Scanner(System.in);
 		String[] arrInput = in.nextLine().split(" ");
 		startTime = System.nanoTime();
@@ -758,8 +766,9 @@ public class Mod2_MA {
 		
 		System.out.print("Final Vector: ");
 		String s = "";
-		for(int i=0;i<resultFinalVector.length;i++)
+		for (int i=0; i<resultFinalVector.length; i++) {
 			s += mod2(resultFinalVector[i]) + " ";
+		}
 		System.out.println(s + "\n");
 		
 		System.out.println("Transition Matrices:\n");
@@ -802,7 +811,7 @@ public class Mod2_MA {
 	public static String genTest(int len) {
 		String test = "";
 		for (int i=0; i<len; i++) {
-			test += alphabet[(int)(Math.random()*alphabet.length)];
+			test += alphabet[(int) (Math.random() * alphabet.length)];
 		}
 		return test;
 	}
@@ -810,7 +819,7 @@ public class Mod2_MA {
 	// performs a statistical EQ between the target and learned mod-2-MA
 	public static boolean finalCheck(int maxTestLen, int numTests) throws Exception {
 		for (int i=1; i<=numTests; i++) {
-			String test = genTest((int)(Math.random()*(maxTestLen+1)));
+			String test = genTest((int) (Math.random() * (maxTestLen + 1)));
 			
 			if (MQArbitrary(inputFinalVector, inputTransitionMatrices, test) != MQArbitrary(resultFinalVector, resultTransitionMatrices, test)) {
 				return false;
