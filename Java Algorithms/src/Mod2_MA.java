@@ -211,12 +211,14 @@ public class Mod2_MA {
 		}
 		
 		ArrayList<String> stateSpaceBasisIndices = new ArrayList<String>();
-		RealMatrix stateSpaceBasis = basis(inputFinalVector, inputTransitionMatrices, stateSpaceBasisIndices, true);
+		HashMap<String, double[]> stateSpaceIndexToVector = new HashMap<String, double[]>();
+		RealMatrix stateSpaceBasis = basis(inputFinalVector, inputTransitionMatrices, stateSpaceIndexToVector, stateSpaceBasisIndices, true);
 		
 		displayMinimizationStatus(progressTimes, 5, false, 0);
 		
 		ArrayList<String> coStateSpaceBasisIndices = new ArrayList<String>();
-		RealMatrix coStateSpaceBasis = basis(inputFinalVector, inputTransitionMatrices, coStateSpaceBasisIndices, false);
+		HashMap<String, double[]> coStateSpaceIndexToVector = new HashMap<String, double[]>();
+		RealMatrix coStateSpaceBasis = basis(inputFinalVector, inputTransitionMatrices, coStateSpaceIndexToVector, coStateSpaceBasisIndices, false);
 		
 		displayMinimizationStatus(progressTimes, 5, false, 0);
 		
@@ -260,22 +262,29 @@ public class Mod2_MA {
 		
 		Hankel = new HashMap<String, Integer>();
 		
+		/*
 		// temporarily set the minimized values to the input values because MQ relies on the minimized values
 		minSize = inputSize;
 		minFinalVector = inputFinalVector;
 		minTransitionMatrices = inputTransitionMatrices;
+		*/
 		
 		// minTransitionMatrices = xSigma*tableInverse, where xSigma is the matrix where row_i = row_(x_i+σ) of the observation table
 		double[][][] tempMinTransitionMatrices = new double[alphabet.length][minObservationTable.getRowDimension()][minObservationTable.getRowDimension()];
 		for (int i=0; i<alphabet.length; i++) {	
+			RealMatrix letterMatrix = MatrixUtils.createRealMatrix(inputTransitionMatrices[i]);
 			RealMatrix xSigma = MatrixUtils.createRealMatrix(minObservationTable.getRowDimension(), minObservationTable.getRowDimension());
+			
 			for (int j=0; j<minObservationTable.getRowDimension(); j++) {
 				// almost all of the minimization runtime is spent in this for loop, so percentComplete is an accurate approximation
 				double percentComplete = ((int) (1000 * (i + (j / (double) minObservationTable.getRowDimension())))/alphabet.length) / 10.0; 		
 				displayMinimizationStatus(progressTimes, 10, true, percentComplete);
 				
 				for (int k=0; k<minObservationTable.getRowDimension(); k++) {
-					xSigma.setEntry(j, k, MQ(minRowIndices.get(j) + alphabet[i] + minColIndices.get(k)));
+					RealVector stateVector = MatrixUtils.createRealVector(stateSpaceIndexToVector.get(minRowIndices.get(j)));
+					RealVector coStateVector = MatrixUtils.createRealVector(coStateSpaceIndexToVector.get(minColIndices.get(k)));
+					
+					xSigma.setEntry(j, k, mod2(letterMatrix.preMultiply(stateVector).dotProduct(coStateVector)));
 				}
 			}
 
@@ -325,7 +334,7 @@ public class Mod2_MA {
 	}
 	
 	// follows algorithm 1 detailed in Thon and Jaeger to form the basis for the state/co-state space
-	public static RealMatrix basis(double[] hypothesisFinalVector, double[][][] hypothesisTransitionMatrices, ArrayList<String> indices, boolean stateSpace) {
+	public static RealMatrix basis(double[] hypothesisFinalVector, double[][][] hypothesisTransitionMatrices, HashMap<String, double[]> indexToVector, ArrayList<String> indices, boolean stateSpace) {
 		double[][] basis = new double[hypothesisFinalVector.length][hypothesisFinalVector.length];
 		int sizeBasis = 0;
 		
@@ -354,6 +363,7 @@ public class Mod2_MA {
 				// extend the basis
 				basis[sizeBasis++] = test;
 				indices.add(testString);
+				indexToVector.put(testString, test);
 				
 				// add to tests the one-letter extensions of test
 				for (int i=0; i<alphabet.length; i++) {
