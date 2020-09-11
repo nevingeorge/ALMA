@@ -209,7 +209,7 @@ public class Mod2_MA {
 		
 		ArrayList<String> stateSpaceBasisIndices = new ArrayList<String>();
 		HashMap<String, double[]> stateSpaceIndexToVector = new HashMap<String, double[]>();
-		RealMatrix stateSpaceBasis = basis(inputFinalVector, inputTransitionMatrices, stateSpaceIndexToVector, stateSpaceBasisIndices, true);
+		RealMatrix stateSpaceBasis = sparseBasis(inputFinalVector, inputTransitionMatrices, stateSpaceIndexToVector, stateSpaceBasisIndices, true);
 		
 		if (minProgressFlag) {
 			System.out.println("Created the state space basis.");
@@ -217,7 +217,7 @@ public class Mod2_MA {
 		
 		ArrayList<String> coStateSpaceBasisIndices = new ArrayList<String>();
 		HashMap<String, double[]> coStateSpaceIndexToVector = new HashMap<String, double[]>();
-		RealMatrix coStateSpaceBasis = basis(inputFinalVector, inputTransitionMatrices, coStateSpaceIndexToVector, coStateSpaceBasisIndices, false);
+		RealMatrix coStateSpaceBasis = sparseBasis(inputFinalVector, inputTransitionMatrices, coStateSpaceIndexToVector, coStateSpaceBasisIndices, false);
 		
 		if (minProgressFlag) {
 			System.out.println("Created the co-state space basis.");
@@ -227,17 +227,15 @@ public class Mod2_MA {
 		RealMatrix observationTable = MatrixUtils.createRealMatrix(stateSpaceBasis.getRowDimension(), coStateSpaceBasis.getRowDimension());
 		for (int row=0; row<stateSpaceBasis.getRowDimension(); row++) {
 			for (int col=0; col<coStateSpaceBasis.getRowDimension(); col++) {
-				observationTable.setEntry(row, col, stateSpaceBasis.getRowVector(row).dotProduct(coStateSpaceBasis.getRowVector(col)));
+				observationTable.setEntry(row, col, mod2(stateSpaceBasis.getRowVector(row).dotProduct(coStateSpaceBasis.getRowVector(col))));
 			}
 		}
 		
 		// obtain the smallest set of linearly independent rows and columns from observationTable
 		minRowIndices = new ArrayList<String>();
-		RealMatrix linIndRowsObservationTable = linIndSubMatrix(observationTable, stateSpaceBasisIndices, minRowIndices, true);
+		RealMatrix linIndRowsObservationTable = sparseLinIndSubMatrix(observationTable, stateSpaceBasisIndices, minRowIndices, true);
 		minColIndices = new ArrayList<String>();
-		RealMatrix minObservationTable = linIndSubMatrix(linIndRowsObservationTable, coStateSpaceBasisIndices, minColIndices, false);
-		
-		minSize = minObservationTable.getRowDimension();
+		RealMatrix minObservationTable = sparseLinIndSubMatrix(linIndRowsObservationTable, coStateSpaceBasisIndices, minColIndices, false);
 		
 		if (minProgressFlag) {
 			System.out.println("Created the minimized observation table.");
@@ -249,14 +247,20 @@ public class Mod2_MA {
 			minFinalVector = new double[1];
 			minFinalVector[0] = 0;
 			minTransitionMatrices = new double[alphabet.length][1][1];
+			
 			for (int i=0; i<alphabet.length; i++) {
 				minTransitionMatrices[i][0][0] = 1;
 			}
 			if (minProgressFlag) {
 				System.out.println("Minimization completed.\n");
 			}
+			
+			tested = new boolean[1][1];
+			
 			return;
 		}
+		
+		minSize = minObservationTable.getRowDimension();
 		
 		DecompositionSolver solver = new solver(minObservationTable).getSolver();
 		RealMatrix tableInverse = solver.getInverse();
@@ -307,6 +311,269 @@ public class Mod2_MA {
 			System.out.println("Minimized dimension: " + minSize + "\n");
 		}
 	}
+	
+	/*
+	 * The minimization algorithm can be run with or without using sparse matrices for the linear algebra.
+	 * The algorithms below are the sparse versions.
+	 */
+	
+	// follows algorithm 1 detailed in Thon and Jaeger to form the basis for the state/co-state space
+	public static RealMatrix sparseBasis(double[] hypothesisFinalVector, double[][][] hypothesisTransitionMatrices, HashMap<String, double[]> indexToVector, ArrayList<String> indices, boolean stateSpace) {
+		ArrayList<ArrayList<Integer>> sparseBasis = new ArrayList<ArrayList<Integer>>();
+		int sizeBasis = 0;
+		
+		// set with elements to try to add to the basis
+		ArrayList<double[]> tests = new ArrayList<double[]>();
+		if (stateSpace) {
+			// begin with ω_i = (1,0,0,...,0)
+			double[] w_i = new double[hypothesisFinalVector.length];
+			w_i[0] = 1;
+			tests.add(w_i);
+		} else {
+			tests.add(hypothesisFinalVector);
+		}
+		int sizeTests = 1;
+		
+		// contains the corresponding string for every element in tests
+		ArrayList<String> testStrings = new ArrayList<String>();
+		testStrings.add("");
+		
+		while (sizeTests > 0) {
+			double[] test = tests.remove(0);
+			String testString = testStrings.remove(0);
+			sizeTests--;
+			
+			ArrayList<Integer> sparseTest = new ArrayList<Integer>();
+			for (int i=0; i<hypothesisFinalVector.length; i++) {
+				if (test[i] != 0) {
+					sparseTest.add(i);
+				}
+			}
+			
+			if (sparseLinInd(sparseTest, sparseBasis, sizeBasis, test.length)) {	
+				// extend the basis
+				sizeBasis++;
+				sparseBasis.add(sparseTest);
+				indices.add(testString);
+				indexToVector.put(testString, test);
+				
+				// add to tests the one-letter extensions of test
+				for (int i=0; i<alphabet.length; i++) {
+					RealMatrix transitionMatrix = MatrixUtils.createRealMatrix(hypothesisTransitionMatrices[i]);
+					RealVector testVector = MatrixUtils.createRealVector(test);
+					double[] newTest;
+					
+					if (stateSpace) {
+						// basis for the set span((initial vector) * (transitionMatrix_ω) : ω∈Σ*)
+						newTest = transitionMatrix.preMultiply(testVector).toArray();
+						testStrings.add(testString+alphabet[i]);
+					} else {
+						// basis for the set span((transitionMatrix_ω) * (final vector) : ω∈Σ*)
+						newTest = transitionMatrix.operate(testVector).toArray();
+						testStrings.add(alphabet[i]+testString);
+					}
+					
+					for (int j=0; j<newTest.length; j++) {
+						newTest[j] = mod2(newTest[j]);
+					}
+					
+					tests.add(newTest);
+					sizeTests++;
+				}
+			}
+		}
+		
+		// convert the sparse basis into a real matrix
+		return sparseToReal(sparseBasis, sizeBasis, hypothesisFinalVector.length);
+	}
+	
+	// returns a RealMatrix where the rows are the ArrayLists in sparseMatrix
+	public static RealMatrix sparseToReal(ArrayList<ArrayList<Integer>> sparseMatrix, int numRows, int numCols) {
+		RealMatrix outputMatrix = MatrixUtils.createRealMatrix(numRows, numCols);
+		
+		for (int r=0; r<sparseMatrix.size(); r++) {
+			ArrayList<Integer> row = sparseMatrix.get(r);
+			int c = 0;
+			int pos = 0;
+			
+			while (c < numCols) {
+				if (pos < row.size()) {
+					if (c < row.get(pos)) {
+						outputMatrix.setEntry(r, c, 0);
+					} else if (c == row.get(pos)) {
+						outputMatrix.setEntry(r, c, 1);
+						pos++;
+					}
+				} else {
+					outputMatrix.setEntry(r, c, 0);
+				}
+				
+				c++;
+			}
+		}
+		
+		return outputMatrix;
+	}
+	
+	// finds a maximal submatrix of linearly independent rows/columns of the observation table
+	public static RealMatrix sparseLinIndSubMatrix(RealMatrix observationTable, ArrayList<String> oldIndices, ArrayList<String> newIndices, boolean rows) {	
+		if (!rows) {
+			observationTable = observationTable.transpose();
+		}
+		
+		int sizeT = 0;
+		ArrayList<ArrayList<Integer>> sparseNewObservationTable = new ArrayList<ArrayList<Integer>>();
+		
+		for (int i=0; i<observationTable.getRowDimension(); i++) {
+			ArrayList<Integer> sparseTest = new ArrayList<Integer>();
+			for (int j=0; j<observationTable.getRow(i).length; j++) {
+				if (observationTable.getRow(i)[j] != 0) {
+					sparseTest.add(j);
+				}
+			}
+			
+			// extend the current subset of linearly independent rows/columns
+			if (sparseLinInd(sparseTest, sparseNewObservationTable, sizeT, observationTable.getRow(i).length)) {
+				sparseNewObservationTable.add(sparseTest);
+				newIndices.add(oldIndices.get(i));
+				sizeT++;
+			}
+		}
+		
+		// convert the sparse basis into a real matrix
+		RealMatrix outputMatrix = sparseToReal(sparseNewObservationTable, sizeT, observationTable.getColumnDimension());
+		
+		if (rows) {
+			return outputMatrix;
+		} else {
+			return outputMatrix.transpose();
+		}
+	}
+	
+	// tests whether the vector is in the span of the basis
+	public static boolean sparseLinInd(ArrayList<Integer> sparseVector, ArrayList<ArrayList<Integer>> sparseBasis, int sizeBasis, int numRows) {
+		if (sizeBasis == 0) {
+			return true;
+		}
+		
+		int numCols = sizeBasis + 1;
+		
+		// create the sparse augmented matrix
+		ArrayList<ArrayList<Integer>> augmentedSparseMatrix = new ArrayList<ArrayList<Integer>>();
+		boolean[][] booleanAugmentedSparseMatrix = new boolean[numRows][numCols];
+		for (int i=0; i<sparseBasis.size(); i++) {
+			ArrayList<Integer> copyOfCol = new ArrayList<Integer>();
+			
+			for (int j=0; j<sparseBasis.get(i).size(); j++) {
+				copyOfCol.add(sparseBasis.get(i).get(j));
+				booleanAugmentedSparseMatrix[sparseBasis.get(i).get(j)][i] = true;
+			}
+			augmentedSparseMatrix.add(copyOfCol);
+		}
+		
+		ArrayList<Integer> copyOfCol = new ArrayList<Integer>();
+		for (int i=0; i<sparseVector.size(); i++) {
+			copyOfCol.add(sparseVector.get(i));
+			booleanAugmentedSparseMatrix[sparseVector.get(i)][numCols - 1] = true;
+		}
+		augmentedSparseMatrix.add(copyOfCol);
+		
+		// put the augmented matrix in rref
+		int r = 0;
+		for (int c=0; c<numCols && r<numRows; c++) {
+			// find first 1 after (or including) row r in column c, set j to the row index
+			int j = -1;
+			ArrayList<Integer> colC = augmentedSparseMatrix.get(c);
+			
+			for (int rowNum : colC) {
+				if (rowNum >= r) {
+					j = rowNum;
+					break;
+				}
+			}
+			
+			if (j == -1) {
+				continue;
+			}
+			
+			// swap rows j and r
+			for (int i=0; i<augmentedSparseMatrix.size(); i++) {
+				if (booleanAugmentedSparseMatrix[j][i] && !booleanAugmentedSparseMatrix[r][i]) {
+					augmentedSparseMatrix.get(i).remove(new Integer(j));
+					insert(augmentedSparseMatrix.get(i), r);
+					
+					booleanAugmentedSparseMatrix[j][i] = false;
+					booleanAugmentedSparseMatrix[r][i] = true;
+				} else if (!booleanAugmentedSparseMatrix[j][i] && booleanAugmentedSparseMatrix[r][i]) {
+					augmentedSparseMatrix.get(i).remove(new Integer(r));
+					insert(augmentedSparseMatrix.get(i), j);
+					
+					booleanAugmentedSparseMatrix[j][i] = true;
+					booleanAugmentedSparseMatrix[r][i] = false;
+				}
+			}
+			
+			// subtract rows
+			for (int i=0; i<numRows; i++) {
+				if (i != r && booleanAugmentedSparseMatrix[i][c]) {
+					for (j=0; j<numCols; j++) {
+						if (booleanAugmentedSparseMatrix[r][j]) {
+							booleanAugmentedSparseMatrix[i][j] = !booleanAugmentedSparseMatrix[i][j];
+							
+							if (booleanAugmentedSparseMatrix[i][j]) {
+								insert(augmentedSparseMatrix.get(j), i);
+							} else {
+								augmentedSparseMatrix.get(j).remove(new Integer(i));
+							}
+						}
+					}
+				}
+			}
+			r++;
+		}
+		
+		
+		// last vector is the 0 vector, in span(B)
+		if (augmentedSparseMatrix.get(numCols - 1).size() == 0) {
+			return false;
+		}
+		
+		// index of the last 1 in the last column
+		int index = augmentedSparseMatrix.get(numCols - 1).get(augmentedSparseMatrix.get(numCols - 1).size() - 1);
+		
+		// check whether in span
+		for (int j=0; j<numCols-1; j++) {
+			if (booleanAugmentedSparseMatrix[index][j]) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+	
+	// inserts insertIndex into the sorted ArrayList
+	public static void insert(ArrayList<Integer> col, int insertIndex) {
+		if (col.size() == 0) {
+			col.add(insertIndex);
+			return;
+		}
+		
+		int pos = 0;
+		
+		while (pos < col.size()) {
+			if (insertIndex < col.get(pos)) {
+				col.add(pos, insertIndex);
+				return;
+			}
+			pos++;
+		}
+		
+		col.add(pos, insertIndex);
+		
+		return;
+	}
+	
+	/* The algorithms below are the non-sparse versions. */
 	
 	// follows algorithm 1 detailed in Thon and Jaeger to form the basis for the state/co-state space
 	public static RealMatrix basis(double[] hypothesisFinalVector, double[][][] hypothesisTransitionMatrices, HashMap<String, double[]> indexToVector, ArrayList<String> indices, boolean stateSpace) {
@@ -410,20 +677,23 @@ public class Mod2_MA {
 		// put the augmented matrix in rref
 		int r = 0;
 		for (int c=0; c<numCols && r<numRows; c++) {
+			// find first 1 after (or including) row r in column c, set j to the row index
 			int j = r;
 			for (int i=r+1; i<numRows; i++) {
 				if (mod2(augmentedMatrix.getEntry(i, c)) > mod2(augmentedMatrix.getEntry(j, c))) {
 					j = i;
 				}
 			}
+			// if column c only has 0s row r and on
 			if (mod2(augmentedMatrix.getEntry(j, c)) == 0) {
 				continue;
 			}
-
+			
+			// swap rows j and r
 			RealMatrix temp = augmentedMatrix.getRowMatrix(j);
-			augmentedMatrix.setRowMatrix(j,augmentedMatrix.getRowMatrix(r));
-			augmentedMatrix.setRowMatrix(r,temp);
-
+			augmentedMatrix.setRowMatrix(j, augmentedMatrix.getRowMatrix(r));
+			augmentedMatrix.setRowMatrix(r, temp);
+			
 			for (int i=0; i<numRows; i++) {
 				if (i != r) {
 					int t = mod2(augmentedMatrix.getEntry(i, c));
@@ -627,6 +897,7 @@ public class Mod2_MA {
 		for (int i=0; i<minRowIndices.size(); i++) {
 			for (int j=0; j<minColIndices.size(); j++) {
 				if (!tested[i][j]) {
+					// update tested to avoid testing the same words in the next EQ
 					tested[i][j] = true;
 					String test = minRowIndices.get(i) + minColIndices.get(j);
 					
@@ -635,8 +906,6 @@ public class Mod2_MA {
 						return false;
 					}
 				}
-				
-				// update tested to avoid testing the same words in the next EQ
 			}
 		}
 		
