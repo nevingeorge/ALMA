@@ -1,5 +1,6 @@
 // SUBA for the language (abbb)^ω
 // learned mod-2-MA dimension = 21
+// dimension = (states)^2 + (states) + 1
 // number of states
 4
 // alphabet
