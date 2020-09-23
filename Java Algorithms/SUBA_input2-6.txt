@@ -1,15 +1,15 @@
 // From the paper "Equivalence and inclusion problem for strongly unambiguous büchi
 // automata" by N. Bousquet and C. Löding.
-// SUBA for the language Σ* a Σ^5 a (abba)^ω
-// learned mod-2-MA dimension = 14
+// SUBA for the language Σ* a Σ^5 a (abb)^ω
+// learned mod-2-MA dimension = 20
 // number of states
-11
+10
 // alphabet
 a b
 // final states
 8
 // number of transitions
-18
+17
 // transitions
 1 a 1
 1 b 1
@@ -27,5 +27,4 @@ a b
 7 a 8
 8 a 9
 9 b 10
-10 b 11
-11 a 8
+10 b 8

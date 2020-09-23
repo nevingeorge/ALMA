@@ -1,0 +1,12 @@
+// SUBA for the language a^ω
+// learned mod-2-MA dimension = 3
+// number of states
+1
+// alphabet
+a b
+// final states
+1
+// number of transitions
+1
+// transitions
+1 a 1

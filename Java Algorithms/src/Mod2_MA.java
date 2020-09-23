@@ -237,13 +237,15 @@ public class Mod2_MA {
 		minColIndices = new ArrayList<String>();
 		RealMatrix minObservationTable = sparseLinIndSubMatrix(linIndRowsObservationTable, coStateSpaceBasisIndices, minColIndices, false);
 		
+		minSize = minObservationTable.getRowDimension();
+		
 		if (minProgressFlag) {
 			System.out.println("Created the minimized observation table.");
+			System.out.println("Minimized dimension: " + minSize + "\n");
 		}
 		
 		// case where minObservationTable = [[0]] (singular, must be treated separately)
 		if (minObservationTable.getRowDimension() == 1 && minObservationTable.getEntry(0, 0) == 0) {
-			minSize = 1;
 			minFinalVector = new double[1];
 			minFinalVector[0] = 0;
 			minTransitionMatrices = new double[alphabet.length][1][1];
@@ -259,8 +261,6 @@ public class Mod2_MA {
 			
 			return;
 		}
-		
-		minSize = minObservationTable.getRowDimension();
 		
 		DecompositionSolver solver = new solver(minObservationTable).getSolver();
 		RealMatrix tableInverse = solver.getInverse();
@@ -308,7 +308,6 @@ public class Mod2_MA {
 		
 		if (minProgressFlag) {
 			System.out.println("Minimization completed.\n");
-			System.out.println("Minimized dimension: " + minSize + "\n");
 		}
 	}
 	
