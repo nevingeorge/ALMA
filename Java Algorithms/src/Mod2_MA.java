@@ -240,8 +240,41 @@ public class Mod2_MA {
 		minSize = minObservationTable.getRowDimension();
 		
 		if (minProgressFlag) {
-			System.out.println("Created the minimized observation table.");
-			System.out.println("Minimized dimension: " + minSize + "\n");
+			System.out.println("\nCreated the minimized observation table.");
+			System.out.println("Minimized dimension: " + minSize);
+			
+			String stateSpaceIndices = "";
+			for (String index : minRowIndices) {
+				if (index.length() == 0) {
+					stateSpaceIndices += "ɛ ";
+				} else {
+					stateSpaceIndices += index + " ";
+				}
+			}
+			System.out.println("Rows: " + stateSpaceIndices);
+			
+			String coStateSpaceIndices = "";
+			for (String index : minColIndices) {
+				if (index.length() == 0) {
+					coStateSpaceIndices += "ɛ ";
+				} else {
+					coStateSpaceIndices += index + " ";
+				}
+			}
+			System.out.println("Cols: " + coStateSpaceIndices);
+			
+			System.out.println("Table:");
+			for (int i=0; i<minObservationTable.getRowDimension(); i++) {
+				String row = "";
+				
+				for (int j=0; j<minObservationTable.getColumnDimension(); j++) {
+					row += (int) minObservationTable.getEntry(i,  j) + " ";
+				}
+				
+				System.out.println(row);
+			}
+			
+			System.out.println();
 		}
 		
 		// case where minObservationTable = [[0]] (singular, must be treated separately)
