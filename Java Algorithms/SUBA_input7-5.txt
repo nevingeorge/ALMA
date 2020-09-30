@@ -1,23 +1,17 @@
-// SUBA for the language (a and 10 b's)^ω
-// learned mod-2-MA dimension = 133
+// SUBA for the language (abbb)^ω
+// learned mod-2-MA dimension = 31
 // dimension = (states)^2 + (states) + 1
 // number of states
-11
+5
 // alphabet
 a b
 // final states
-11
+5
 // number of transitions
-11
+5
 // transitions
 1 a 2
 2 b 3
 3 b 4
 4 b 5
-5 b 6
-6 b 7
-7 b 8
-8 b 9
-9 b 10
-10 b 11
-11 b 1
+5 b 1

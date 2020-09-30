@@ -204,31 +204,78 @@ public class Mod2_MA {
 	// follows an adapted version of algorithm 2 in Thon and Jaeger to minimize the input mod-2-MA
 	public static void minimize() throws OutOfRangeException, Exception {
 		if (minProgressFlag) {
-			System.out.println("Minimization in progress.");
+			System.out.println("Mod-2-MA to minimize:");
+			System.out.println("---------------------");
+			
+			System.out.println("Dimension: " + inputSize + '\n');
+			
+			System.out.print("Final Vector: ");
+			String s = "";
+			for (int i=0; i<inputFinalVector.length; i++) {
+				s += mod2(inputFinalVector[i]) + " ";
+			}
+			System.out.println(s + "\n");
+			
+			System.out.println("Transition Matrices:\n");
+			for (int i=0; i<inputTransitionMatrices.length; i++) {
+				System.out.println("Letter " + alphabet[i]);
+				for (int j=0; j<inputTransitionMatrices[i].length; j++) {
+					s = "";
+					for (int k=0; k<inputTransitionMatrices[i].length; k++) {
+						s += mod2(inputTransitionMatrices[i][j][k]) + " ";
+					}
+					System.out.println(s);
+				}
+				System.out.println();
+			}
+			System.out.println("Minimization in progress:");
+			System.out.println("-------------------------");
 		}
 		
 		ArrayList<String> stateSpaceBasisIndices = new ArrayList<String>();
 		HashMap<String, double[]> stateSpaceIndexToVector = new HashMap<String, double[]>();
 		RealMatrix stateSpaceBasis = sparseBasis(inputFinalVector, inputTransitionMatrices, stateSpaceIndexToVector, stateSpaceBasisIndices, true);
 		
-		if (minProgressFlag) {
-			System.out.println("Created the state space basis.");
-		}
-		
 		ArrayList<String> coStateSpaceBasisIndices = new ArrayList<String>();
 		HashMap<String, double[]> coStateSpaceIndexToVector = new HashMap<String, double[]>();
 		RealMatrix coStateSpaceBasis = sparseBasis(inputFinalVector, inputTransitionMatrices, coStateSpaceIndexToVector, coStateSpaceBasisIndices, false);
 		
-		if (minProgressFlag) {
-			System.out.println("Created the co-state space basis.");
-		}
-		
 		// (state space x co-state space) observation table
 		RealMatrix observationTable = MatrixUtils.createRealMatrix(stateSpaceBasis.getRowDimension(), coStateSpaceBasis.getRowDimension());
+		String tableStr = "";
 		for (int row=0; row<stateSpaceBasis.getRowDimension(); row++) {
 			for (int col=0; col<coStateSpaceBasis.getRowDimension(); col++) {
 				observationTable.setEntry(row, col, mod2(stateSpaceBasis.getRowVector(row).dotProduct(coStateSpaceBasis.getRowVector(col))));
+				tableStr += ((int) observationTable.getEntry(row, col)) + " ";
 			}
+			tableStr += "\n";
+		}
+		
+		if (minProgressFlag) {
+			System.out.println("Original observation table:" );
+			System.out.println("Dimension: " + stateSpaceBasis.getRowDimension() + " x " + coStateSpaceBasis.getRowDimension());
+			
+			String indices = "";
+			for (String index : stateSpaceBasisIndices) {
+				if (index.length() == 0) {
+					indices += "ɛ ";
+				} else {
+					indices += index + " ";
+				}
+			}	
+			System.out.println("Rows: " + indices);
+			
+			indices = "";
+			for (String index : coStateSpaceBasisIndices) {
+				if (index.length() == 0) {
+					indices += "ɛ ";
+				} else {
+					indices += index + " ";
+				}
+			}
+			System.out.println("Cols: " + indices);
+			
+			System.out.println("Table:\n" + tableStr);
 		}
 		
 		// obtain the smallest set of linearly independent rows and columns from observationTable
@@ -240,8 +287,8 @@ public class Mod2_MA {
 		minSize = minObservationTable.getRowDimension();
 		
 		if (minProgressFlag) {
-			System.out.println("\nCreated the minimized observation table.");
-			System.out.println("Minimized dimension: " + minSize);
+			System.out.println("Minimized observation table:");
+			System.out.println("Dimension: " + minSize);
 			
 			String stateSpaceIndices = "";
 			for (String index : minRowIndices) {
