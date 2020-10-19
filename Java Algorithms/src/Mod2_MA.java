@@ -315,7 +315,7 @@ public class Mod2_MA {
 				String row = "";
 				
 				for (int j=0; j<minObservationTable.getColumnDimension(); j++) {
-					row += (int) minObservationTable.getEntry(i,  j) + " ";
+					row += (int) minObservationTable.getEntry(i, j) + " ";
 				}
 				
 				System.out.println(row);
