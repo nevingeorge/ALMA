@@ -39,9 +39,9 @@ public class Mod2_MA {
 	// if true, displays information on the progress of the minimization algorithm
 	public static boolean minProgressFlag;
 	
-	public static Character[] alphabet;
+	public static String[] alphabet;
 	// maps each letter in the alphabet to an index
-	public static HashMap<Character, Integer> letterToIndex;
+	public static HashMap<String, Integer> letterToIndex;
 	
 	// input mod-2-MA
 	public static int inputSize;
@@ -133,21 +133,18 @@ public class Mod2_MA {
 		System.out.println();
 		
 		StringTokenizer st = new StringTokenizer(readFile(f));
-		ArrayList<Character> tempAlphabet = new ArrayList<Character>();
+		ArrayList<String> tempAlphabet = new ArrayList<String>();
 		while (st.hasMoreTokens()) {
 			String letter = st.nextToken();
-			if (letter.length() != 1) {
-				throwException(f, "Invalid input: invalid character in the alphabet.");
-			}
-			tempAlphabet.add(letter.charAt(0));
+			tempAlphabet.add(letter);
 		}
-		alphabet = new Character[tempAlphabet.size()];
+		alphabet = new String[tempAlphabet.size()];
 		for (int i=0; i<tempAlphabet.size(); i++) {
 			alphabet[i] = tempAlphabet.get(i);
 		}
 		
 		// map each letter in the alphabet to an index
-		letterToIndex = new HashMap<Character, Integer>();
+		letterToIndex = new HashMap<String, Integer>();
 		for (int i=0; i<alphabet.length; i++) {
 			letterToIndex.put(alphabet[i], i);
 		}
@@ -260,7 +257,7 @@ public class Mod2_MA {
 				if (index.length() == 0) {
 					indices += "ɛ ";
 				} else {
-					indices += index + " ";
+					indices += removeSpaces(index) + " ";
 				}
 			}	
 			System.out.println("Rows: " + indices);
@@ -270,7 +267,7 @@ public class Mod2_MA {
 				if (index.length() == 0) {
 					indices += "ɛ ";
 				} else {
-					indices += index + " ";
+					indices += removeSpaces(index) + " ";
 				}
 			}
 			System.out.println("Cols: " + indices);
@@ -295,7 +292,7 @@ public class Mod2_MA {
 				if (index.length() == 0) {
 					stateSpaceIndices += "ɛ ";
 				} else {
-					stateSpaceIndices += index + " ";
+					stateSpaceIndices += removeSpaces(index) + " ";
 				}
 			}
 			System.out.println("Rows: " + stateSpaceIndices);
@@ -305,7 +302,7 @@ public class Mod2_MA {
 				if (index.length() == 0) {
 					coStateSpaceIndices += "ɛ ";
 				} else {
-					coStateSpaceIndices += index + " ";
+					coStateSpaceIndices += removeSpaces(index) + " ";
 				}
 			}
 			System.out.println("Cols: " + coStateSpaceIndices);
@@ -445,11 +442,11 @@ public class Mod2_MA {
 					if (stateSpace) {
 						// basis for the set span((initial vector) * (transitionMatrix_ω) : ω∈Σ*)
 						newTest = transitionMatrix.preMultiply(testVector).toArray();
-						testStrings.add(testString+alphabet[i]);
+						testStrings.add(addStrings(testString, alphabet[i]));
 					} else {
 						// basis for the set span((transitionMatrix_ω) * (final vector) : ω∈Σ*)
 						newTest = transitionMatrix.operate(testVector).toArray();
-						testStrings.add(alphabet[i]+testString);
+						testStrings.add(addStrings(alphabet[i], testString));
 					}
 					
 					for (int j=0; j<newTest.length; j++) {
@@ -695,11 +692,11 @@ public class Mod2_MA {
 					if (stateSpace) {
 						// basis for the set span((initial vector) * (transitionMatrix_ω) : ω∈Σ*)
 						newTest = transitionMatrix.preMultiply(testVector).toArray();
-						testStrings.add(testString+alphabet[i]);
+						testStrings.add(addStrings(testString, alphabet[i]));
 					} else {
 						// basis for the set span((transitionMatrix_ω) * (final vector) : ω∈Σ*)
 						newTest = transitionMatrix.operate(testVector).toArray();
-						testStrings.add(alphabet[i]+testString);
+						testStrings.add(addStrings(alphabet[i], testString));
 					}
 					
 					for (int j=0; j<newTest.length; j++) {
@@ -873,14 +870,14 @@ public class Mod2_MA {
 		 */
 		double[][][] hypothesisTransitionMatrices = new double[alphabet.length][learnedSize][learnedSize];
 		for (int c=0; c<alphabet.length; c++) {
-			char letter = alphabet[c];
+			String letter = alphabet[c];
 			
 			double[][] F_xi = new double[learnedSize][learnedSize];
 			double[][] F_xi_letter = new double[learnedSize][learnedSize];
 			for (int i=0; i<learnedSize; i++) {
 				for (int j=0; j<learnedSize; j++) {
-					F_xi[j][i] = MQ(learnedRowIndices.get(i) + learnedColIndices.get(j));
-					F_xi_letter[i][j] = MQ(learnedRowIndices.get(i) + letter + learnedColIndices.get(j));
+					F_xi[j][i] = MQ(addStrings(learnedRowIndices.get(i), learnedColIndices.get(j)));
+					F_xi_letter[i][j] = MQ(addStrings(addStrings(learnedRowIndices.get(i), letter), learnedColIndices.get(j)));
 				}
 			}
 			
@@ -891,8 +888,9 @@ public class Mod2_MA {
 				RealVector constants = new ArrayRealVector(F_xi_letter[i]);
 				try {
 					RealVector solution = solver.solve(constants);
-					for(int j=0;j<learnedSize;j++)
+					for(int j=0; j<learnedSize; j++) {
 						hypothesisTransitionMatrices[c][i][j] = solution.getEntry(j);
+					}
 				} catch(Exception e) {
 					// matrix is not invertible
 					for (int j=0; j<learnedSize; j++) {
@@ -905,7 +903,7 @@ public class Mod2_MA {
 	}
 	
 	// MQ for the target function
-	public static int MQ(String word) throws Exception {		
+	public static int MQ(String word) throws Exception {	
 		// MQ(ω) was previously calculated and is in the Hankel matrix
 		if (Hankel.get(word) != null) {
 			return Hankel.get(word);
@@ -925,8 +923,13 @@ public class Mod2_MA {
 		} else {
 			RealMatrix current = MatrixUtils.createRealIdentityMatrix(minSize);
 			
-			for (int i=0; i<word.length(); i++) {
-				current = current.multiply(MatrixUtils.createRealMatrix(minTransitionMatrices[letterToIndex.get(word.charAt(i))]));
+			String[] wordArr = word.split(" ");
+			if (word.length() == 0) {
+				wordArr = new String[0];
+			}
+			
+			for (int i=0; i<wordArr.length; i++) {
+				current = current.multiply(MatrixUtils.createRealMatrix(minTransitionMatrices[letterToIndex.get(wordArr[i])]));
 				
 				// account for rounding issues with larger words
 				if (i != 0 && i%25 == 0) {
@@ -947,11 +950,16 @@ public class Mod2_MA {
 	}
 	
 	// MQ for any given final vector and set of transition matrices
-	public static int MQArbitrary(double[] finalVector, double[][][] transitionMatrices, String word) {		
+	public static int MQArbitrary(double[] finalVector, double[][][] transitionMatrices, String word) {	
 		RealMatrix current = MatrixUtils.createRealIdentityMatrix(finalVector.length);
 		
-		for (int i=0; i<word.length(); i++) {
-			current = current.multiply(MatrixUtils.createRealMatrix(transitionMatrices[letterToIndex.get(word.charAt(i))]));
+		String[] wordArr = word.split(" ");
+		if (word.length() == 0) {
+			wordArr = new String[0];
+		}
+		
+		for (int i=0; i<wordArr.length; i++) {
+			current = current.multiply(MatrixUtils.createRealMatrix(transitionMatrices[letterToIndex.get(wordArr[i])]));
 			
 			// account for rounding issues with larger words
 			if (i != 0 && i%25 == 0) {
@@ -978,8 +986,9 @@ public class Mod2_MA {
 				if (!tested[i][j]) {
 					// update tested to avoid testing the same words in the next EQ
 					tested[i][j] = true;
-					String test = minRowIndices.get(i) + minColIndices.get(j);
 					
+					String test = addStrings(minRowIndices.get(i), minColIndices.get(j));
+	
 					if (MQ(test) != MQArbitrary(hypothesisFinalVector, hypothesisTransitionMatrices, test)) {
 						counterExample = test;
 						return false;
@@ -1004,7 +1013,7 @@ public class Mod2_MA {
 					if (a1 == alphabet.length) {
 						letter1 = ""; 
 					} else {
-						letter1 = Character.toString(alphabet[a1]);
+						letter1 = alphabet[a1];
 					}
 					
 					for (int a2=0; a2<=alphabet.length; a2++) {
@@ -1015,10 +1024,10 @@ public class Mod2_MA {
 							if (a2 == alphabet.length) {
 								letter2 = ""; 
 							} else {
-								letter2 = Character.toString(alphabet[a2]);
+								letter2 = alphabet[a2];
 							}
 							
-							String test = minRowIndices.get(i) + letter1 + minColIndices.get(j) + letter2;
+							String test = addStrings(addStrings(addStrings(minRowIndices.get(i), letter1), minColIndices.get(j)), letter2);
 							if (MQ(test) != MQArbitrary(hypothesisFinalVector, hypothesisTransitionMatrices, test)) {
 								counterExample = test;
 								return false;
@@ -1035,29 +1044,40 @@ public class Mod2_MA {
 	public static void growObservationTable(double[][][] hypothesisTransitionMatrices) throws Exception {
 		// prefix of the counter-example = ω + σ
 		String w = "";
-		char sigma = 0;
+		String sigma = "";
 		// experiment
 		String y = "";
 		
+		String[] counterExampleArr = counterExample.split(" ");
+		if (counterExample.length() == 0) {
+			counterExampleArr = new String[0];
+		}
+		
 		// go through every possible prefix of the counter-example starting with ω = "" and σ = (first character of ω)
-		for (int i=0; i<counterExample.length(); i++) {
+		for (int i=0; i<counterExampleArr.length; i++) {
 			if (i != 0) {
-				w = counterExample.substring(0,i);
+				w = "";
+				for (int j=0; j<i-1; j++) {
+					w += counterExampleArr[j] + " ";
+				}
+				if (i >= 1) {
+					w += counterExampleArr[i - 1];
+				}
 			}
-			sigma = counterExample.charAt(i);
+			sigma = counterExampleArr[i];
 			
 			RealMatrix transitionMatrix_w = MatrixUtils.createRealIdentityMatrix(learnedSize);
-			for (int n=0; n<w.length(); n++) {
-				transitionMatrix_w = transitionMatrix_w.multiply(MatrixUtils.createRealMatrix(hypothesisTransitionMatrices[letterToIndex.get(w.charAt(n))]));
+			for (int n=0; n<i; n++) {
+				transitionMatrix_w = transitionMatrix_w.multiply(MatrixUtils.createRealMatrix(hypothesisTransitionMatrices[letterToIndex.get(counterExampleArr[n])]));
 			}
 			
 			// if F is the Hankel matrix, check if F_ω = sum(μ(ω)_1,i * F_xi)
 			for (int j=0; j<learnedSize; j++) {
 				int sum = 0;
 				for (int k=0; k<learnedSize; k++) {
-					sum = mod2(sum + transitionMatrix_w.getEntry(0, k) * MQ(learnedRowIndices.get(k) + learnedColIndices.get(j)));
+					sum = mod2(sum + transitionMatrix_w.getEntry(0, k) * MQ(addStrings(learnedRowIndices.get(k), learnedColIndices.get(j))));
 				}
-				if (MQ(w+learnedColIndices.get(j)) != sum) {
+				if (MQ(addStrings(w, learnedColIndices.get(j))) != sum) {
 					break;
 				}
 			}
@@ -1069,18 +1089,18 @@ public class Mod2_MA {
 			
 				int sum = 0;
 				for (int k=0; k<learnedSize; k++) {
-					sum = mod2(sum + transitionMatrix_w.getEntry(0, k) * MQ(learnedRowIndices.get(k) + sigma + y));
+					sum = mod2(sum + transitionMatrix_w.getEntry(0, k) * MQ(addStrings(addStrings(learnedRowIndices.get(k), sigma), y)));
 				}
 				
 				// found a solution
-				if (MQ(w + sigma + y) != sum) {		
+				if (MQ(addStrings(addStrings(w, sigma), y)) != sum) {		
 					if (learnedSize == minSize) {
 						throwException(null, "Algorithm failed: size of the hypothesis exceeds that of the target function.");
 					}
 
 					learnedSize++;
 					learnedRowIndices.add(w);
-					learnedColIndices.add(sigma + y);
+					learnedColIndices.add(addStrings(sigma, y));
 					
 					if (observationTableFlag) {
 						displayTable();
@@ -1125,19 +1145,19 @@ public class Mod2_MA {
 		System.out.println("Size: " + learnedSize);
 		System.out.print("Rows: ɛ ");
 		for (int i=1; i<learnedRowIndices.size(); i++) {
-			System.out.print(learnedRowIndices.get(i) + " ");
+			System.out.print(removeSpaces(learnedRowIndices.get(i)) + " ");
 		}
 		System.out.println();
 		
 		System.out.print("Cols: ɛ ");
 		for (int i=1; i<learnedColIndices.size(); i++) {
-			System.out.print(learnedColIndices.get(i) + " ");
+			System.out.print(removeSpaces(learnedColIndices.get(i)) + " ");
 		}
 		
 		System.out.println("\nTable:");
 		for (int i=0; i<learnedRowIndices.size(); i++) {
 			for (int j=0; j<learnedColIndices.size(); j++) {
-				System.out.print(MQ(learnedRowIndices.get(i) + learnedColIndices.get(j)) + " ");
+				System.out.print(MQ(addStrings(learnedRowIndices.get(i), learnedColIndices.get(j))) + " ");
 			}
 			System.out.println();
 		}
@@ -1146,8 +1166,11 @@ public class Mod2_MA {
 
 	public static String genTest(int len) {
 		String test = "";
-		for (int i=0; i<len; i++) {
-			test += alphabet[(int) (Math.random() * alphabet.length)];
+		for (int i=0; i<len-1; i++) {
+			test += alphabet[(int) (Math.random() * alphabet.length)] + " ";
+		}
+		if (len >= 1) {
+			test +=  alphabet[(int) (Math.random() * alphabet.length)];
 		}
 		return test;
 	}
@@ -1218,8 +1241,12 @@ public class Mod2_MA {
 	}
 	
 	public static boolean inAlphabet(String word) {
-		for (int i=0; i<word.length(); i++) {
-			if (letterToIndex.get(word.charAt(i)) == null) {
+		String[] wordArr = word.split(" ");
+		if (word.length() == 0) {
+			wordArr = new String[0];
+		}
+		for (int i=0; i<wordArr.length; i++) {
+			if (letterToIndex.get(wordArr[i]) == null) {
 				return false;
 			}
 		}
@@ -1233,5 +1260,30 @@ public class Mod2_MA {
 		} else {
 			return 1;
 		}
+	}
+	
+	// adds two strings with a white space in between (trimmed)
+	public static String addStrings(String s1, String s2) {
+		String out = s1;
+
+		if (s2.length() > 0) {
+			if (s1.length() > 0) {
+				out += " ";
+			}
+			out += s2;
+		}
+		return out;
+	}
+
+	public static String removeSpaces(String s) {
+		String out = "";
+		for (int i=0; i<s.length(); i++) {
+			char c = s.charAt(i);
+			
+			if (c != ' ') {
+				out += c;
+			}
+		}
+		return out;
 	}
 }
