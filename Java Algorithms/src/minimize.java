@@ -95,7 +95,10 @@ public class minimize {
 	
 	public static String genTest(int len) {
 		String test = "";
-		for (int i=0; i<len; i++) {
+		for (int i=0; i<len-1; i++) {
+			test += Mod2_MA.alphabet[(int) (Math.random() * Mod2_MA.alphabet.length)] + " ";
+		}
+		if (len >= 1) {
 			test += Mod2_MA.alphabet[(int) (Math.random() * Mod2_MA.alphabet.length)];
 		}
 		return test;

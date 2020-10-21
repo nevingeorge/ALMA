@@ -80,21 +80,18 @@ public class arbitrary {
 		EQNumPerformed = 0;
 
 		StringTokenizer st = new StringTokenizer(Mod2_MA.readFile(f));
-		ArrayList<Character> tempAlphabet = new ArrayList<Character>();
+		ArrayList<String> tempAlphabet = new ArrayList<String>();
 		while (st.hasMoreTokens()) {
 			String letter = st.nextToken();
-			if (letter.length() != 1) {
-				Mod2_MA.throwException(f, "Invalid input: invalid character in the alphabet.");
-			}
-			tempAlphabet.add(letter.charAt(0));
+			tempAlphabet.add(letter);
 		}
-		Mod2_MA.alphabet = new Character[tempAlphabet.size()];
+		Mod2_MA.alphabet = new String[tempAlphabet.size()];
 		for (int i=0; i<tempAlphabet.size(); i++) {
 			Mod2_MA.alphabet[i] = tempAlphabet.get(i);
 		}
 		
 		// map each letter in the alphabet to an index
-		Mod2_MA.letterToIndex = new HashMap<Character, Integer>();
+		Mod2_MA.letterToIndex = new HashMap<String, Integer>();
 		for (int i=0; i<Mod2_MA.alphabet.length; i++) {
 			Mod2_MA.letterToIndex.put(Mod2_MA.alphabet[i], i);
 		}
@@ -105,10 +102,13 @@ public class arbitrary {
 	public static boolean EQstatistical(double[] hypothesisFinalVector, double[][][] hypothesisTransitionMatrices) throws Exception {
 		int numFail = 0;
 		for (int i=0; i<EQNumTests; i++) {
-			int len = (int) (Math.random()*(EQMaxTestLen+1));
+			int len = (int) (Math.random() * (EQMaxTestLen + 1));
 			
 			String test = "";
-			for (int j=0; j<len; j++) {
+			for (int j=0; j<len-1; j++) {
+				test += Mod2_MA.alphabet[(int) (Math.random() * Mod2_MA.alphabet.length)] + " ";
+			}
+			if (len >= 1) {
 				test += Mod2_MA.alphabet[(int) (Math.random() * Mod2_MA.alphabet.length)];
 			}
 			

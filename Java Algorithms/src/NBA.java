@@ -72,22 +72,22 @@ public class NBA {
 		
 		// alphabet ΣU{$}
 		StringTokenizer st = new StringTokenizer(Mod2_MA.readFile(f));
-		ArrayList<Character> tempAlphabet = new ArrayList<Character>();
+		ArrayList<String> tempAlphabet = new ArrayList<String>();
 		while (st.hasMoreTokens()) {
 			String letter = st.nextToken();
-			if (letter.length() != 1 || letter.charAt(0) == '$') {
+			if (letter.equals("$")) {
 				Mod2_MA.throwException(f, "Invalid input: invalid character in the alphabet.");
 			}
-			tempAlphabet.add(letter.charAt(0));
+			tempAlphabet.add(letter);
 		}
-		tempAlphabet.add('$');
-		Mod2_MA.alphabet = new Character[tempAlphabet.size()];
+		tempAlphabet.add("$");
+		Mod2_MA.alphabet = new String[tempAlphabet.size()];
 		for (int i=0; i<tempAlphabet.size(); i++) {
 			Mod2_MA.alphabet[i] = tempAlphabet.get(i);
 		}
 		
 		// map each letter in alphabet to an index
-		Mod2_MA.letterToIndex = new HashMap<Character, Integer>();
+		Mod2_MA.letterToIndex = new HashMap<String, Integer>();
 		for (int i=0; i<Mod2_MA.alphabet.length; i++) {
 			Mod2_MA.letterToIndex.put(Mod2_MA.alphabet[i], i);
 		}
@@ -126,7 +126,7 @@ public class NBA {
 				Mod2_MA.throwException(f, "Invalid input: invalid transition.");
 			}
 			
-			int a = Mod2_MA.letterToIndex.get(letter.charAt(0));
+			int a = Mod2_MA.letterToIndex.get(letter);
 			int p_end = Integer.parseInt(st.nextToken());
 			if (p_start < 1 || p_start > NBAStates || p_end < 1 || p_end > NBAStates) {
 				Mod2_MA.throwException(f, "Invalid input: invalid transition.");
@@ -157,8 +157,8 @@ public class NBA {
 			return 0;
 		}
 		
-		String u = w.substring(0, dollarIndex);
-		String v = w.substring(dollarIndex+1);
+		String u = w.substring(0, dollarIndex).trim();
+		String v = w.substring(dollarIndex+1).trim();
 		
 		/*
 		 * States are represented as length-2 integer arrays.
@@ -236,9 +236,15 @@ public class NBA {
 		ArrayList<int[]> nextStates = new ArrayList<int[]>();
 		boolean[][] visited = new boolean[NBAStates+1][2];
 		
+		String firstLetter = "";
+		int pos = 0;
+		while (pos < str.length() && str.charAt(pos) != ' ') {
+			firstLetter += str.charAt(pos++);
+		}
+		
 		// update nextStates with all of the states reachable from startStates on the first letter of str
 		for (int i=0; i<startStates.size(); i++) {
-			ArrayList<Integer> curTransition = NBATransitions[startStates.get(i)[0]][Mod2_MA.letterToIndex.get(str.charAt(0))];
+			ArrayList<Integer> curTransition = NBATransitions[startStates.get(i)[0]][Mod2_MA.letterToIndex.get(firstLetter)];
 			for (int j=0; j<curTransition.size(); j++) {
 				int nextState = curTransition.get(j);
 				int mark = 0;
@@ -256,7 +262,7 @@ public class NBA {
 			}
 		}
 		
-		return readStr(str.substring(1), nextStates);
+		return readStr(str.substring(Math.min(firstLetter.length() + 1, str.length())), nextStates);
 	}
 	
 	// refines states so that it contains unique values 
