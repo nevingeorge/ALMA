@@ -100,22 +100,22 @@ public class SUBA {
 		
 		// alphabet ΣU{$}
 		StringTokenizer st = new StringTokenizer(Mod2_MA.readFile(f));
-		ArrayList<Character> tempAlphabet = new ArrayList<Character>();
+		ArrayList<String> tempAlphabet = new ArrayList<String>();
 		while (st.hasMoreTokens()) {
 			String letter = st.nextToken();
-			if(letter.length() != 1 || letter.charAt(0) == '$') {
+			if(letter.equals("$")) {
 				Mod2_MA.throwException(f, "Invalid input: invalid character in the alphabet.");
 			}
-			tempAlphabet.add(letter.charAt(0));
+			tempAlphabet.add(letter);
 		}
-		tempAlphabet.add('$');
-		Mod2_MA.alphabet = new Character[tempAlphabet.size()];
+		tempAlphabet.add("$");
+		Mod2_MA.alphabet = new String[tempAlphabet.size()];
 		for (int i=0; i<tempAlphabet.size(); i++) {
 			Mod2_MA.alphabet[i] = tempAlphabet.get(i);
 		}
 		
 		// map each letter in alphabet to an index
-		Mod2_MA.letterToIndex = new HashMap<Character, Integer>();
+		Mod2_MA.letterToIndex = new HashMap<String, Integer>();
 		for (int i=0; i<Mod2_MA.alphabet.length; i++) {
 			Mod2_MA.letterToIndex.put(Mod2_MA.alphabet[i], i);
 		}
@@ -169,11 +169,8 @@ public class SUBA {
 			int p_start = Integer.parseInt(st.nextToken());
 			
 			String letter = st.nextToken();
-			if (letter.length() != 1) {
-				Mod2_MA.throwException(f,"Invalid input: invalid transition.");
-			}
 			
-			int a = Mod2_MA.letterToIndex.get(letter.charAt(0));
+			int a = Mod2_MA.letterToIndex.get(letter);
 			int p_end = Integer.parseInt(st.nextToken());
 			if (p_start < 1 || p_start > SUBAStates || p_end < 1 || p_end > SUBAStates) {
 				Mod2_MA.throwException(f, "Invalid input: invalid transition.");
@@ -208,7 +205,7 @@ public class SUBA {
 		// final states for the UFA of the form (q,q,1), where q∈SUBAStates
 		UFAFinalStates = new boolean[UFAStates+1];
 		for (int q=1; q<=SUBAStates; q++) {
-			UFATransitions[q][Mod2_MA.letterToIndex.get('$')][getIndex(q, q, 0)] = true;
+			UFATransitions[q][Mod2_MA.letterToIndex.get("$")][getIndex(q, q, 0)] = true;
 			UFAFinalStates[getIndex(q, q, 1)] = true;
 		}
 		
@@ -256,19 +253,20 @@ public class SUBA {
 		
 		// read u
 		if (u.length() != 0) {
+			String[] uArr = u.split(" ");
 			// look at the first character of u
-			char c = u.charAt(0);
+			String c = uArr[0];
 			
 			// check all possible states reachable from (curState, c)
 			for (int i=0; i<SUBATransitions[curState][Mod2_MA.letterToIndex.get(c)].size(); i++) {
 				int newState = SUBATransitions[curState][Mod2_MA.letterToIndex.get(c)].get(i);
 				
-				if (u.length() == 1) {
+				if (uArr.length == 1) {
 					// ready to read v
 					if (MQ_SUBA("", v, newState, false, newState)) {
 						return true;
 					}
-				} else if (MQ_SUBA(u.substring(1), v, newState, false, q_u)) {
+				} else if (MQ_SUBA(u.substring(Math.min(c.length()+1, u.length())), v, newState, false, q_u)) {
 					// more left to read in u
 					return true;
 				}
@@ -293,13 +291,15 @@ public class SUBA {
 				passedFinal = true;
 			}
 			
+			String[] vArr = v.split(" ");
+			
 			// look at the first character of v
-			char c = v.charAt(0);
+			String c = vArr[0];
 			
 			// check all possible states reachable from (curState, c)
 			for (int i=0; i<SUBATransitions[curState][Mod2_MA.letterToIndex.get(c)].size(); i++) {
 				int newState = SUBATransitions[curState][Mod2_MA.letterToIndex.get(c)].get(i);
-				if (MQ_SUBA("", v.substring(1), newState, passedFinal, q_u)) {
+				if (MQ_SUBA("", v.substring(Math.min(c.length() + 1, v.length())), newState, passedFinal, q_u)) {
 					return true;
 				}
 			}
@@ -311,7 +311,10 @@ public class SUBA {
 		String test = "";
 		
 		// cannot include $
-		for (int i=0; i<len; i++) {
+		for (int i=0; i<len-1; i++) {
+			test += Mod2_MA.alphabet[(int) (Math.random() * (Mod2_MA.alphabet.length - 1))] + " ";
+		}
+		if (len >= 1) {
 			test += Mod2_MA.alphabet[(int) (Math.random() * (Mod2_MA.alphabet.length - 1))];
 		}
 		return test;
@@ -328,7 +331,7 @@ public class SUBA {
 			boolean SUBA_accepts = MQ_SUBA(u, v, 1, false, 1);
 			
 			// mod-2-MA: words of the form u$v
-			int mod2_MA_accepts = Mod2_MA.MQArbitrary(Mod2_MA.resultFinalVector, Mod2_MA.resultTransitionMatrices, u + '$' + v);
+			int mod2_MA_accepts = Mod2_MA.MQArbitrary(Mod2_MA.resultFinalVector, Mod2_MA.resultTransitionMatrices, Mod2_MA.addStrings(Mod2_MA.addStrings(u, "$"), v));
 			
 			if ((SUBA_accepts && mod2_MA_accepts == 0) || (!SUBA_accepts && mod2_MA_accepts == 1)) {
 				System.out.println("u: " + u);
