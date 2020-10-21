@@ -1,0 +1,29 @@
+// maximum length of a test in the statistical equivalence query
+6
+// number of tests the statistical equivalence query will check
+1000000
+// limit on the number of equivalence queries to run
+100
+// number of states
+6
+// alphabet
+123a&@ b c@041 d
+// final states
+1 2 3 4
+// number of transitions
+14
+// transitions
+6 123a&@ 4
+1 123a&@ 5
+5 d 4
+1 c@041 4
+5 123a&@ 1
+4 123a&@ 2
+2 d 6
+1 123a&@ 5
+2 d 3
+4 c@041 6
+4 c@041 3
+6 b 1
+3 c@041 5
+2 123a&@ 2

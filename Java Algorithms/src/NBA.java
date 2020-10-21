@@ -122,9 +122,6 @@ public class NBA {
 			int p_start = Integer.parseInt(st.nextToken());
 			
 			String letter = st.nextToken();
-			if (letter.length() != 1) {
-				Mod2_MA.throwException(f, "Invalid input: invalid transition.");
-			}
 			
 			int a = Mod2_MA.letterToIndex.get(letter);
 			int p_end = Integer.parseInt(st.nextToken());

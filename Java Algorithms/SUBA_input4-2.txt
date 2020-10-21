@@ -1,0 +1,19 @@
+// SUBA for the language ((a82)^* (a82)^5 29c$2%)^w
+// variant of SUBA_input3.txt
+// learned MOD-2-MA has dimension = 44
+// number of states
+6
+// alphabet
+a82 29c$2%
+// final states
+6
+// number of transitions
+7
+// transitions
+1 a82 1
+1 a82 2
+2 a82 3
+3 a82 4
+4 a82 5
+5 a82 6
+6 29c$2% 1
