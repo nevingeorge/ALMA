@@ -1201,46 +1201,29 @@ public class Mod2_MA {
 	
 	// performs operations on the learned mod-2-MA
 	public static void operationsOnLearnedMA() {
-		System.out.println("Available operations for the learned Mod-2-MA (enter \"quit\" to terminate):");
-		System.out.println("- Test whether a word is accepted: \"-a <word>\"\n  If the language is (L)_$, words must be of the form u$v.");
+		System.out.println("Input a word to test if it is accepted.");
+		System.out.println("Words are space-separated strings of letters (e.g. for the alphabet {a, b0}, a word is \"a b0 b0\").");
+		System.out.println("If the language is (L)_$, words must be of the form u$v.");
+		System.out.println("Enter \"quit\" to terminate.");
 		
 		while (true) {
 			// read in cmd
-			String line = in.nextLine();
+			String test = in.nextLine().trim();
 			
 			// terminate the program
-			if (line.equals("quit")) {
+			if (test.equals("quit")) {
 				in.close();
 				break;
 			}
 			
-			String[] input = line.split(" ");
-			if (input.length == 0) {
-				System.out.println("Invalid cmd");
-			}
-			
 			// test whether a word is accepted
-			if (input[0].equals("-a")) {
-				if (input.length>2) {
-					System.out.println("Invalid cmd");
-				}
-				else {
-					// if no word is passed, the test is the empty string
-					String test = "";
-					if (input.length==2) {
-						test = input[1];
-					}
-					
-					if (!inAlphabet(test)) {
-						System.out.println("Inputted word is not in the language.");
-					} else if(MQArbitrary(resultFinalVector, resultTransitionMatrices, test) == 1) {
-						System.out.println("Accepted");
-					} else {
-						System.out.println("Not accepted");
-					}
-				}
+			// if no word is passed, the test is the empty string		
+			if (!inAlphabet(test)) {
+				System.out.println("Inputted word is not in the language.");
+			} else if(MQArbitrary(resultFinalVector, resultTransitionMatrices, test) == 1) {
+				System.out.println("Accepted");
 			} else {
-				System.out.println("Invalid cmd");
+				System.out.println("Not accepted");
 			}
 		}
 	}
@@ -1248,7 +1231,7 @@ public class Mod2_MA {
 	public static boolean inAlphabet(String word) {
 		String[] wordArr = word.split(" ");
 		if (word.length() == 0) {
-			wordArr = new String[0];
+			return true;
 		}
 		for (int i=0; i<wordArr.length; i++) {
 			if (letterToIndex.get(wordArr[i]) == null) {
