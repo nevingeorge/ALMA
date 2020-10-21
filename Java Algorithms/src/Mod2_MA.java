@@ -1164,13 +1164,18 @@ public class Mod2_MA {
 		System.out.println();
 	}
 
-	public static String genTest(int len) {
+	public static String genTest(int len, boolean smallerAlphabet) {
+		int length = alphabet.length;
+		if (smallerAlphabet) {
+			length--;
+		}
+		
 		String test = "";
 		for (int i=0; i<len-1; i++) {
-			test += alphabet[(int) (Math.random() * alphabet.length)] + " ";
+			test += alphabet[(int) (Math.random() * length)] + " ";
 		}
 		if (len >= 1) {
-			test +=  alphabet[(int) (Math.random() * alphabet.length)];
+			test +=  alphabet[(int) (Math.random() * length)];
 		}
 		return test;
 	}
@@ -1178,7 +1183,7 @@ public class Mod2_MA {
 	// performs a statistical EQ between the target and learned mod-2-MA
 	public static boolean finalCheck(int maxTestLen, int numTests) throws Exception {
 		for (int i=1; i<=numTests; i++) {
-			String test = genTest((int) (Math.random() * (maxTestLen + 1)));
+			String test = genTest((int) (Math.random() * (maxTestLen + 1)), false);
 			
 			if (MQArbitrary(inputFinalVector, inputTransitionMatrices, test) != MQArbitrary(resultFinalVector, resultTransitionMatrices, test)) {
 				return false;

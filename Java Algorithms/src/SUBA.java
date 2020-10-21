@@ -307,27 +307,14 @@ public class SUBA {
 		}
 	}
 	
-	public static String genTest(int len) {		
-		String test = "";
-		
-		// cannot include $
-		for (int i=0; i<len-1; i++) {
-			test += Mod2_MA.alphabet[(int) (Math.random() * (Mod2_MA.alphabet.length - 1))] + " ";
-		}
-		if (len >= 1) {
-			test += Mod2_MA.alphabet[(int) (Math.random() * (Mod2_MA.alphabet.length - 1))];
-		}
-		return test;
-	}
-	
 	// performs a statistical EQ between the input SUBA and learned mod-2-MA
 	public static boolean finalCheck(int maxTestLen, int numTests) {		
 		for (int i=1; i<=numTests; i++) {
 			// SUBA: ultimately periodic words of the form u(v)^w
 			int lenU = (int) (Math.random() * (maxTestLen + 1));
 			int lenV = (int) (Math.random() * (maxTestLen - lenU + 1));
-			String u = genTest(lenU);
-			String v = genTest(lenV);
+			String u = Mod2_MA.genTest(lenU, true);
+			String v = Mod2_MA.genTest(lenV, true);
 			boolean SUBA_accepts = MQ_SUBA(u, v, 1, false, 1);
 			
 			// mod-2-MA: words of the form u$v

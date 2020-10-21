@@ -102,15 +102,7 @@ public class arbitrary {
 	public static boolean EQstatistical(double[] hypothesisFinalVector, double[][][] hypothesisTransitionMatrices) throws Exception {
 		int numFail = 0;
 		for (int i=0; i<EQNumTests; i++) {
-			int len = (int) (Math.random() * (EQMaxTestLen + 1));
-			
-			String test = "";
-			for (int j=0; j<len-1; j++) {
-				test += Mod2_MA.alphabet[(int) (Math.random() * Mod2_MA.alphabet.length)] + " ";
-			}
-			if (len >= 1) {
-				test += Mod2_MA.alphabet[(int) (Math.random() * Mod2_MA.alphabet.length)];
-			}
+			String test = Mod2_MA.genTest((int) (Math.random() * (EQMaxTestLen + 1)), false);
 			
 			if (Mod2_MA.MQ(test) != Mod2_MA.MQArbitrary(hypothesisFinalVector, hypothesisTransitionMatrices, test)) {
 				// found a counter-example

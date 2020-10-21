@@ -92,22 +92,11 @@ public class minimize {
 			System.out.println();
 		}
 	}
-	
-	public static String genTest(int len) {
-		String test = "";
-		for (int i=0; i<len-1; i++) {
-			test += Mod2_MA.alphabet[(int) (Math.random() * Mod2_MA.alphabet.length)] + " ";
-		}
-		if (len >= 1) {
-			test += Mod2_MA.alphabet[(int) (Math.random() * Mod2_MA.alphabet.length)];
-		}
-		return test;
-	}
 
 	// performs a statistical EQ between the target and learned mod-2-MA
 	public static boolean finalCheck(int maxTestLen, int numTests) throws Exception {
 		for (int i=1; i<=numTests; i++) {
-			String test = genTest((int) (Math.random() * (maxTestLen + 1)));
+			String test = Mod2_MA.genTest((int) (Math.random() * (maxTestLen + 1)), false);
 			
 			if (Mod2_MA.MQArbitrary(Mod2_MA.inputFinalVector, Mod2_MA.inputTransitionMatrices, test) != Mod2_MA.MQArbitrary(Mod2_MA.minFinalVector, Mod2_MA.minTransitionMatrices, test)) {
 				return false;
