@@ -182,8 +182,8 @@ public class Mod2_MA {
 	
 	public static String readFile(BufferedReader f) throws IOException {
 		String line = f.readLine();
-		// ignore lines beginning with "//"
-		while (line != null && line.charAt(0) == '/' && line.charAt(1) == '/') {
+		// ignore empty lines and lines beginning with "//"
+		while (line != null && (line.equals("") || (line.charAt(0) == '/' && line.charAt(1) == '/' ))) {
 			line = f.readLine();
 		}
 		return line;
