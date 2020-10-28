@@ -38,6 +38,8 @@ public class Mod2_MA {
 	public static boolean observationTableFlag;
 	// if true, displays information on the progress of the minimization algorithm
 	public static boolean minProgressFlag;
+	// if true, only displays the minimized dimension and terminates
+	public static boolean displayMinDimensionFlag;
 	
 	public static String[] alphabet;
 	// maps each letter in the alphabet to an index
@@ -103,7 +105,7 @@ public class Mod2_MA {
 	
 	public static void readInput() throws Exception {	
 		if (inMinimize) {
-			System.out.println("Input file name and optional flags -vm (e.g. Mod2_MA_input1.txt, Mod2_MA_input1.txt -m)");;
+			System.out.println("Input file name and optional flags -m (e.g. Mod2_MA_input1.txt, Mod2_MA_input1.txt -m)");;
 		} else {
 			System.out.println("Input file name and optional flags -vm (e.g. Mod2_MA_input1.txt -v, Mod2_MA_input1.txt -m, Mod2_MA_input1.txt -vm)");;
 		}
@@ -225,17 +227,30 @@ public class Mod2_MA {
 				}
 				System.out.println();
 			}
-			System.out.println("Minimization in progress:");
+			System.out.println("Minimization in progress...");
 			System.out.println("-------------------------");
+		} else if (displayMinDimensionFlag) {
+			System.out.println("Minimization in progress...");
 		}
 		
 		ArrayList<String> stateSpaceBasisIndices = new ArrayList<String>();
 		HashMap<String, double[]> stateSpaceIndexToVector = new HashMap<String, double[]>();
 		RealMatrix stateSpaceBasis = sparseBasis(inputFinalVector, inputTransitionMatrices, stateSpaceIndexToVector, stateSpaceBasisIndices, true);
 		
+		if (minProgressFlag || displayMinDimensionFlag) {
+			System.out.println("Created the state space.");
+		}
+		
 		ArrayList<String> coStateSpaceBasisIndices = new ArrayList<String>();
 		HashMap<String, double[]> coStateSpaceIndexToVector = new HashMap<String, double[]>();
 		RealMatrix coStateSpaceBasis = sparseBasis(inputFinalVector, inputTransitionMatrices, coStateSpaceIndexToVector, coStateSpaceBasisIndices, false);
+		
+		if (minProgressFlag || displayMinDimensionFlag) {
+			System.out.println("Created the co-state space.");
+			if (minProgressFlag) {
+				System.out.println();
+			}
+		}
 		
 		// (state space x co-state space) observation table
 		RealMatrix observationTable = MatrixUtils.createRealMatrix(stateSpaceBasis.getRowDimension(), coStateSpaceBasis.getRowDimension());
@@ -248,8 +263,12 @@ public class Mod2_MA {
 			tableStr += "\n";
 		}
 		
+		if (displayMinDimensionFlag) {
+			System.out.println("Created the observation table.");
+		}
+		
 		if (minProgressFlag) {
-			System.out.println("Original observation table:" );
+			System.out.println("Observation table:" );
 			System.out.println("Dimension: " + stateSpaceBasis.getRowDimension() + " x " + coStateSpaceBasis.getRowDimension());
 			
 			String indices = "";
@@ -278,6 +297,15 @@ public class Mod2_MA {
 		// obtain the smallest set of linearly independent rows and columns from observationTable
 		minRowIndices = new ArrayList<String>();
 		RealMatrix linIndRowsObservationTable = sparseLinIndSubMatrix(observationTable, stateSpaceBasisIndices, minRowIndices, true);
+		
+		if (displayMinDimensionFlag) {
+			System.out.println("Minimized dimension: " + linIndRowsObservationTable.getRowDimension());
+			if (in != null) {
+				in.close();
+			}
+			System.exit(0);
+		}
+		
 		minColIndices = new ArrayList<String>();
 		RealMatrix minObservationTable = sparseLinIndSubMatrix(linIndRowsObservationTable, coStateSpaceBasisIndices, minColIndices, false);
 		

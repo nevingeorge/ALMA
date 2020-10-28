@@ -66,7 +66,7 @@ public class SUBA {
 	@SuppressWarnings("unchecked")
 	public static void SUBAtoUFA() throws Exception {	
 		if (Mod2_MA.inMinimize) {
-			System.out.println("Input file name and optional flag -v (e.g. SUBA_input1.txt, SUBA_input1.txt -m)");
+			System.out.println("Input file name and optional flag -m or -d (e.g. SUBA_input1.txt, SUBA_input1.txt -d)");
 		} else {
 			System.out.println("Input file name and optional flag -vm (e.g. SUBA_input1.txt -v, SUBA_input1.txt -m, SUBA_input1.txt -vm)");
 		}
@@ -85,9 +85,11 @@ public class SUBA {
 				Mod2_MA.observationTableFlag = true;
 			} else if (arrInput[1].equals("-m")) {
 				Mod2_MA.minProgressFlag = true;
-			} else if(arrInput[1].equals("-vm") || arrInput[1].equals("-mv")) {
+			} else if (arrInput[1].equals("-vm") || arrInput[1].equals("-mv")) {
 				Mod2_MA.observationTableFlag = true;
 				Mod2_MA.minProgressFlag = true;
+			} else if (arrInput[1].equals("-d")) {
+				Mod2_MA.displayMinDimensionFlag = true;
 			} else {
 				Mod2_MA.throwException(null, "Invalid input: invalid flag");
 			}
