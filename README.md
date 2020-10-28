@@ -1,5 +1,5 @@
 # Learning Automata
-To run the programs, in Terminal/Command Prompt change your current directory to the Java Algorithms folder and input the command "java -jar" followed by "Mod2_MA.jar", "SUBA.jar", "NBA.jar", "arbitrary.jar", or "minimize.jar". The program will then ask for the input file name and optional flag -v. Make sure the desired input file is in the same folder as the jar file.
+To run the programs, in Terminal/Command Prompt change your current directory to the Java Algorithms folder and input the command "java -jar" followed by "Mod2_MA.jar", "SUBA.jar", "NBA.jar", "arbitrary.jar", or "minimize.jar". The program will then ask for the input file name and optional flags. Make sure the desired input file is in the same folder as the jar file.
 
 Optional flags:\
 -v - display more verbose information regarding the procedures and outputs of the algorithms\
