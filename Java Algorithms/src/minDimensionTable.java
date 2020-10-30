@@ -6,6 +6,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 import org.apache.commons.math3.linear.MatrixUtils;
@@ -22,6 +23,8 @@ public class minDimensionTable {
 		System.out.println("SUBA Dimension, Minimized Dimension");
 		
 		int numSUBA = Integer.parseInt(Mod2_MA.readFile(f));
+		// int[0] = sum, int[1] = count
+		HashMap<Integer, int[]> totalDimensions = new HashMap<Integer, int[]>();
 		
 		for (int i = 0; i < numSUBA; i++) {
 			readInput(f);
@@ -29,6 +32,28 @@ public class minDimensionTable {
 			int minimizedDimension = minimization();
 			out.println(SUBA.SUBAStates + " " + minimizedDimension);
 			System.out.println(SUBA.SUBAStates + " " + minimizedDimension);
+			
+			if (totalDimensions.get(SUBA.SUBAStates) == null) {
+				int[] results = new int[2];
+				results[0] = minimizedDimension;
+				results[1] = 1;
+				totalDimensions.put(SUBA.SUBAStates, results);
+			} else {
+				totalDimensions.get(SUBA.SUBAStates)[0] += minimizedDimension;
+				totalDimensions.get(SUBA.SUBAStates)[1] += 1;
+			}
+		}
+		
+		out.println("\nAggregate Results");
+		out.println("SUBA States, Total Minimized Dimension, Number of Minimized Automata, Average Minimized Dimension");
+		System.out.println("\nAggregate Results");
+		System.out.println("SUBA States, Total Minimized Dimension, Number of Minimized Automata, Average Minimized Dimension");
+		Set<Integer> keySet = totalDimensions.keySet();
+		
+		for (int subaStates : keySet) {
+			int[] results = totalDimensions.get(subaStates);
+			out.println(subaStates + " " + results[0] + " " + results[1] + " " + ((double) results[0])/results[1]);
+			System.out.println(subaStates + " " + results[0] + " " + results[1] + " " + ((double) results[0])/results[1]);
 		}
 		
 		out.close();
