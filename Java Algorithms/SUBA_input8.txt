@@ -1,0 +1,49 @@
+// number of states
+15
+// alphabet
+a b c 
+// final states
+3 7 
+// number of transitions
+40
+// transitions
+8 a 1
+15 b 1
+9 c 1
+15 a 9
+9 b 9
+12 c 9
+6 a 2
+8 b 2
+6 c 2
+13 a 10
+1 b 10
+15 c 10
+13 b 3
+5 c 3
+11 a 11
+10 b 11
+12 c 11
+2 a 4
+4 b 4
+15 c 4
+2 a 12
+12 c 12
+2 a 5
+1 b 5
+11 a 13
+11 b 13
+14 c 13
+11 a 6
+6 b 6
+15 a 14
+1 b 14
+15 c 14
+3 a 7
+14 b 7
+12 c 7
+6 a 15
+10 b 15
+7 c 15
+4 a 8
+12 c 8
