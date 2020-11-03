@@ -47,13 +47,13 @@ public class Mod2_MA {
 	
 	// input mod-2-MA
 	public static int inputSize;
-	public static double[] inputFinalVector;
-	public static double[][][] inputTransitionMatrices;
+	public static HashMap<Integer, ArrayList<Integer>> inputFinalVector;
+	public static HashMap<Integer, ArrayList<Integer>>[] inputTransitionMatrices;
 	public static HashMap<String, Integer> Hankel;
 	
 	// minimized mod-2-MA
-	public static double[] minFinalVector;
-	public static double[][][] minTransitionMatrices;
+	public static HashMap<Integer, ArrayList<Integer>> minFinalVector;
+	public static HashMap<Integer, ArrayList<Integer>>[] minTransitionMatrices;
 	public static int minSize;
 	// row and column indices of the minimized mod-2-MA's observation table
 	public static ArrayList<String> minRowIndices;
@@ -67,8 +67,8 @@ public class Mod2_MA {
 	public static String counterExample;
 
 	// learned mod-2-MA
-	public static double[] resultFinalVector;
-	public static double[][][] resultTransitionMatrices;
+	public static HashMap<Integer, ArrayList<Integer>> resultFinalVector;
+	public static HashMap<Integer, ArrayList<Integer>>[] resultTransitionMatrices;
 	
 	// used in EQ to avoid testing the same word
 	public static boolean[][] tested;
@@ -103,6 +103,7 @@ public class Mod2_MA {
 		operationsOnLearnedMA();
 	}
 	
+	@SuppressWarnings("unchecked")
 	public static void readInput() throws Exception {	
 		if (inMinimize) {
 			System.out.println("Input file name and optional flags -m (e.g. Mod2_MA_input1.txt, Mod2_MA_input1.txt -m)");;
@@ -153,25 +154,34 @@ public class Mod2_MA {
 		inputSize = Integer.parseInt(readFile(f));
 		
 		st = new StringTokenizer(readFile(f));
-		inputFinalVector = new double[inputSize];
-		for (int i=0; i<inputSize; i++) {
-			inputFinalVector[i] = Integer.parseInt(st.nextToken());
+		
+		inputFinalVector = initialize(1, inputSize);
+		for (int i=1; i<=inputSize; i++) {
+			if (Integer.parseInt(st.nextToken()) == 1) {
+				addElement(inputFinalVector, 1, i);
+			}
 		}
 		if (st.hasMoreTokens()) {
 			throwException(f, "Invalid input: final vector length exceeds the specified size.");
 		}
 		
-		inputTransitionMatrices = new double[alphabet.length][inputSize][inputSize];
+		inputTransitionMatrices = new HashMap[alphabet.length];
 		for (int i=0; i<alphabet.length; i++) {
-			for (int j=0; j<inputSize; j++) {
+			HashMap<Integer, ArrayList<Integer>> transitionMatrix = initialize(inputSize, inputSize);
+			
+			for (int j=1; j<=inputSize; j++) {
 				st = new StringTokenizer(readFile(f));
-				for (int k=0; k<inputSize; k++) {
-					inputTransitionMatrices[i][j][k] = Integer.parseInt(st.nextToken());
+				for (int k=1; k<=inputSize; k++) {
+					if (Integer.parseInt(st.nextToken()) == 1) {
+						addElement(transitionMatrix, j, k);
+					}
 				}
 				if (st.hasMoreTokens()) {
 					throwException(f, "Invalid input: transition matrix size exceeds the specified size.");
 				}
 			}
+			
+			inputTransitionMatrices[i] = transitionMatrix;
 		}
 		if (readFile(f) != null) {
 			throwException(f, "Invalid input: transition matrix size exceeds the specified size.");
@@ -415,11 +425,6 @@ public class Mod2_MA {
 			System.out.println("Minimization completed.\n");
 		}
 	}
-	
-	/*
-	 * The minimization algorithm can be run with or without using sparse matrices for the linear algebra.
-	 * The algorithms below are the sparse versions.
-	 */
 	
 	// follows algorithm 1 detailed in Thon and Jaeger to form the basis for the state/co-state space
 	public static RealMatrix basis(double[] hypothesisFinalVector, double[][][] hypothesisTransitionMatrices, HashMap<String, double[]> indexToVector, ArrayList<String> indices, boolean stateSpace) {
@@ -693,8 +698,8 @@ public class Mod2_MA {
 		 * The algorithm instead begins with a 2x2 matrix of full rank.
 		 */
 		if (MQ("") == 0) {
-			double[] hypothesisFinalVector = createHypothesisFinalVector();
-			double[][][] hypothesisTransitionMatrices = createHypothesisTransitionMatrices();
+			HashMap<Integer, ArrayList<Integer>> hypothesisFinalVector = createHypothesisFinalVector();
+			HashMap<Integer, ArrayList<Integer>>[] hypothesisTransitionMatrices = createHypothesisTransitionMatrices();
 			
 			if (!EQ(hypothesisFinalVector, hypothesisTransitionMatrices)) {
 				learnedSize++;
@@ -712,8 +717,8 @@ public class Mod2_MA {
 	}
 	
 	public static void learnMain() throws Exception {
-		double[] hypothesisFinalVector = createHypothesisFinalVector();
-		double[][][] hypothesisTransitionMatrices = createHypothesisTransitionMatrices();
+		HashMap<Integer, ArrayList<Integer>> hypothesisFinalVector = createHypothesisFinalVector();
+		HashMap<Integer, ArrayList<Integer>>[] hypothesisTransitionMatrices = createHypothesisTransitionMatrices();
 		
 		if (EQ(hypothesisFinalVector, hypothesisTransitionMatrices)) {
 			resultFinalVector = hypothesisFinalVector;
@@ -726,21 +731,24 @@ public class Mod2_MA {
 		learnMain();
 	}
 	
-	public static double[] createHypothesisFinalVector() throws Exception {
-		double[] hypothesisFinalVector = new double[learnedSize];
+	public static HashMap<Integer, ArrayList<Integer>> createHypothesisFinalVector() throws Exception {
+		HashMap<Integer, ArrayList<Integer>> hypothesisFinalVector = initialize(1, learnedSize);
 		for (int i=0; i<learnedSize; i++) {
-			hypothesisFinalVector[i] = MQ(learnedRowIndices.get(i));
+			if (MQ(learnedRowIndices.get(i)) == 1) {
+				addElement(hypothesisFinalVector, 1, i+1);
+			}
 		}
 		return hypothesisFinalVector;
 	}
 	
-	public static double[][][] createHypothesisTransitionMatrices() throws Exception {
+	@SuppressWarnings("unchecked")
+	public static HashMap<Integer, ArrayList<Integer>>[] createHypothesisTransitionMatrices() throws Exception {
 		/*
 		 * For every letter in alphabet, define a transition matrix by letting its i-th row be the coefficients 
 		 * of the vector F_{xi+letter}(y) when expressed as a linear combination of the row vectors of F (such 
 		 * coefficients exist as the row vectors are linearly independent).
 		 */
-		double[][][] hypothesisTransitionMatrices = new double[alphabet.length][learnedSize][learnedSize];
+		HashMap<Integer, ArrayList<Integer>>[] hypothesisTransitionMatrices = new HashMap[alphabet.length];
 		for (int c=0; c<alphabet.length; c++) {
 			String letter = alphabet[c];
 			
@@ -793,7 +801,7 @@ public class Mod2_MA {
 				throwException(null, "Invalid input: invalid membership query function.");
 			} 
 		} else {
-			RealMatrix current = MatrixUtils.createRealIdentityMatrix(minSize);
+			HashMap<Integer, ArrayList<Integer>> current = identity(minSize);
 			
 			String[] wordArr = word.split(" ");
 			if (word.length() == 0) {
@@ -801,19 +809,10 @@ public class Mod2_MA {
 			}
 			
 			for (int i=0; i<wordArr.length; i++) {
-				current = current.multiply(MatrixUtils.createRealMatrix(minTransitionMatrices[letterToIndex.get(wordArr[i])]));
-				
-				// account for rounding issues with larger words
-				if (i != 0 && i%25 == 0) {
-					for (int j=0; j<minSize; j++) {
-						for (int k=0; k<minSize; k++) {
-							current.setEntry(j, k, mod2(current.getEntry(j, k)));
-						}
-					}
-				}
+				current = multiply(current, minTransitionMatrices[letterToIndex.get(wordArr[i])]);
 			}
 			
-			out = mod2(current.getRowVector(0).dotProduct(new ArrayRealVector(minFinalVector)));
+			out = dotProduct(current.get(1), minFinalVector.get(1));
 		}
 		
 		Hankel.put(word, out);
@@ -822,8 +821,8 @@ public class Mod2_MA {
 	}
 	
 	// MQ for any given final vector and set of transition matrices
-	public static int MQArbitrary(double[] finalVector, double[][][] transitionMatrices, String word) {	
-		RealMatrix current = MatrixUtils.createRealIdentityMatrix(finalVector.length);
+	public static int MQArbitrary(HashMap<Integer, ArrayList<Integer>> finalVector, HashMap<Integer, ArrayList<Integer>>[] transitionMatrices, String word) throws Exception {	
+		HashMap<Integer, ArrayList<Integer>> current = identity(finalVector.get(0).get(1));
 		
 		String[] wordArr = word.split(" ");
 		if (word.length() == 0) {
@@ -831,22 +830,13 @@ public class Mod2_MA {
 		}
 		
 		for (int i=0; i<wordArr.length; i++) {
-			current = current.multiply(MatrixUtils.createRealMatrix(transitionMatrices[letterToIndex.get(wordArr[i])]));
-			
-			// account for rounding issues with larger words
-			if (i != 0 && i%25 == 0) {
-				for (int j=0; j<finalVector.length; j++) {
-					for (int k=0; k<finalVector.length; k++) {
-						current.setEntry(j, k, mod2(current.getEntry(j, k)));
-					}
-				}
-			}
+			current = multiply(current, transitionMatrices[letterToIndex.get(wordArr[i])]);
 		}
 		
-		return mod2(current.getRowVector(0).dotProduct(new ArrayRealVector(finalVector)));
+		return dotProduct(current.get(1), finalVector.get(1));
 	}
 	
-	public static boolean EQ(double[] hypothesisFinalVector, double[][][] hypothesisTransitionMatrices) throws Exception {
+	public static boolean EQ(HashMap<Integer, ArrayList<Integer>> hypothesisFinalVector, HashMap<Integer, ArrayList<Integer>>[] hypothesisTransitionMatrices) throws Exception {
 		// NBA.java and arbitrary.java use statistical EQ's
 		if (NBA.NBAFinalStates!=null || arbitrary.MQMethod!=null) {
 			return arbitrary.EQstatistical(hypothesisFinalVector, hypothesisTransitionMatrices);
@@ -913,7 +903,7 @@ public class Mod2_MA {
 		return true;
 	}
 	
-	public static void growObservationTable(double[][][] hypothesisTransitionMatrices) throws Exception {
+	public static void growObservationTable(HashMap<Integer, ArrayList<Integer>>[] hypothesisTransitionMatrices) throws Exception {
 		// prefix of the counter-example = ω + σ
 		String w = "";
 		String sigma = "";
@@ -938,16 +928,16 @@ public class Mod2_MA {
 			}
 			sigma = counterExampleArr[i];
 			
-			RealMatrix transitionMatrix_w = MatrixUtils.createRealIdentityMatrix(learnedSize);
+			HashMap<Integer, ArrayList<Integer>> transitionMatrix_w = identity(learnedSize);
 			for (int n=0; n<i; n++) {
-				transitionMatrix_w = transitionMatrix_w.multiply(MatrixUtils.createRealMatrix(hypothesisTransitionMatrices[letterToIndex.get(counterExampleArr[n])]));
+				transitionMatrix_w = multiply(transitionMatrix_w, hypothesisTransitionMatrices[letterToIndex.get(counterExampleArr[n])]);
 			}
 			
 			// if F is the Hankel matrix, check if F_ω = sum(μ(ω)_1,i * F_xi)
 			for (int j=0; j<learnedSize; j++) {
 				int sum = 0;
 				for (int k=0; k<learnedSize; k++) {
-					sum = mod2(sum + transitionMatrix_w.getEntry(0, k) * MQ(addStrings(learnedRowIndices.get(k), learnedColIndices.get(j))));
+					sum = mod2(sum + getEntry(transitionMatrix_w, 1, k+1) * MQ(addStrings(learnedRowIndices.get(k), learnedColIndices.get(j))));
 				}
 				if (MQ(addStrings(w, learnedColIndices.get(j))) != sum) {
 					break;
@@ -961,7 +951,7 @@ public class Mod2_MA {
 			
 				int sum = 0;
 				for (int k=0; k<learnedSize; k++) {
-					sum = mod2(sum + transitionMatrix_w.getEntry(0, k) * MQ(addStrings(addStrings(learnedRowIndices.get(k), sigma), y)));
+					sum = mod2(sum + getEntry(transitionMatrix_w, 1, k+1) * MQ(addStrings(addStrings(learnedRowIndices.get(k), sigma), y)));
 				}
 				
 				// found a solution
@@ -993,22 +983,13 @@ public class Mod2_MA {
 		System.out.println("Dimension: " + learnedSize + '\n');
 		
 		System.out.print("Final Vector: ");
-		String s = "";
-		for (int i=0; i<resultFinalVector.length; i++) {
-			s += mod2(resultFinalVector[i]) + " ";
-		}
-		System.out.println(s + "\n");
+		displayMatrix(resultFinalVector);
+		System.out.println();
 		
 		System.out.println("Transition Matrices:\n");
 		for (int i=0; i<resultTransitionMatrices.length; i++) {
 			System.out.println("Letter " + alphabet[i]);
-			for (int j=0; j<resultTransitionMatrices[i].length; j++) {
-				s = "";
-				for (int k=0; k<resultTransitionMatrices[i].length; k++) {
-					s += mod2(resultTransitionMatrices[i][j][k]) + " ";
-				}
-				System.out.println(s);
-			}
+			displayMatrix(resultTransitionMatrices[i]);
 			System.out.println();
 		}
 	}
@@ -1072,7 +1053,7 @@ public class Mod2_MA {
 	}
 	
 	// performs operations on the learned mod-2-MA
-	public static void operationsOnLearnedMA() {
+	public static void operationsOnLearnedMA() throws Exception {
 		System.out.println("Input a word to test if it is accepted.");
 		System.out.println("Words are space-separated strings of letters (e.g. for the alphabet {a, b0}, a word is \"a b0 b0\").");
 		System.out.println("If the language is (L)_$, words must be of the form u$v.");
@@ -1149,6 +1130,15 @@ public class Mod2_MA {
 	
 	/* Sparse matrix operations. */
 	
+	public static HashMap<Integer, ArrayList<Integer>> initialize(int numRows, int numCols) {
+		HashMap<Integer, ArrayList<Integer>> arr = new HashMap<Integer, ArrayList<Integer>>();
+		ArrayList<Integer> dim = new ArrayList<Integer>();
+		dim.add(numRows);
+		dim.add(numCols);
+		arr.put(0, dim);
+		return arr;
+	}
+	
 	// multiplies a sparse mxn matrix by a sparse nxp matrix
 	public static HashMap<Integer, ArrayList<Integer>> multiply(HashMap<Integer, ArrayList<Integer>> arr1, HashMap<Integer, ArrayList<Integer>> arr2) throws Exception {
 		ArrayList<Integer> dim1 = arr1.get(0);
@@ -1157,13 +1147,7 @@ public class Mod2_MA {
 			throwException(null, "Multiplied matrices of invalid dimension.");
 		}
 		
-		HashMap<Integer, ArrayList<Integer>> result = new HashMap<Integer, ArrayList<Integer>>();
-
-		ArrayList<Integer> newDim = new ArrayList<Integer>();
-		newDim.add(arr1.get(0).get(0));
-		newDim.add(arr2.get(0).get(1));
-		result.put(0, newDim);
-		
+		HashMap<Integer, ArrayList<Integer>> result = initialize(dim1.get(0), dim2.get(1));		
 		ArrayList<Integer> colSet = null;
 		
 		int rowsTraversed = 0;
@@ -1187,14 +1171,14 @@ public class Mod2_MA {
 						if (col < 0) {
 							colsTraversed++;
 							colSet.add(col);
-							if (dotProduct(arr1.get(row), arr2.get(col))) {
+							if (dotProduct(arr1.get(row), arr2.get(col)) == 1) {
 								addElement(result, row, col);
 							}
 						}
 					}
 				} else {
 					for (int col : colSet) {
-						if (dotProduct(arr1.get(row), arr2.get(col))) {
+						if (dotProduct(arr1.get(row), arr2.get(col)) == 1) {
 							addElement(result, row, col);
 						}
 					}
@@ -1206,7 +1190,7 @@ public class Mod2_MA {
 	}
 	
 	// returns true if the dot product of two sparse vectors is 1, false otherwise
-	public static boolean dotProduct(ArrayList<Integer> v1, ArrayList<Integer> v2) {
+	public static int dotProduct(ArrayList<Integer> v1, ArrayList<Integer> v2) {
 		int count = 0;
 		
 		int pos1 = 0;
@@ -1223,11 +1207,23 @@ public class Mod2_MA {
 			}
 		}
 		
-		return (count % 2 == 1);
+		return count % 2;
+	}
+	
+	// creates the identity matrix
+	public static HashMap<Integer, ArrayList<Integer>> identity(int size) throws Exception {
+		HashMap<Integer, ArrayList<Integer>> identity = initialize(size, size);
+		for (int i=1; i<=size; i++) {
+			addElement(identity, i, i);
+		}
+		return identity;
 	}
 	
 	// adds a 1 to a sparse array at the position (row, col) (assume col is negative)
-	public static void addElement(HashMap<Integer, ArrayList<Integer>> arr, int row, int col) {
+	public static void addElement(HashMap<Integer, ArrayList<Integer>> arr, int row, int col) throws Exception {
+		if (row < 1 || row > arr.get(0).get(0) || col < 1 || col > arr.get(0).get(1)) {
+			throwException(null, "Added an invalid element to a matrix.");
+		}
 		if (arr.get(row) == null) {
 			ArrayList<Integer> newRow = new ArrayList<Integer>();
 			newRow.add(col * -1);
@@ -1243,6 +1239,23 @@ public class Mod2_MA {
 		} else {
 			arr.get(col).add(row);
 		} 
+	}
+	
+	// returns the element at position (row, col)
+	public static int getEntry(HashMap<Integer, ArrayList<Integer>> arr, int row, int col) {
+		if (arr.get(row) == null) {
+			return 0;
+		}
+		
+		for (int num : arr.get(row)) {
+			if (num == col) {
+				return 1;
+			} else if (num > col) {
+				return 0;
+			}
+		}
+		
+		return 0;
 	}
 	
 	// displays a sparse matrix
