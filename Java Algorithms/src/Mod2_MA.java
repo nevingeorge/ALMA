@@ -422,8 +422,8 @@ public class Mod2_MA {
 	 */
 	
 	// follows algorithm 1 detailed in Thon and Jaeger to form the basis for the state/co-state space
-	public static RealMatrix sparseBasis(double[] hypothesisFinalVector, double[][][] hypothesisTransitionMatrices, HashMap<String, double[]> indexToVector, ArrayList<String> indices, boolean stateSpace) {
-		ArrayList<ArrayList<Integer>> sparseBasis = new ArrayList<ArrayList<Integer>>();
+	public static RealMatrix basis(double[] hypothesisFinalVector, double[][][] hypothesisTransitionMatrices, HashMap<String, double[]> indexToVector, ArrayList<String> indices, boolean stateSpace) {
+		ArrayList<ArrayList<Integer>> basis = new ArrayList<ArrayList<Integer>>();
 		int sizeBasis = 0;
 		
 		// set with elements to try to add to the basis
@@ -520,7 +520,7 @@ public class Mod2_MA {
 	}
 	
 	// finds a maximal submatrix of linearly independent rows/columns of the observation table
-	public static RealMatrix sparseLinIndSubMatrix(RealMatrix observationTable, ArrayList<String> oldIndices, ArrayList<String> newIndices, boolean rows) {	
+	public static RealMatrix linIndSubMatrix(RealMatrix observationTable, ArrayList<String> oldIndices, ArrayList<String> newIndices, boolean rows) {	
 		if (!rows) {
 			observationTable = observationTable.transpose();
 		}
@@ -555,7 +555,7 @@ public class Mod2_MA {
 	}
 	
 	// tests whether the vector is in the span of the basis
-	public static boolean sparseLinInd(ArrayList<Integer> sparseVector, ArrayList<ArrayList<Integer>> sparseBasis, int sizeBasis, int numRows) {
+	public static boolean linInd(ArrayList<Integer> sparseVector, ArrayList<ArrayList<Integer>> sparseBasis, int sizeBasis, int numRows) {
 		if (sizeBasis == 0) {
 			return true;
 		}
@@ -675,162 +675,6 @@ public class Mod2_MA {
 		col.add(pos, insertIndex);
 		
 		return;
-	}
-	
-	/* The algorithms below are the non-sparse versions. */
-	
-	// follows algorithm 1 detailed in Thon and Jaeger to form the basis for the state/co-state space
-	public static RealMatrix basis(double[] hypothesisFinalVector, double[][][] hypothesisTransitionMatrices, HashMap<String, double[]> indexToVector, ArrayList<String> indices, boolean stateSpace) {
-		double[][] basis = new double[hypothesisFinalVector.length][hypothesisFinalVector.length];
-		int sizeBasis = 0;
-		
-		// set with elements to try to add to the basis
-		ArrayList<double[]> tests = new ArrayList<double[]>();
-		if (stateSpace) {
-			// begin with ω_i = (1,0,0,...,0)
-			double[] w_i = new double[hypothesisFinalVector.length];
-			w_i[0] = 1;
-			tests.add(w_i);
-		} else {
-			tests.add(hypothesisFinalVector);
-		}
-		int sizeTests = 1;
-		
-		// contains the corresponding string for every element in tests
-		ArrayList<String> testStrings = new ArrayList<String>();
-		testStrings.add("");
-		
-		while (sizeTests > 0) {
-			double[] test = tests.remove(0);
-			String testString = testStrings.remove(0);
-			sizeTests--;
-			
-			if (linInd(test, basis, sizeBasis)) {	
-				// extend the basis
-				basis[sizeBasis++] = test;
-				indices.add(testString);
-				indexToVector.put(testString, test);
-				
-				// add to tests the one-letter extensions of test
-				for (int i=0; i<alphabet.length; i++) {
-					RealMatrix transitionMatrix = MatrixUtils.createRealMatrix(hypothesisTransitionMatrices[i]);
-					RealVector testVector = MatrixUtils.createRealVector(test);
-					double[] newTest;
-					
-					if (stateSpace) {
-						// basis for the set span((initial vector) * (transitionMatrix_ω) : ω∈Σ*)
-						newTest = transitionMatrix.preMultiply(testVector).toArray();
-						testStrings.add(addStrings(testString, alphabet[i]));
-					} else {
-						// basis for the set span((transitionMatrix_ω) * (final vector) : ω∈Σ*)
-						newTest = transitionMatrix.operate(testVector).toArray();
-						testStrings.add(addStrings(alphabet[i], testString));
-					}
-					
-					for (int j=0; j<newTest.length; j++) {
-						newTest[j] = mod2(newTest[j]);
-					}
-					
-					tests.add(newTest);
-					sizeTests++;
-				}
-			}
-		}
-		
-		return MatrixUtils.createRealMatrix(basis).getSubMatrix(0, sizeBasis-1, 0, hypothesisFinalVector.length-1);
-	}
-	
-	// finds a maximal submatrix of linearly independent rows/columns of the observation table
-	public static RealMatrix linIndSubMatrix(RealMatrix observationTable, ArrayList<String> oldIndices, ArrayList<String> newIndices, boolean rows) {	
-		if (!rows) {
-			observationTable = observationTable.transpose();
-		}
-		
-		double[][] newObservationTable = new double[observationTable.getRowDimension()][observationTable.getColumnDimension()];
-		int sizeT = 0;
-		
-		for (int i=0; i<observationTable.getRowDimension(); i++) {
-			// extend the current subset of linearly independent rows/columns
-			if (linInd(observationTable.getRow(i), newObservationTable, sizeT)) {
-				newObservationTable[sizeT++] = observationTable.getRow(i);
-				newIndices.add(oldIndices.get(i));
-			}
-		}
-		
-		if (rows) {
-			return MatrixUtils.createRealMatrix(newObservationTable).getSubMatrix(0, sizeT-1, 0, observationTable.getColumnDimension()-1);
-		} else {
-			return MatrixUtils.createRealMatrix(newObservationTable).getSubMatrix(0, sizeT-1, 0, observationTable.getColumnDimension()-1).transpose();
-		}
-	}
-	
-	// tests whether the vector is in the span of the basis
-	public static boolean linInd(double[] vector, double[][] basis, int sizeBasis) {
-		if (sizeBasis == 0) {
-			return true;
-		}
-		
-		int numRows = vector.length;
-		int numCols = sizeBasis + 1;
-		RealMatrix augmentedMatrix = MatrixUtils.createRealMatrix(numRows, numCols);
-		for (int i=0; i<sizeBasis; i++) {
-			augmentedMatrix.setColumn(i, basis[i]);
-		}
-		augmentedMatrix.setColumn(numCols - 1, vector);
-		
-		// put the augmented matrix in rref
-		int r = 0;
-		for (int c=0; c<numCols && r<numRows; c++) {
-			// find first 1 after (or including) row r in column c, set j to the row index
-			int j = r;
-			for (int i=r+1; i<numRows; i++) {
-				if (mod2(augmentedMatrix.getEntry(i, c)) > mod2(augmentedMatrix.getEntry(j, c))) {
-					j = i;
-				}
-			}
-			// if column c only has 0s row r and on
-			if (mod2(augmentedMatrix.getEntry(j, c)) == 0) {
-				continue;
-			}
-			
-			// swap rows j and r
-			RealMatrix temp = augmentedMatrix.getRowMatrix(j);
-			augmentedMatrix.setRowMatrix(j, augmentedMatrix.getRowMatrix(r));
-			augmentedMatrix.setRowMatrix(r, temp);
-			
-			for (int i=0; i<numRows; i++) {
-				if (i != r) {
-					int t = mod2(augmentedMatrix.getEntry(i, c));
-					for (j=0; j<numCols; j++) {
-						augmentedMatrix.setEntry(i, j, mod2(augmentedMatrix.getEntry(i,j) - (t * augmentedMatrix.getEntry(r, j))));
-					}
-				}
-			}
-			r++;
-		}
-		
-		// find the index of the last 1 in the last column (if exists)
-		int index = -1;
-		for (int i=numRows-1; i>=0; i--) {
-			if (mod2(augmentedMatrix.getEntry(i, numCols-1)) == 1) {
-				index = i;
-				break;
-			}
-		}
-		
-		// last vector is the 0 vector, in span(B)
-		if (index == -1) {
-			return false;
-		}
-		
-		// check whether in span
-		for (int j=0; j<numCols-1; j++) {
-			if (mod2(augmentedMatrix.getEntry(index, j)) == 1) {
-				return false;
-			}
-		}
-
-		return true;
 	}
 	
 	public static void learn() throws Exception {	
@@ -1301,5 +1145,131 @@ public class Mod2_MA {
 			}
 		}
 		return out;
+	}
+	
+	/* Sparse matrix operations. */
+	
+	// multiplies a sparse mxn matrix by a sparse nxp matrix
+	public static HashMap<Integer, ArrayList<Integer>> multiply(HashMap<Integer, ArrayList<Integer>> arr1, HashMap<Integer, ArrayList<Integer>> arr2) throws Exception {
+		ArrayList<Integer> dim1 = arr1.get(0);
+		ArrayList<Integer> dim2 = arr2.get(0);
+		if (dim1.get(1) != dim2.get(0)) {
+			throwException(null, "Multiplied matrices of invalid dimension.");
+		}
+		
+		HashMap<Integer, ArrayList<Integer>> result = new HashMap<Integer, ArrayList<Integer>>();
+
+		ArrayList<Integer> newDim = new ArrayList<Integer>();
+		newDim.add(arr1.get(0).get(0));
+		newDim.add(arr2.get(0).get(1));
+		result.put(0, newDim);
+		
+		ArrayList<Integer> colSet = null;
+		
+		int rowsTraversed = 0;
+		for (int row : arr1.keySet()) {
+			if (rowsTraversed >= dim1.get(0)) {
+				break;
+			}
+			
+			if (row > 0) {
+				rowsTraversed++;
+				
+				if (colSet == null) {
+					colSet = new ArrayList<Integer>();
+					
+					int colsTraversed = 0;
+					for (int col : arr2.keySet()) {
+						if (colsTraversed >= dim2.get(1)) {
+							break;
+						}
+						
+						if (col < 0) {
+							colsTraversed++;
+							colSet.add(col);
+							if (dotProduct(arr1.get(row), arr2.get(col))) {
+								addElement(result, row, col);
+							}
+						}
+					}
+				} else {
+					for (int col : colSet) {
+						if (dotProduct(arr1.get(row), arr2.get(col))) {
+							addElement(result, row, col);
+						}
+					}
+				}
+			}
+		}
+		
+		return result;
+	}
+	
+	// returns true if the dot product of two sparse vectors is 1, false otherwise
+	public static boolean dotProduct(ArrayList<Integer> v1, ArrayList<Integer> v2) {
+		int count = 0;
+		
+		int pos1 = 0;
+		int pos2 = 0;
+		while (pos1 < v1.size() && pos2 < v2.size()) {
+			if (v1.get(pos1) == v2.get(pos2)) {
+				count++;
+				pos1++;
+				pos2++;
+			} else if (v1.get(pos1) < v2.get(pos2)) {
+				pos1++;
+			} else {
+				pos2++;
+			}
+		}
+		
+		return (count % 2 == 1);
+	}
+	
+	// adds a 1 to a sparse array at the position (row, col) (assume col is negative)
+	public static void addElement(HashMap<Integer, ArrayList<Integer>> arr, int row, int col) {
+		if (arr.get(row) == null) {
+			ArrayList<Integer> newRow = new ArrayList<Integer>();
+			newRow.add(col * -1);
+			arr.put(row, newRow);
+		} else {
+			arr.get(row).add(col * -1);
+		}
+		
+		if (arr.get(col) == null) {
+			ArrayList<Integer> newCol = new ArrayList<Integer>();
+			newCol.add(row);
+			arr.put(col, newCol);
+		} else {
+			arr.get(col).add(row);
+		} 
+	}
+	
+	// displays a sparse matrix
+	public static void displayMatrix(HashMap<Integer, ArrayList<Integer>> arr) {
+		ArrayList<Integer> dim = arr.get(0);
+		
+		for (int row = 1; row <= dim.get(0); row++) {
+			String rowStr = "";
+			
+			if (arr.get(row) == null) {
+				for (int col = 1; col <= dim.get(1); col++) {
+					rowStr += 0 + " ";
+				}
+			} else {
+				ArrayList<Integer> rowVector = arr.get(row);
+				int pos = 0;
+				for (int col = 1; col <= dim.get(1); col++) {
+					if (pos < rowVector.size() && rowVector.get(pos) == col) {
+						rowStr += 1 + " ";
+						pos++;
+					} else {
+						rowStr += 0 + " ";
+					}
+				}
+			}
+			
+			System.out.println(rowStr);
+		}
 	}
 }
