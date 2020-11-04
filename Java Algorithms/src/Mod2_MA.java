@@ -211,6 +211,7 @@ public class Mod2_MA {
 	}
 	
 	// follows an adapted version of algorithm 2 in Thon and Jaeger to minimize the input mod-2-MA
+	@SuppressWarnings("unchecked")
 	public static void minimize() throws OutOfRangeException, Exception {
 		if (minProgressFlag) {
 			System.out.println("Mod-2-MA to minimize:");
@@ -219,24 +220,14 @@ public class Mod2_MA {
 			System.out.println("Dimension: " + inputSize + '\n');
 			
 			System.out.print("Final Vector: ");
-			String s = "";
-			for (int i=0; i<inputFinalVector.length; i++) {
-				s += mod2(inputFinalVector[i]) + " ";
-			}
-			System.out.println(s + "\n");
+			displayMatrix(inputFinalVector);
 			
 			System.out.println("Transition Matrices:\n");
 			for (int i=0; i<inputTransitionMatrices.length; i++) {
 				System.out.println("Letter " + alphabet[i]);
-				for (int j=0; j<inputTransitionMatrices[i].length; j++) {
-					s = "";
-					for (int k=0; k<inputTransitionMatrices[i].length; k++) {
-						s += mod2(inputTransitionMatrices[i][j][k]) + " ";
-					}
-					System.out.println(s);
-				}
-				System.out.println();
+				displayMatrix(inputTransitionMatrices[i]);
 			}
+			
 			System.out.println("Minimization in progress...");
 			System.out.println("-------------------------");
 		} else if (displayMinDimensionFlag) {
@@ -244,16 +235,16 @@ public class Mod2_MA {
 		}
 		
 		ArrayList<String> stateSpaceBasisIndices = new ArrayList<String>();
-		HashMap<String, double[]> stateSpaceIndexToVector = new HashMap<String, double[]>();
-		RealMatrix stateSpaceBasis = sparseBasis(inputFinalVector, inputTransitionMatrices, stateSpaceIndexToVector, stateSpaceBasisIndices, true);
+		HashMap<String, HashMap<Integer, ArrayList<Integer>>> stateSpaceIndexToVector = new HashMap<String, HashMap<Integer, ArrayList<Integer>>>();
+		HashMap<Integer, ArrayList<Integer>> stateSpaceBasis = basis(inputFinalVector, inputTransitionMatrices, stateSpaceIndexToVector, stateSpaceBasisIndices, true);
 		
 		if (minProgressFlag || displayMinDimensionFlag) {
 			System.out.println("Created the state space.");
 		}
 		
 		ArrayList<String> coStateSpaceBasisIndices = new ArrayList<String>();
-		HashMap<String, double[]> coStateSpaceIndexToVector = new HashMap<String, double[]>();
-		RealMatrix coStateSpaceBasis = sparseBasis(inputFinalVector, inputTransitionMatrices, coStateSpaceIndexToVector, coStateSpaceBasisIndices, false);
+		HashMap<String, HashMap<Integer, ArrayList<Integer>>> coStateSpaceIndexToVector = new HashMap<String, HashMap<Integer, ArrayList<Integer>>>();
+		HashMap<Integer, ArrayList<Integer>> coStateSpaceBasis = basis(inputFinalVector, inputTransitionMatrices, coStateSpaceIndexToVector, coStateSpaceBasisIndices, false);
 		
 		if (minProgressFlag || displayMinDimensionFlag) {
 			System.out.println("Created the co-state space.");
@@ -263,15 +254,7 @@ public class Mod2_MA {
 		}
 		
 		// (state space x co-state space) observation table
-		RealMatrix observationTable = MatrixUtils.createRealMatrix(stateSpaceBasis.getRowDimension(), coStateSpaceBasis.getRowDimension());
-		String tableStr = "";
-		for (int row=0; row<stateSpaceBasis.getRowDimension(); row++) {
-			for (int col=0; col<coStateSpaceBasis.getRowDimension(); col++) {
-				observationTable.setEntry(row, col, mod2(stateSpaceBasis.getRowVector(row).dotProduct(coStateSpaceBasis.getRowVector(col))));
-				tableStr += ((int) observationTable.getEntry(row, col)) + " ";
-			}
-			tableStr += "\n";
-		}
+		HashMap<Integer, ArrayList<Integer>> observationTable = multiply(stateSpaceBasis, coStateSpaceBasis);
 		
 		if (displayMinDimensionFlag) {
 			System.out.println("Created the observation table.");
@@ -279,37 +262,18 @@ public class Mod2_MA {
 		
 		if (minProgressFlag) {
 			System.out.println("Observation table:" );
-			System.out.println("Dimension: " + stateSpaceBasis.getRowDimension() + " x " + coStateSpaceBasis.getRowDimension());
-			
-			String indices = "";
-			for (String index : stateSpaceBasisIndices) {
-				if (index.length() == 0) {
-					indices += "ɛ ";
-				} else {
-					indices += removeSpaces(index) + " ";
-				}
-			}	
-			System.out.println("Rows: " + indices);
-			
-			indices = "";
-			for (String index : coStateSpaceBasisIndices) {
-				if (index.length() == 0) {
-					indices += "ɛ ";
-				} else {
-					indices += removeSpaces(index) + " ";
-				}
-			}
-			System.out.println("Cols: " + indices);
-			
-			System.out.println("Table:\n" + tableStr);
+			System.out.println("Dimension: " + stateSpaceBasis.get(0).get(0) + " x " + coStateSpaceBasis.get(0).get(0));
+			System.out.println("Rows: " + displayIndices(stateSpaceBasisIndices));
+			System.out.println("Cols: " + displayIndices(coStateSpaceBasisIndices));
+			displayMatrix(observationTable);
 		}
 		
 		// obtain the smallest set of linearly independent rows and columns from observationTable
 		minRowIndices = new ArrayList<String>();
-		RealMatrix linIndRowsObservationTable = sparseLinIndSubMatrix(observationTable, stateSpaceBasisIndices, minRowIndices, true);
+		HashMap<Integer, ArrayList<Integer>> linIndRowsObservationTable = linIndSubMatrix(observationTable, stateSpaceBasisIndices, minRowIndices, true);
 		
 		if (displayMinDimensionFlag) {
-			System.out.println("Minimized dimension: " + linIndRowsObservationTable.getRowDimension());
+			System.out.println("Minimized dimension: " + linIndRowsObservationTable.get(0).get(0));
 			if (in != null) {
 				in.close();
 			}
@@ -317,105 +281,67 @@ public class Mod2_MA {
 		}
 		
 		minColIndices = new ArrayList<String>();
-		RealMatrix minObservationTable = sparseLinIndSubMatrix(linIndRowsObservationTable, coStateSpaceBasisIndices, minColIndices, false);
+		HashMap<Integer, ArrayList<Integer>> minObservationTable = linIndSubMatrix(linIndRowsObservationTable, coStateSpaceBasisIndices, minColIndices, false);
 		
-		minSize = minObservationTable.getRowDimension();
+		minSize = minObservationTable.get(0).get(0);
 		
 		if (minProgressFlag) {
 			System.out.println("Minimized observation table:");
 			System.out.println("Dimension: " + minSize);
-			
-			String stateSpaceIndices = "";
-			for (String index : minRowIndices) {
-				if (index.length() == 0) {
-					stateSpaceIndices += "ɛ ";
-				} else {
-					stateSpaceIndices += removeSpaces(index) + " ";
-				}
-			}
-			System.out.println("Rows: " + stateSpaceIndices);
-			
-			String coStateSpaceIndices = "";
-			for (String index : minColIndices) {
-				if (index.length() == 0) {
-					coStateSpaceIndices += "ɛ ";
-				} else {
-					coStateSpaceIndices += removeSpaces(index) + " ";
-				}
-			}
-			System.out.println("Cols: " + coStateSpaceIndices);
-			
+			System.out.println("Rows: " + displayIndices(minRowIndices));
+			System.out.println("Cols: " + displayIndices(minColIndices));
 			System.out.println("Table:");
-			for (int i=0; i<minObservationTable.getRowDimension(); i++) {
-				String row = "";
-				
-				for (int j=0; j<minObservationTable.getColumnDimension(); j++) {
-					row += (int) minObservationTable.getEntry(i, j) + " ";
-				}
-				
-				System.out.println(row);
-			}
-			
-			System.out.println();
+			displayMatrix(minObservationTable);
 		}
 		
 		// case where minObservationTable = [[0]] (singular, must be treated separately)
-		if (minObservationTable.getRowDimension() == 1 && minObservationTable.getEntry(0, 0) == 0) {
-			minFinalVector = new double[1];
-			minFinalVector[0] = 0;
-			minTransitionMatrices = new double[alphabet.length][1][1];
-			
+		if (minObservationTable.get(0).get(0) == 0) {
+			minFinalVector = initialize(1, 1);
+			minTransitionMatrices = new HashMap[alphabet.length];		
 			for (int i=0; i<alphabet.length; i++) {
-				minTransitionMatrices[i][0][0] = 1;
+				minTransitionMatrices[i] = initialize(1, 1);
 			}
+			
 			if (minProgressFlag) {
 				System.out.println("Minimization completed.\n");
 			}
 			
-			tested = new boolean[1][1];
-			
+			tested = new boolean[1][1];	
 			return;
 		}
 		
 		DecompositionSolver solver = new solver(minObservationTable).getSolver();
-		RealMatrix tableInverse = solver.getInverse();
+		HashMap<Integer, ArrayList<Integer>> tableInverse = solver.getInverse();
 		
 		Hankel = new HashMap<String, Integer>();
 		
 		// minTransitionMatrices = xSigma*tableInverse, where xSigma is the matrix where row_i = row_(x_i+σ) of the observation table
-		double[][][] tempMinTransitionMatrices = new double[alphabet.length][minObservationTable.getRowDimension()][minObservationTable.getRowDimension()];
+		minTransitionMatrices = new HashMap[alphabet.length];
+		int dim = minObservationTable.get(0).get(0);
 		for (int i=0; i<alphabet.length; i++) {	
-			RealMatrix letterMatrix = MatrixUtils.createRealMatrix(inputTransitionMatrices[i]);
-			RealMatrix xSigma = MatrixUtils.createRealMatrix(minObservationTable.getRowDimension(), minObservationTable.getRowDimension());
+			minTransitionMatrices[i] = initialize(dim, dim);
+			HashMap<Integer, ArrayList<Integer>> xSigma = initialize(dim, dim);
 			
-			for (int j=0; j<minObservationTable.getRowDimension(); j++) {			
-				for (int k=0; k<minObservationTable.getRowDimension(); k++) {
-					RealVector stateVector = MatrixUtils.createRealVector(stateSpaceIndexToVector.get(minRowIndices.get(j)));
-					RealVector coStateVector = MatrixUtils.createRealVector(coStateSpaceIndexToVector.get(minColIndices.get(k)));
+			for (int j=0; j<dim; j++) {			
+				for (int k=0; k<dim; k++) {
+					HashMap<Integer, ArrayList<Integer>> stateVector = stateSpaceIndexToVector.get(minRowIndices.get(j));
+					HashMap<Integer, ArrayList<Integer>> coStateVector = coStateSpaceIndexToVector.get(minColIndices.get(k));
 					
-					xSigma.setEntry(j, k, mod2(letterMatrix.preMultiply(stateVector).dotProduct(coStateVector)));
+					if (dotProduct(multiply(stateVector, inputTransitionMatrices[i]).get(1), coStateVector.get(1)) == 1) {
+						addElement(xSigma, j+1, k+1);
+					}
 				}
 			}
 
-			tempMinTransitionMatrices[i] = xSigma.multiply(tableInverse).getData();
+			minTransitionMatrices[i] = multiply(xSigma, tableInverse);
 		}
 		
-		minTransitionMatrices = new double[alphabet.length][minObservationTable.getRowDimension()][minObservationTable.getRowDimension()];
-		for (int i=0; i<alphabet.length; i++) {
-			for (int j=0; j<minObservationTable.getRowDimension(); j++) {
-				for (int k=0; k<minObservationTable.getRowDimension(); k++) {
-					minTransitionMatrices[i][j][k] = mod2(tempMinTransitionMatrices[i][j][k]);
-				}
+		// minFinalVector is the first column of minObservationTable
+		minFinalVector = initialize(1, minObservationTable.get(0).get(0));
+		if (minObservationTable.get(-1) != null) {
+			for (int num : minObservationTable.get(-1)) {
+				addElement(minFinalVector, 1, num);
 			}
-		}
-		
-		// minFinalVector = minObservationTable*e_1, where e_1 is a standard unit basis vector
-		double[] tempE_1 = new double[minSize];
-		tempE_1[0] = 1;
-		RealVector e_1 = MatrixUtils.createRealVector(tempE_1);
-		minFinalVector = minObservationTable.operate(e_1).toArray();
-		for (int i=0; i<minSize; i++) {
-			minFinalVector[i] = mod2(minFinalVector[i]);
 		}
 		
 		// used in EQ to avoid testing the same word
@@ -426,8 +352,20 @@ public class Mod2_MA {
 		}
 	}
 	
+	public static String displayIndices(ArrayList<String> indices) {
+		String out = "";
+		for (String index : indices) {
+			if (index.length() == 0) {
+				out += "ɛ ";
+			} else {
+				out += removeSpaces(index) + " ";
+			}
+		}	
+		return out;
+	}
+	
 	// follows algorithm 1 detailed in Thon and Jaeger to form the basis for the state/co-state space
-	public static RealMatrix basis(double[] hypothesisFinalVector, double[][][] hypothesisTransitionMatrices, HashMap<String, double[]> indexToVector, ArrayList<String> indices, boolean stateSpace) {
+	public static HashMap<Integer, ArrayList<Integer>> basis(HashMap<Integer, ArrayList<Integer>> hypothesisFinalVector, HashMap<Integer, ArrayList<Integer>>[] hypothesisTransitionMatrices, HashMap<String, HashMap<Integer, ArrayList<Integer>>> indexToVector, ArrayList<String> indices, boolean stateSpace) {
 		ArrayList<ArrayList<Integer>> basis = new ArrayList<ArrayList<Integer>>();
 		int sizeBasis = 0;
 		
@@ -493,11 +431,15 @@ public class Mod2_MA {
 		}
 		
 		// convert the sparse basis into a real matrix
-		return sparseToReal(sparseBasis, sizeBasis, hypothesisFinalVector.length);
+		if (stateSpace) {
+			return sparseToReal(sparseBasis, sizeBasis, hypothesisFinalVector.length);
+		} else {
+			return sparseToReal(sparseBasis, sizeBasis, hypothesisFinalVector.length).transpose();
+		}
 	}
 	
 	// returns a RealMatrix where the rows are the ArrayLists in sparseMatrix
-	public static RealMatrix sparseToReal(ArrayList<ArrayList<Integer>> sparseMatrix, int numRows, int numCols) {
+	public static HashMap<Integer, ArrayList<Integer>> sparseToReal(HashMap<Integer, ArrayList<Integer>> sparseMatrix, int numRows, int numCols) {
 		RealMatrix outputMatrix = MatrixUtils.createRealMatrix(numRows, numCols);
 		
 		for (int r=0; r<sparseMatrix.size(); r++) {
@@ -525,7 +467,7 @@ public class Mod2_MA {
 	}
 	
 	// finds a maximal submatrix of linearly independent rows/columns of the observation table
-	public static RealMatrix linIndSubMatrix(RealMatrix observationTable, ArrayList<String> oldIndices, ArrayList<String> newIndices, boolean rows) {	
+	public static HashMap<Integer, ArrayList<Integer>> linIndSubMatrix(HashMap<Integer, ArrayList<Integer>> observationTable, ArrayList<String> oldIndices, ArrayList<String> newIndices, boolean rows) {	
 		if (!rows) {
 			observationTable = observationTable.transpose();
 		}
@@ -560,7 +502,7 @@ public class Mod2_MA {
 	}
 	
 	// tests whether the vector is in the span of the basis
-	public static boolean linInd(ArrayList<Integer> sparseVector, ArrayList<ArrayList<Integer>> sparseBasis, int sizeBasis, int numRows) {
+	public static boolean linInd(HashMap<Integer, ArrayList<Integer>> sparseVector, HashMap<Integer, ArrayList<Integer>> sparseBasis, int sizeBasis, int numRows) {
 		if (sizeBasis == 0) {
 			return true;
 		}
@@ -984,13 +926,11 @@ public class Mod2_MA {
 		
 		System.out.print("Final Vector: ");
 		displayMatrix(resultFinalVector);
-		System.out.println();
 		
 		System.out.println("Transition Matrices:\n");
 		for (int i=0; i<resultTransitionMatrices.length; i++) {
 			System.out.println("Letter " + alphabet[i]);
 			displayMatrix(resultTransitionMatrices[i]);
-			System.out.println();
 		}
 	}
 	
@@ -1284,5 +1224,6 @@ public class Mod2_MA {
 			
 			System.out.println(rowStr);
 		}
+		System.out.println();
 	}
 }
