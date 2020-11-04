@@ -35,7 +35,7 @@ public class minimize {
 		
 		Mod2_MA.in.close();
 		
-		if (finalCheck(25,1000)) {
+		if (Mod2_MA.finalCheck(25, 1000, true)) {
 			displayResults();
 		} else {
 			throw new Exception("Algorithm failed: failed final check.");
@@ -91,17 +91,5 @@ public class minimize {
 			}
 			System.out.println();
 		}
-	}
-
-	// performs a statistical EQ between the target and learned mod-2-MA
-	public static boolean finalCheck(int maxTestLen, int numTests) throws Exception {
-		for (int i=1; i<=numTests; i++) {
-			String test = Mod2_MA.genTest((int) (Math.random() * (maxTestLen + 1)), false);
-			
-			if (Mod2_MA.MQArbitrary(Mod2_MA.inputFinalVector, Mod2_MA.inputTransitionMatrices, test) != Mod2_MA.MQArbitrary(Mod2_MA.minFinalVector, Mod2_MA.minTransitionMatrices, test)) {
-				return false;
-			}
-		}
-		return true;
 	}
 }

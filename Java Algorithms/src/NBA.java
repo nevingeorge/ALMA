@@ -16,10 +16,7 @@
  */
 
 import java.io.BufferedReader;
-import java.io.FileReader;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Scanner;
 import java.util.StringTokenizer;
 
 public class NBA {
@@ -44,24 +41,8 @@ public class NBA {
 	@SuppressWarnings("unchecked")
 	public static void readInput() throws Exception {
 		System.out.println("Input file name and optional flag -v (e.g. NBA_input1.txt or NBA_input1.txt -v)");
-		Mod2_MA.in = new Scanner(System.in);
-		String[] arrInput = Mod2_MA.in.nextLine().split(" ");
-		Mod2_MA.startTime = System.nanoTime();
-		BufferedReader f = new BufferedReader(new FileReader(arrInput[0]));
 		
-		Mod2_MA.observationTableFlag = false;
-		if (arrInput.length > 2) {
-			Mod2_MA.throwException(null, "Invalid input: too many inputs passed.");
-		}
-		if (arrInput.length == 2) {
-			if (arrInput[1].equals("-v")) {
-				Mod2_MA.observationTableFlag = true;
-			}
-			else {
-				Mod2_MA.throwException(null, "Invalid input: invalid flag.");
-			}
-		}
-		System.out.println("");
+		BufferedReader f = Mod2_MA.getFile(true, false, false);
 		
 		arbitrary.EQMaxTestLen = Integer.parseInt(Mod2_MA.readFile(f));	
 		arbitrary.EQNumTests = Integer.parseInt(Mod2_MA.readFile(f));
@@ -71,28 +52,9 @@ public class NBA {
 		NBAStates = Integer.parseInt(Mod2_MA.readFile(f));
 		
 		// alphabet ΣU{$}
+		Mod2_MA.readAlphabet(f, true);
+		
 		StringTokenizer st = new StringTokenizer(Mod2_MA.readFile(f));
-		ArrayList<String> tempAlphabet = new ArrayList<String>();
-		while (st.hasMoreTokens()) {
-			String letter = st.nextToken();
-			if (letter.equals("$")) {
-				Mod2_MA.throwException(f, "Invalid input: invalid character in the alphabet.");
-			}
-			tempAlphabet.add(letter);
-		}
-		tempAlphabet.add("$");
-		Mod2_MA.alphabet = new String[tempAlphabet.size()];
-		for (int i=0; i<tempAlphabet.size(); i++) {
-			Mod2_MA.alphabet[i] = tempAlphabet.get(i);
-		}
-		
-		// map each letter in alphabet to an index
-		Mod2_MA.letterToIndex = new HashMap<String, Integer>();
-		for (int i=0; i<Mod2_MA.alphabet.length; i++) {
-			Mod2_MA.letterToIndex.put(Mod2_MA.alphabet[i], i);
-		}
-		
-		st = new StringTokenizer(Mod2_MA.readFile(f));
 		NBAFinalStates = new boolean[NBAStates+1];
 		while (st.hasMoreTokens()) {
 			int state = Integer.parseInt(st.nextToken());

@@ -16,6 +16,7 @@
  */
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -92,7 +93,7 @@ public class Mod2_MA {
 					+ "(" + learnedSize + ") than the minimized mod-2-MA (" + minSize + ").");
 		}
 
-		if (finalCheck(25,1000)) {
+		if (finalCheck(25, 1000, false)) {
 			displayResults();
 		} else {
 			throwException(null, "Algorithm failed: failed final check.");
@@ -111,50 +112,13 @@ public class Mod2_MA {
 			System.out.println("Input file name and optional flags -vm (e.g. Mod2_MA_input1.txt -v, Mod2_MA_input1.txt -m, Mod2_MA_input1.txt -vm)");;
 		}
 		
-		in = new Scanner(System.in);
-		String[] arrInput = in.nextLine().split(" ");
-		startTime = System.nanoTime();
-		BufferedReader f = new BufferedReader(new FileReader(arrInput[0]));
+		BufferedReader f = getFile(true, true, false);
 		
-		observationTableFlag = false;
-		minProgressFlag = false;
-		if (arrInput.length > 2) {
-			throwException(null, "Invalid input: too many inputs passed.");
-		}
-		if (arrInput.length == 2) {
-			if (arrInput[1].equals("-v")) {
-				observationTableFlag = true;
-			} else if (arrInput[1].equals("-m")) {
-				minProgressFlag = true;
-			} else if (arrInput[1].equals("-vm") || arrInput[1].equals("-mv")) {
-				observationTableFlag = true;
-				minProgressFlag = true;
-			} else {
-				throwException(null, "Invalid input: invalid flag.");
-			}
-		}
-		System.out.println();
+		readAlphabet(f, false);
 		
-		StringTokenizer st = new StringTokenizer(readFile(f));
-		ArrayList<String> tempAlphabet = new ArrayList<String>();
-		while (st.hasMoreTokens()) {
-			String letter = st.nextToken();
-			tempAlphabet.add(letter);
-		}
-		alphabet = new String[tempAlphabet.size()];
-		for (int i=0; i<tempAlphabet.size(); i++) {
-			alphabet[i] = tempAlphabet.get(i);
-		}
-		
-		// map each letter in the alphabet to an index
-		letterToIndex = new HashMap<String, Integer>();
-		for (int i=0; i<alphabet.length; i++) {
-			letterToIndex.put(alphabet[i], i);
-		}
 		inputSize = Integer.parseInt(readFile(f));
 		
-		st = new StringTokenizer(readFile(f));
-		
+		StringTokenizer st = new StringTokenizer(readFile(f));
 		inputFinalVector = initialize(1, inputSize);
 		for (int i=1; i<=inputSize; i++) {
 			if (Integer.parseInt(st.nextToken()) == 1) {
@@ -190,6 +154,35 @@ public class Mod2_MA {
 		f.close();
 	}
 	
+	public static BufferedReader getFile(boolean vFlag, boolean mFlag, boolean dFlag) throws Exception {
+		in = new Scanner(System.in);
+		String[] arrInput = in.nextLine().split(" ");
+		startTime = System.nanoTime();
+		
+		if (arrInput.length > 2) {
+			throwException(null, "Invalid input: too many inputs passed.");
+		}
+		
+		// handle flags
+		observationTableFlag = false;
+		minProgressFlag = false;
+		displayMinDimensionFlag = false;
+		if (arrInput.length == 2) {
+			if (vFlag && arrInput[1].contains("v")) {
+				observationTableFlag = true;
+			}
+			if (mFlag && arrInput[1].contains("m")) {
+				minProgressFlag = true;
+			}
+			if (dFlag && arrInput[1].contains("d")) {
+				displayMinDimensionFlag = true;
+			}
+		}
+		System.out.println();
+		
+		return new BufferedReader(new FileReader(arrInput[0]));
+	}
+	
 	public static String readFile(BufferedReader f) throws IOException {
 		String line = f.readLine();
 		// ignore empty lines and lines beginning with "//"
@@ -197,6 +190,34 @@ public class Mod2_MA {
 			line = f.readLine();
 		}
 		return line;
+	}
+	
+	public static void readAlphabet(BufferedReader f, boolean inLDollar) throws Exception {
+		ArrayList<String> tempAlphabet = new ArrayList<String>();
+		
+		StringTokenizer st = new StringTokenizer(readFile(f));
+		while (st.hasMoreTokens()) {
+			String letter = st.nextToken();
+			if(inLDollar && letter.equals("$")) {
+				throwException(f, "Invalid input: invalid character in the alphabet.");
+			}
+			tempAlphabet.add(letter);
+		}
+		
+		if (inLDollar) {
+			tempAlphabet.add("$");
+		}
+		
+		alphabet = new String[tempAlphabet.size()];
+		for (int i=0; i<tempAlphabet.size(); i++) {
+			alphabet[i] = tempAlphabet.get(i);
+		}
+		
+		// map each letter in the alphabet to an index
+		letterToIndex = new HashMap<String, Integer>();
+		for (int i=0; i<alphabet.length; i++) {
+			letterToIndex.put(alphabet[i], i);
+		}
 	}
 	
 	// properly closes input streams
@@ -397,7 +418,7 @@ public class Mod2_MA {
 				}
 			}
 			
-			if (sparseLinInd(sparseTest, sparseBasis, sizeBasis, test.length)) {	
+			if (linInd(sparseTest, sparseBasis, sizeBasis, test.length)) {	
 				// extend the basis
 				sizeBasis++;
 				sparseBasis.add(sparseTest);
@@ -484,7 +505,7 @@ public class Mod2_MA {
 			}
 			
 			// extend the current subset of linearly independent rows/columns
-			if (sparseLinInd(sparseTest, sparseNewObservationTable, sizeT, observationTable.getRow(i).length)) {
+			if (linInd(sparseTest, sparseNewObservationTable, sizeT, observationTable.getRow(i).length)) {
 				sparseNewObservationTable.add(sparseTest);
 				newIndices.add(oldIndices.get(i));
 				sizeT++;
@@ -973,12 +994,14 @@ public class Mod2_MA {
 		return test;
 	}
 
-	// performs a statistical EQ between the target and learned mod-2-MA
-	public static boolean finalCheck(int maxTestLen, int numTests) throws Exception {
+	// performs a statistical EQ between the target and final mod-2-MA
+	public static boolean finalCheck(int maxTestLen, int numTests, boolean inMinimize) throws Exception {
 		for (int i=1; i<=numTests; i++) {
 			String test = genTest((int) (Math.random() * (maxTestLen + 1)), false);
 			
-			if (MQArbitrary(inputFinalVector, inputTransitionMatrices, test) != MQArbitrary(resultFinalVector, resultTransitionMatrices, test)) {
+			if (!inMinimize && MQArbitrary(inputFinalVector, inputTransitionMatrices, test) != MQArbitrary(resultFinalVector, resultTransitionMatrices, test)) {
+				return false;
+			} else if (inMinimize && Mod2_MA.MQArbitrary(Mod2_MA.inputFinalVector, Mod2_MA.inputTransitionMatrices, test) != Mod2_MA.MQArbitrary(Mod2_MA.minFinalVector, Mod2_MA.minTransitionMatrices, test)) {
 				return false;
 			}
 		}

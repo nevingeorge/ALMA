@@ -49,23 +49,8 @@ public class arbitrary {
 	
 	public static void readInput() throws Exception {
 		System.out.println("Input file name and optional flag -v (e.g. arb_input1.txt or arb_input1.txt -v)");
-		Mod2_MA.in = new Scanner(System.in);
-		String[] arrInput = Mod2_MA.in.nextLine().split(" ");
-		Mod2_MA.startTime = System.nanoTime();
-		BufferedReader f = new BufferedReader(new FileReader(arrInput[0]));
-		
-		Mod2_MA.observationTableFlag = false;
-		if(arrInput.length > 2) {
-			Mod2_MA.throwException(null, "Invalid input: too many inputs passed");
-		}
-		if(arrInput.length == 2) {
-			if(arrInput[1].equals("-v")) {
-				Mod2_MA.observationTableFlag = true;
-			} else {
-				Mod2_MA.throwException(null, "Invalid input: invalid flag.,");
-			}
-		}
-		System.out.println();
+
+		BufferedReader f = Mod2_MA.getFile(true, false, false);
 		
 		// membership query function to call in MQ.java
 		try {
@@ -78,23 +63,7 @@ public class arbitrary {
 		EQNumTests = Integer.parseInt(Mod2_MA.readFile(f));
 		EQLimit = Integer.parseInt(Mod2_MA.readFile(f));
 		EQNumPerformed = 0;
-
-		StringTokenizer st = new StringTokenizer(Mod2_MA.readFile(f));
-		ArrayList<String> tempAlphabet = new ArrayList<String>();
-		while (st.hasMoreTokens()) {
-			String letter = st.nextToken();
-			tempAlphabet.add(letter);
-		}
-		Mod2_MA.alphabet = new String[tempAlphabet.size()];
-		for (int i=0; i<tempAlphabet.size(); i++) {
-			Mod2_MA.alphabet[i] = tempAlphabet.get(i);
-		}
-		
-		// map each letter in the alphabet to an index
-		Mod2_MA.letterToIndex = new HashMap<String, Integer>();
-		for (int i=0; i<Mod2_MA.alphabet.length; i++) {
-			Mod2_MA.letterToIndex.put(Mod2_MA.alphabet[i], i);
-		}
+		Mod2_MA.readAlphabet(f, false);
 				
 		f.close();
 	}
