@@ -15,6 +15,12 @@
  *   16(4):103−147, 2015.
  */
 
+REMOVE ALL THE DUPLICATE CODE!!!
+
+
+
+
+
 import java.util.Scanner;
 
 public class minimize {
