@@ -8,7 +8,7 @@
  * 1 Amos Beimel, Francesco Bergadano, Nader H. Bshouty, Eyal Kushilevitz, Stefano Varric- chio. Learning 
  *   functions represented as multiplicity automata. J. ACM, 47(3):506–530, May 2000.
  * 2 Dana Angluin. Learning regular sets from queries and counterexamples. Inf. Comput., 75(2):87–106, 1987.
- * 3 Dana Angluin, Timos Antonopoulos, Dana Fis`man. Strongly Unambiguous Büchi Automata Are Polynomially 
+ * 3 Dana Angluin, Timos Antonopoulos, Dana Fisman. Strongly Unambiguous Büchi Automata Are Polynomially 
  *   Predictable with Membership Queries. 28th International Conference on Computer Science Logic, 8:1–8:17, 2020.
  * 4 Michael Thon and Herbert Jaeger. Links Between Multiplicity Automata, Observable Operator Models and 
  *   Predictive State Representations — a Unified Learning Framework. Journal of Machine Learning Research, 
@@ -16,7 +16,6 @@
  */
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -283,7 +282,7 @@ public class Mod2_MA {
 		
 		if (minProgressFlag) {
 			System.out.println("Observation table:" );
-			System.out.println("Dimension: " + stateSpaceBasis.get(0).get(0) + " x " + coStateSpaceBasis.get(0).get(0));
+			System.out.println("Dimension: " + stateSpaceBasis.get(0).get(0) + " x " + coStateSpaceBasis.get(0).get(1));
 			System.out.println("Rows: " + displayIndices(stateSpaceBasisIndices));
 			System.out.println("Cols: " + displayIndices(coStateSpaceBasisIndices));
 			displayMatrix(observationTable);
@@ -316,7 +315,7 @@ public class Mod2_MA {
 		}
 		
 		// case where minObservationTable = [[0]] (singular, must be treated separately)
-		if (minObservationTable.get(0).get(0) == 0) {
+		if (minObservationTable.get(0).get(0) == 1 && minObservationTable.get(1) == null) {
 			minFinalVector = initialize(1, 1);
 			minTransitionMatrices = new HashMap[alphabet.length];		
 			for (int i=0; i<alphabet.length; i++) {
@@ -331,8 +330,8 @@ public class Mod2_MA {
 			return;
 		}
 		
-		DecompositionSolver solver = new solver(minObservationTable).getSolver();
-		HashMap<Integer, ArrayList<Integer>> tableInverse = solver.getInverse();
+		DecompositionSolver solver = new solver(sparseToReal(minObservationTable)).getSolver();
+		HashMap<Integer, ArrayList<Integer>> tableInverse = realToSparse(solver.getInverse());
 		
 		Hankel = new HashMap<String, Integer>();
 		
@@ -348,7 +347,7 @@ public class Mod2_MA {
 					HashMap<Integer, ArrayList<Integer>> stateVector = stateSpaceIndexToVector.get(minRowIndices.get(j));
 					HashMap<Integer, ArrayList<Integer>> coStateVector = coStateSpaceIndexToVector.get(minColIndices.get(k));
 					
-					if (dotProduct(multiply(stateVector, inputTransitionMatrices[i]).get(1), coStateVector.get(1)) == 1) {
+					if (dotProduct(multiply(stateVector, inputTransitionMatrices[i]).get(1), coStateVector.get(-1)) == 1) {
 						addElement(xSigma, j+1, k+1);
 					}
 				}
@@ -391,19 +390,30 @@ public class Mod2_MA {
 		ArrayList<HashMap<Integer, ArrayList<Integer>>> tests = new ArrayList<HashMap<Integer, ArrayList<Integer>>>();
 		
 		HashMap<Integer, ArrayList<Integer>> basis;
+		int sizeBasis = 0;
+		HashMap<Integer, ArrayList<Integer>> hypothesisFinalVectorTranpose = null;
+		
 		if (stateSpace) {
-			basis = initialize(hypothesisFinalVector.get(0).get(1), 0);
+			basis = initialize(1, hypothesisFinalVector.get(0).get(1));
 			
 			// begin with ω_i = (1,0,0,...,0)
 			HashMap<Integer, ArrayList<Integer>> w_i = initialize(1, hypothesisFinalVector.get(0).get(1));
 			addElement(w_i, 1, 1);
 			tests.add(w_i);
 		} else {
-			basis = initialize(0, hypothesisFinalVector.get(0).get(1));
-			tests.add(hypothesisFinalVector);
+			basis = initialize(hypothesisFinalVector.get(0).get(1), 1);		
+			
+			// begin with the transpose of hypothesisFinalVector
+			hypothesisFinalVectorTranpose = initialize(hypothesisFinalVector.get(0).get(1), 1);
+			if (hypothesisFinalVector.get(1) != null) {
+				for (int col : hypothesisFinalVector.get(1)) {
+					addElement(hypothesisFinalVectorTranpose, col, 1);
+				}
+			}
+			
+			tests.add(hypothesisFinalVectorTranpose);
 		}
 		
-		int sizeBasis = 0;
 		int sizeTests = 1;
 		
 		// contains the corresponding string for every element in tests
@@ -422,7 +432,7 @@ public class Mod2_MA {
 			String testString = testStrings.remove(0);
 			sizeTests--;
 			
-			if (linInd(test.get(1), operations, sizeBasis, hypothesisFinalVector.get(0).get(1))) {	
+			if (linInd(stateSpace ? test.get(1) : test.get(-1), operations, sizeBasis, hypothesisFinalVector.get(0).get(1))) {	
 				// extend the basis
 				sizeBasis++;
 				if (stateSpace) {
@@ -432,7 +442,7 @@ public class Mod2_MA {
 					}
 				} else {
 					basis.get(0).set(1, sizeBasis);
-					for (int num : test.get(1)) {
+					for (int num : test.get(-1)) {
 						addElement(basis, num, sizeBasis);
 					}
 				}
@@ -458,6 +468,11 @@ public class Mod2_MA {
 					sizeTests++;
 				}
 			}
+		}
+		
+		if (sizeBasis == 0) {
+			indices.add("");
+			indexToVector.put("", hypothesisFinalVectorTranpose);
 		}
 		
 		return basis;
@@ -486,6 +501,12 @@ public class Mod2_MA {
 			}
 		}
 		
+		if (newObservationTable.get(0).get(0) == 0 || newObservationTable.get(0).get(1) == 0) {
+			newObservationTable.get(0).set(0, 1);
+			newObservationTable.get(0).set(1, 1);
+			newIndices.add("");
+		}
+		
 		return newObservationTable;
 	}
 	
@@ -512,12 +533,18 @@ public class Mod2_MA {
 			}
 		}
 		
+		if (newObservationTable.get(0).get(0) == 0 || newObservationTable.get(0).get(1) == 0) {
+			newObservationTable.get(0).set(0, 1);
+			newObservationTable.get(0).set(1, 1);
+			newIndices.add("");
+		}
+		
 		return newObservationTable;
 	}
 	
 	// tests whether the vector is in the span of the basis
-	public static boolean linInd(ArrayList<Integer> vector, ArrayList<int[]> operations, int sizeBasis, int numRows) {
-		if (vector.size() == 0) {
+	public static boolean linInd(ArrayList<Integer> vector, ArrayList<int[]> operations, int sizeBasis, int numRows) {	
+		if (vector == null || vector.size() == 0) {
 			return false;
 		}
 		
@@ -652,6 +679,7 @@ public class Mod2_MA {
 		 */
 		HashMap<Integer, ArrayList<Integer>>[] hypothesisTransitionMatrices = new HashMap[alphabet.length];
 		for (int c=0; c<alphabet.length; c++) {
+			hypothesisTransitionMatrices[c] = initialize(learnedSize, learnedSize);
 			String letter = alphabet[c];
 			
 			double[][] F_xi = new double[learnedSize][learnedSize];
@@ -671,13 +699,13 @@ public class Mod2_MA {
 				try {
 					RealVector solution = solver.solve(constants);
 					for(int j=0; j<learnedSize; j++) {
-						hypothesisTransitionMatrices[c][i][j] = solution.getEntry(j);
+						if (mod2(solution.getEntry(j)) == 1) {
+							addElement(hypothesisTransitionMatrices[c], i + 1, j + 1);
+						}
 					}
 				} catch(Exception e) {
 					// matrix is not invertible
-					for (int j=0; j<learnedSize; j++) {
-						hypothesisTransitionMatrices[c][i][j] = 0;
-					}
+					hypothesisTransitionMatrices[c] = initialize(learnedSize, learnedSize);
 				}
 			}
 		}
@@ -1093,6 +1121,10 @@ public class Mod2_MA {
 	
 	// returns true if the dot product of two sparse vectors is 1, false otherwise
 	public static int dotProduct(ArrayList<Integer> v1, ArrayList<Integer> v2) {
+		if (v1 == null || v2 == null) {
+			return 0;
+		}
+		
 		int count = 0;
 		
 		int pos1 = 0;
@@ -1174,6 +1206,11 @@ public class Mod2_MA {
 	public static void displayMatrix(HashMap<Integer, ArrayList<Integer>> arr) {
 		ArrayList<Integer> dim = arr.get(0);
 		
+		if (dim.get(0) == 0 || dim.get(1) == 0) {
+			System.out.println();
+			return;
+		}
+		
 		for (int row = 1; row <= dim.get(0); row++) {
 			String rowStr = "";
 			
@@ -1197,5 +1234,35 @@ public class Mod2_MA {
 			System.out.println(rowStr);
 		}
 		System.out.println();
+	}
+
+	// converts a sparse matrix into a real matrix
+	public static RealMatrix sparseToReal(HashMap<Integer, ArrayList<Integer>> arr) {
+		RealMatrix out = MatrixUtils.createRealMatrix(arr.get(0).get(0), arr.get(0).get(1));
+		
+		for (int row : arr.keySet()) {
+			if (row > 0) {
+				for (int col : arr.get(row)) {
+					out.setEntry(row - 1, col - 1, 1);
+				}
+			}
+		}
+		
+		return out;
+	}
+	
+	// converts a real matrix into a sparse matrix
+	public static HashMap<Integer, ArrayList<Integer>> realToSparse(RealMatrix arr) throws Exception {
+		HashMap<Integer, ArrayList<Integer>> out = initialize(arr.getRowDimension(), arr.getColumnDimension());
+		
+		for (int r = 0; r < arr.getRowDimension(); r++) {
+			for (int c = 0; c < arr.getColumnDimension(); c++) {
+				if (arr.getEntry(r, c) == 1) {
+					addElement(out, r + 1, c + 1);
+				}
+			}
+		}
+		
+		return out;
 	}
 }

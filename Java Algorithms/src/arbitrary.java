@@ -17,12 +17,9 @@
  */
 
 import java.io.BufferedReader;
-import java.io.FileReader;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Scanner;
-import java.util.StringTokenizer;
 
 public class arbitrary {
 	
@@ -68,7 +65,7 @@ public class arbitrary {
 		f.close();
 	}
 	
-	public static boolean EQstatistical(double[] hypothesisFinalVector, double[][][] hypothesisTransitionMatrices) throws Exception {
+	public static boolean EQstatistical(HashMap<Integer, ArrayList<Integer>> hypothesisFinalVector, HashMap<Integer, ArrayList<Integer>>[] hypothesisTransitionMatrices) throws Exception {
 		int numFail = 0;
 		for (int i=0; i<EQNumTests; i++) {
 			String test = Mod2_MA.genTest((int) (Math.random() * (EQMaxTestLen + 1)), false);
