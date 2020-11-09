@@ -1073,7 +1073,10 @@ public class Mod2_MA {
 	public static HashMap<Integer, ArrayList<Integer>> multiply(HashMap<Integer, ArrayList<Integer>> arr1, HashMap<Integer, ArrayList<Integer>> arr2) throws Exception {
 		ArrayList<Integer> dim1 = arr1.get(0);
 		ArrayList<Integer> dim2 = arr2.get(0);
-		if (dim1.get(1) != dim2.get(0)) {
+		
+		int colDim1 = dim1.get(1);
+		int rowDim2 = dim2.get(0);
+		if (colDim1 != rowDim2) {
 			throwException(null, "Multiplied matrices of invalid dimension.");
 		}
 		

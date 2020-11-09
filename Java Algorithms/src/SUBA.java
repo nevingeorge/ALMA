@@ -20,10 +20,8 @@
  */
 
 import java.io.BufferedReader;
-import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Scanner;
 import java.util.StringTokenizer;
 
 public class SUBA {
@@ -180,25 +178,28 @@ public class SUBA {
 		return (2 * SUBAStates * j) + (2 * k) - SUBAStates + i - 1;
 	}
 
-	public static void UFAtoMod2MA() {
+	@SuppressWarnings("unchecked")
+	public static void UFAtoMod2MA() throws Exception {
 		// the size of the target function equals the number of states in the UFA
 		Mod2_MA.inputSize = UFAStates;
 		
 		// inputFinalVector is the characteristic vector of UFAFinalStates
-		Mod2_MA.inputFinalVector = new double[Mod2_MA.inputSize];
+		Mod2_MA.inputFinalVector = Mod2_MA.initialize(1, Mod2_MA.inputSize);
 		for (int i=1; i<=UFAStates; i++) {
 			if(UFAFinalStates[i]) {
-				Mod2_MA.inputFinalVector[i-1] = 1;
+				Mod2_MA.addElement(Mod2_MA.inputFinalVector, 1, i);
 			}
 		}
 		
 		// for each letter in the alphabet, [transitionMatrix_letter]i,j = 1 iff (q_i,letter,q_j)∈UFATransitions
-		Mod2_MA.inputTransitionMatrices = new double[Mod2_MA.alphabet.length][Mod2_MA.inputSize][Mod2_MA.inputSize];
+		Mod2_MA.inputTransitionMatrices = new HashMap[Mod2_MA.alphabet.length];
 		for (int i=0; i<Mod2_MA.alphabet.length; i++) {
+			Mod2_MA.inputTransitionMatrices[i] = Mod2_MA.initialize(Mod2_MA.inputSize, Mod2_MA.inputSize);
+			
 			for (int j=1; j<=Mod2_MA.inputSize; j++) {
 				for (int k=1; k<=Mod2_MA.inputSize; k++) {
 					if (UFATransitions[j][i][k]) {
-						Mod2_MA.inputTransitionMatrices[i][j-1][k-1] = 1;
+						Mod2_MA.addElement(Mod2_MA.inputTransitionMatrices[i], j, k);
 					}
 				}
 			}
@@ -268,7 +269,7 @@ public class SUBA {
 	}
 	
 	// performs a statistical EQ between the input SUBA and learned mod-2-MA
-	public static boolean finalCheck(int maxTestLen, int numTests) {		
+	public static boolean finalCheck(int maxTestLen, int numTests) throws Exception {		
 		for (int i=1; i<=numTests; i++) {
 			// SUBA: ultimately periodic words of the form u(v)^w
 			int lenU = (int) (Math.random() * (maxTestLen + 1));
