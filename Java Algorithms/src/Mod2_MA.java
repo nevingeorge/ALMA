@@ -315,7 +315,7 @@ public class Mod2_MA {
 		}
 		
 		// case where minObservationTable = [[0]] (singular, must be treated separately)
-		if (minObservationTable.get(0).get(0) == 1 && minObservationTable.get(1) == null) {
+		if ((int) minObservationTable.get(0).get(0) == 1 && minObservationTable.get(1) == null) {
 			minFinalVector = initialize(1, 1);
 			minTransitionMatrices = new HashMap[alphabet.length];		
 			for (int i=0; i<alphabet.length; i++) {
@@ -501,7 +501,7 @@ public class Mod2_MA {
 			}
 		}
 		
-		if (newObservationTable.get(0).get(0) == 0 || newObservationTable.get(0).get(1) == 0) {
+		if ((int) newObservationTable.get(0).get(0) == 0 || (int) newObservationTable.get(0).get(1) == 0) {
 			newObservationTable.get(0).set(0, 1);
 			newObservationTable.get(0).set(1, 1);
 			newIndices.add("");
@@ -533,7 +533,7 @@ public class Mod2_MA {
 			}
 		}
 		
-		if (newObservationTable.get(0).get(0) == 0 || newObservationTable.get(0).get(1) == 0) {
+		if ((int) newObservationTable.get(0).get(0) == 0 || (int) newObservationTable.get(0).get(1) == 0) {
 			newObservationTable.get(0).set(0, 1);
 			newObservationTable.get(0).set(1, 1);
 			newIndices.add("");
@@ -555,7 +555,7 @@ public class Mod2_MA {
 		
 		// apply all of the previously done elementary row operations to vector
 		for (int[] operation : operations) {
-			if (operation[0] == 0) {
+			if ((int) operation[0] == 0) {
 				// swap operation
 				if (booleanVector[operation[1]] && !booleanVector[operation[2]]) {
 					booleanVector[operation[1]] = false;
@@ -768,7 +768,7 @@ public class Mod2_MA {
 	
 	public static boolean EQ(HashMap<Integer, ArrayList<Integer>> hypothesisFinalVector, HashMap<Integer, ArrayList<Integer>>[] hypothesisTransitionMatrices) throws Exception {
 		// NBA.java and arbitrary.java use statistical EQ's
-		if (NBA.NBAFinalStates!=null || arbitrary.MQMethod!=null) {
+		if (NBA.NBAFinalStates != null || arbitrary.MQMethod != null) {
 			return arbitrary.EQstatistical(hypothesisFinalVector, hypothesisTransitionMatrices);
 		}
 		
@@ -1071,55 +1071,55 @@ public class Mod2_MA {
 	
 	// multiplies a sparse mxn matrix by a sparse nxp matrix
 	public static HashMap<Integer, ArrayList<Integer>> multiply(HashMap<Integer, ArrayList<Integer>> arr1, HashMap<Integer, ArrayList<Integer>> arr2) throws Exception {
-		ArrayList<Integer> dim1 = arr1.get(0);
-		ArrayList<Integer> dim2 = arr2.get(0);
+		int rowDim1 = arr1.get(0).get(0);
+		int colDim1 = arr1.get(0).get(1);
+		int rowDim2 = arr2.get(0).get(0);
+		int colDim2 = arr2.get(0).get(1);
 		
-		int colDim1 = dim1.get(1);
-		int rowDim2 = dim2.get(0);
 		if (colDim1 != rowDim2) {
 			throwException(null, "Multiplied matrices of invalid dimension.");
 		}
 		
-		HashMap<Integer, ArrayList<Integer>> result = initialize(dim1.get(0), dim2.get(1));		
+		HashMap<Integer, ArrayList<Integer>> out = initialize(rowDim1, colDim2);
 		ArrayList<Integer> colSet = null;
 		
 		int rowsTraversed = 0;
-		for (int row : arr1.keySet()) {
-			if (rowsTraversed >= dim1.get(0)) {
+		for (int r : arr1.keySet()) {
+			if (rowsTraversed >= rowDim1) {
 				break;
 			}
 			
-			if (row > 0) {
+			if (r > 0) {
 				rowsTraversed++;
 				
 				if (colSet == null) {
 					colSet = new ArrayList<Integer>();
 					
 					int colsTraversed = 0;
-					for (int col : arr2.keySet()) {
-						if (colsTraversed >= dim2.get(1)) {
+					for (int c : arr2.keySet()) {
+						if (colsTraversed == colDim2) {
 							break;
 						}
-						
-						if (col < 0) {
+						if (c < 0) {
 							colsTraversed++;
-							colSet.add(col);
-							if (dotProduct(arr1.get(row), arr2.get(col)) == 1) {
-								addElement(result, row, col * -1);
+							colSet.add(c);
+							
+							if (dotProduct(arr1.get(r), arr2.get(c)) == 1) {
+								addElement(out, r, c * -1);
 							}
 						}
 					}
 				} else {
-					for (int col : colSet) {
-						if (dotProduct(arr1.get(row), arr2.get(col)) == 1) {
-							addElement(result, row, col * -1);
+					for (int c : colSet) {
+						if (dotProduct(arr1.get(r), arr2.get(c)) == 1) {
+							addElement(out, r, c * -1);
 						}
 					}
 				}
 			}
 		}
 		
-		return result;
+		return out;
 	}
 	
 	// returns true if the dot product of two sparse vectors is 1, false otherwise
@@ -1133,11 +1133,11 @@ public class Mod2_MA {
 		int pos1 = 0;
 		int pos2 = 0;
 		while (pos1 < v1.size() && pos2 < v2.size()) {
-			if (v1.get(pos1) == v2.get(pos2)) {
+			if ((int) v1.get(pos1) == (int) v2.get(pos2)) {
 				count++;
 				pos1++;
 				pos2++;
-			} else if (v1.get(pos1) < v2.get(pos2)) {
+			} else if ((int) v1.get(pos1) < (int) v2.get(pos2)) {
 				pos1++;
 			} else {
 				pos2++;
@@ -1260,7 +1260,22 @@ public class Mod2_MA {
 		
 		for (int r = 0; r < arr.getRowDimension(); r++) {
 			for (int c = 0; c < arr.getColumnDimension(); c++) {
-				if (arr.getEntry(r, c) == 1) {
+				if ((int) arr.getEntry(r, c) == 1) {
+					addElement(out, r + 1, c + 1);
+				}
+			}
+		}
+		
+		return out;
+	}
+	
+	// converts a int[][] into a sparse matrix
+	public static HashMap<Integer, ArrayList<Integer>> intArrayToSparse(int[][] arr) throws Exception {
+		HashMap<Integer, ArrayList<Integer>> out = initialize(arr.length, arr[0].length);
+		
+		for (int r = 0; r < arr.length; r++) {
+			for (int c = 0; c < arr[0].length; c++) {
+				if ((int) arr[r][c] == 1) {
 					addElement(out, r + 1, c + 1);
 				}
 			}

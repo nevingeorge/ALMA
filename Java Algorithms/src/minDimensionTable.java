@@ -9,9 +9,6 @@ import java.util.Scanner;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-import org.apache.commons.math3.linear.MatrixUtils;
-import org.apache.commons.math3.linear.RealMatrix;
-
 public class minDimensionTable {
 
 	public static void main(String[] args) throws Exception {
@@ -178,25 +175,20 @@ public class minDimensionTable {
 		}
 	}
 
-	public static int minimization() {
+	public static int minimization() throws Exception {
 		ArrayList<String> stateSpaceBasisIndices = new ArrayList<String>();
-		HashMap<String, double[]> stateSpaceIndexToVector = new HashMap<String, double[]>();
-		RealMatrix stateSpaceBasis = Mod2_MA.sparseBasis(Mod2_MA.inputFinalVector, Mod2_MA.inputTransitionMatrices, stateSpaceIndexToVector, stateSpaceBasisIndices, true);
+		HashMap<String, HashMap<Integer, ArrayList<Integer>>> stateSpaceIndexToVector = new HashMap<String, HashMap<Integer, ArrayList<Integer>>>();
+		HashMap<Integer, ArrayList<Integer>> stateSpaceBasis = Mod2_MA.basis(Mod2_MA.inputFinalVector, Mod2_MA.inputTransitionMatrices, stateSpaceIndexToVector, stateSpaceBasisIndices, true);
 		
 		ArrayList<String> coStateSpaceBasisIndices = new ArrayList<String>();
-		HashMap<String, double[]> coStateSpaceIndexToVector = new HashMap<String, double[]>();
-		RealMatrix coStateSpaceBasis = Mod2_MA.sparseBasis(Mod2_MA.inputFinalVector, Mod2_MA.inputTransitionMatrices, coStateSpaceIndexToVector, coStateSpaceBasisIndices, false);
+		HashMap<String, HashMap<Integer, ArrayList<Integer>>> coStateSpaceIndexToVector = new HashMap<String, HashMap<Integer, ArrayList<Integer>>>();
+		HashMap<Integer, ArrayList<Integer>> coStateSpaceBasis = Mod2_MA.basis(Mod2_MA.inputFinalVector, Mod2_MA.inputTransitionMatrices, coStateSpaceIndexToVector, coStateSpaceBasisIndices, false);
 		
-		RealMatrix observationTable = MatrixUtils.createRealMatrix(stateSpaceBasis.getRowDimension(), coStateSpaceBasis.getRowDimension());
-		for (int row=0; row<stateSpaceBasis.getRowDimension(); row++) {
-			for (int col=0; col<coStateSpaceBasis.getRowDimension(); col++) {
-				observationTable.setEntry(row, col, Mod2_MA.mod2(stateSpaceBasis.getRowVector(row).dotProduct(coStateSpaceBasis.getRowVector(col))));
-			}
-		}
+		HashMap<Integer, ArrayList<Integer>> observationTable = Mod2_MA.multiply(stateSpaceBasis, coStateSpaceBasis);
 		
 		Mod2_MA.minRowIndices = new ArrayList<String>();
-		RealMatrix linIndRowsObservationTable = Mod2_MA.sparseLinIndSubMatrix(observationTable, stateSpaceBasisIndices, Mod2_MA.minRowIndices, true);
+		HashMap<Integer, ArrayList<Integer>> linIndRowsObservationTable = Mod2_MA.linIndSubMatrixRows(observationTable, stateSpaceBasisIndices, Mod2_MA.minRowIndices);
 		
-		return linIndRowsObservationTable.getRowDimension();
+		return linIndRowsObservationTable.get(0).get(0);
 	}
 }

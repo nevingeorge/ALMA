@@ -15,12 +15,6 @@
  *   16(4):103−147, 2015.
  */
 
-REMOVE ALL THE DUPLICATE CODE!!!
-
-
-
-
-
 import java.util.Scanner;
 
 public class minimize {
@@ -79,23 +73,12 @@ public class minimize {
 		System.out.println("Dimension: " + Mod2_MA.minSize + '\n');
 		
 		System.out.print("Final Vector: ");
-		String s = "";
-		for (int i=0; i<Mod2_MA.minFinalVector.length; i++) {
-			s += Mod2_MA.mod2(Mod2_MA.minFinalVector[i]) + " ";
-		}
-		System.out.println(s + "\n");
+		Mod2_MA.displayMatrix(Mod2_MA.minFinalVector);
 		
 		System.out.println("Transition Matrices:\n");
 		for (int i=0; i<Mod2_MA.minTransitionMatrices.length; i++) {
 			System.out.println("Letter " + Mod2_MA.alphabet[i]);
-			for (int j=0; j<Mod2_MA.minTransitionMatrices[i].length; j++) {
-				s = "";
-				for (int k=0; k<Mod2_MA.minTransitionMatrices[i].length; k++) {
-					s += Mod2_MA.mod2(Mod2_MA.minTransitionMatrices[i][j][k]) + " ";
-				}
-				System.out.println(s);
-			}
-			System.out.println();
+			Mod2_MA.displayMatrix(Mod2_MA.minTransitionMatrices[i]);
 		}
 	}
 }
