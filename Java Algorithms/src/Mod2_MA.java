@@ -18,11 +18,12 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Scanner;
 import java.util.StringTokenizer;
-import java.text.DecimalFormat;
 
 import org.apache.commons.math3.exception.OutOfRangeException;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
@@ -1071,21 +1072,16 @@ public class Mod2_MA {
 	
 	// multiplies a sparse mxn matrix by a sparse nxp matrix
 	public static HashMap<Integer, ArrayList<Integer>> multiply(HashMap<Integer, ArrayList<Integer>> arr1, HashMap<Integer, ArrayList<Integer>> arr2) throws Exception {
-		int rowDim1 = arr1.get(0).get(0);
-		int colDim1 = arr1.get(0).get(1);
-		int rowDim2 = arr2.get(0).get(0);
-		int colDim2 = arr2.get(0).get(1);
-		
-		if (colDim1 != rowDim2) {
+		if ((int) arr1.get(0).get(1) != (int) arr2.get(0).get(0)) {
 			throwException(null, "Multiplied matrices of invalid dimension.");
 		}
-		
-		HashMap<Integer, ArrayList<Integer>> out = initialize(rowDim1, colDim2);
+
+		HashMap<Integer, ArrayList<Integer>> out = initialize(arr1.get(0).get(0), arr2.get(0).get(1));
 		ArrayList<Integer> colSet = null;
 		
 		int rowsTraversed = 0;
 		for (int r : arr1.keySet()) {
-			if (rowsTraversed >= rowDim1) {
+			if (rowsTraversed >= arr1.get(0).get(0)) {
 				break;
 			}
 			
@@ -1097,7 +1093,7 @@ public class Mod2_MA {
 					
 					int colsTraversed = 0;
 					for (int c : arr2.keySet()) {
-						if (colsTraversed == colDim2) {
+						if (colsTraversed == arr2.get(0).get(1)) {
 							break;
 						}
 						if (c < 0) {
@@ -1128,19 +1124,16 @@ public class Mod2_MA {
 			return 0;
 		}
 		
+		HashSet<Integer> set = new HashSet<Integer>();
+		for (int n : v1) {
+			set.add(n);
+		}
+		
 		int count = 0;
 		
-		int pos1 = 0;
-		int pos2 = 0;
-		while (pos1 < v1.size() && pos2 < v2.size()) {
-			if ((int) v1.get(pos1) == (int) v2.get(pos2)) {
+		for (int n : v2) {
+			if (set.contains(n)) {
 				count++;
-				pos1++;
-				pos2++;
-			} else if ((int) v1.get(pos1) < (int) v2.get(pos2)) {
-				pos1++;
-			} else {
-				pos2++;
 			}
 		}
 		
@@ -1197,8 +1190,6 @@ public class Mod2_MA {
 		for (int num : arr.get(row)) {
 			if (num == col) {
 				return 1;
-			} else if (num > col) {
-				return 0;
 			}
 		}
 		
