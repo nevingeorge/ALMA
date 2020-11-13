@@ -35,6 +35,25 @@ import org.apache.commons.math3.linear.RealVector;
 
 public class Mod2_MA {
 	
+	/*
+	 * Matrices are represented as sparse matrices using a HashMap<Integer, ArrayList<Integer>>.
+	 * Each element in the hashmap consists of a (Integer, ArrayList<Integer>) pair.
+	 * 
+	 * map.get(0) returns an arraylist of size 2, where the first element is the row dimension, and
+	 * the second element is the column dimension.
+	 * I.e. map.get(0).get(0) = row dimension, map.get(0).get(1) = column dimension
+	 * 
+	 * Every row/column in the matrix is represented as an arraylist, where the arraylist contains
+	 * the indices (starting from 1 instead of 0) corresponding to locations of the 1's.
+	 * E.g. [1, 0, 0, 1, 0, 0, 0, 1] -> [1, 4, 8]
+	 * 
+	 * For any positive integer r, map.get(r) returns the arraylist corresponding to row r.
+	 * For any negative integer c, map.get(c) returns the arraylist corresponding to row -c.
+	 * 
+	 * Useful sparse matrix functions are implemented such as initializing matrices, adding elements, 
+	 * and multiplying matrices.
+	 */
+	
 	// if true, displays the observation table as it is constructed
 	public static boolean observationTableFlag;
 	// if true, displays information on the progress of the minimization algorithm
@@ -185,6 +204,7 @@ public class Mod2_MA {
 	
 	public static String readFile(BufferedReader f) throws IOException {
 		String line = f.readLine();
+		
 		// ignore empty lines and lines beginning with "//"
 		while (line != null && (line.equals("") || (line.charAt(0) == '/' && line.charAt(1) == '/' ))) {
 			line = f.readLine();
@@ -231,7 +251,13 @@ public class Mod2_MA {
 		throw new Exception(message);
 	}
 	
-	// follows an adapted version of algorithm 2 in Thon and Jaeger to minimize the input mod-2-MA
+	/*
+	 * 
+	 * TODO!!!!!!!
+	 * 
+	 */
+	
+	// follows the minimization algorithm given in _______
 	@SuppressWarnings("unchecked")
 	public static void minimize() throws OutOfRangeException, Exception {
 		if (minProgressFlag) {
@@ -421,11 +447,6 @@ public class Mod2_MA {
 		ArrayList<String> testStrings = new ArrayList<String>();
 		testStrings.add("");
 		
-		/*
-		 * Each int[] in operations has size 3, where int[0] = 0 for a swap operation and
-		 * 1 for a subtract operation, and int[1] = row_1 and int[2] = row_2, meaning either
-		 * you swap row_1 and row_2 or subtract row_1 from row_2. 
-		 */
 		ArrayList<int[]> operations = new ArrayList<int[]>();
 		
 		while (sizeTests > 0) {
@@ -543,7 +564,17 @@ public class Mod2_MA {
 		return newObservationTable;
 	}
 	
-	// tests whether the vector is in the span of the basis
+	/*
+	 * Returns false if vector is in the span of the basis, true otherwise.
+	 * 
+	 * Operations consists of all the elementary row operations needed to convert the basis into rref.
+	 * These operations are applied to vector, and the additional elementary row operations needed to
+	 * convert the augmented matrix basis+vector into rref are added to operations.
+	 * 
+	 * Each int[] in operations has size 3, where int[0] = 0 for a swap operation and
+	 * 1 for a subtract operation, and int[1] = row_1 and int[2] = row_2, meaning either
+	 * you swap row_1 and row_2 or subtract row_1 from row_2. 
+	 */
 	public static boolean linInd(ArrayList<Integer> vector, ArrayList<int[]> operations, int sizeBasis, int numRows) {	
 		if (vector == null || vector.size() == 0) {
 			return false;
@@ -576,6 +607,8 @@ public class Mod2_MA {
 		ArrayList<Integer> rows = new ArrayList<Integer>();
 		int index = -1;
 		
+		// convert booleanVector to a sparse vector
+		// find the first 1 in a row after sizeBasis
 		for (int row = 1; row <= numRows; row++) {
 			if (booleanVector[row]) {
 				if (row > sizeBasis && index == -1) {
@@ -585,10 +618,14 @@ public class Mod2_MA {
 			}
 		}
 		
+		// no 1 was found, so vector is linearly dependent with the basis
 		if (index == -1) {
 			return false;
 		}
 		
+		// add the operations needed to convert the augmented matrix basis+vector into rref
+		
+		// swap operations
 		if (index != sizeBasis + 1) {
 			// need to perform a swap
 			int[] swap = new int[3];
@@ -598,6 +635,7 @@ public class Mod2_MA {
 			operations.add(swap);
 		}
 		
+		// subtract operations
 		for (int row : rows) {
 			if (row != index) {
 				// need to subtract two rows
