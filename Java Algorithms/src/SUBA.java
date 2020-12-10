@@ -63,13 +63,14 @@ public class SUBA {
 	
 	@SuppressWarnings("unchecked")
 	public static void SUBAtoUFA() throws Exception {	
+		BufferedReader f;
 		if (Mod2_MA.inMinimize) {
-			System.out.println("Input file name and optional flag -m or -d (e.g. SUBA_input1.txt, SUBA_input1.txt -d)");
+			System.out.println("Input file name and optional flag -ma or -da (e.g. SUBA_input1.txt, SUBA_input1.txt -m, SUBA_input1.txt -da)");
+			f = Mod2_MA.getFile(false, true, true, true);
 		} else {
-			System.out.println("Input file name and optional flag -vm (e.g. SUBA_input1.txt -v, SUBA_input1.txt -m, SUBA_input1.txt -vm)");
+			System.out.println("Input file name and optional flag -vma (e.g. SUBA_input1.txt -v, SUBA_input1.txt -ma, SUBA_input1.txt -vma)");
+			f = Mod2_MA.getFile(true, true, false, true);
 		}
-
-		BufferedReader f = Mod2_MA.getFile(true, true, true);
 
 		// UFAStates = SUBAStates U (SUBAStates x SUBAStates x {0,1})
 		SUBAStates = Integer.parseInt(Mod2_MA.readFile(f));

@@ -59,7 +59,9 @@ public class Mod2_MA {
 	// if true, displays information on the progress of the minimization algorithm
 	public static boolean minProgressFlag;
 	// if true, only displays the minimized dimension and terminates
-	public static boolean displayMinDimensionFlag;
+	public static boolean minDimensionFlag;
+	// if true, displays the dimension of an equivalent minimal DFA
+	public static boolean dfaFlag;
 	
 	public static String[] alphabet;
 	// maps each letter in the alphabet to an index
@@ -125,13 +127,14 @@ public class Mod2_MA {
 	
 	@SuppressWarnings("unchecked")
 	public static void readInput() throws Exception {	
+		BufferedReader f;
 		if (inMinimize) {
-			System.out.println("Input file name and optional flags -m (e.g. Mod2_MA_input1.txt, Mod2_MA_input1.txt -m)");;
+			System.out.println("Input file name and optional flags -ma (e.g. Mod2_MA_input1.txt, Mod2_MA_input1.txt -m)");
+			f = getFile(false, true, false, true);
 		} else {
-			System.out.println("Input file name and optional flags -vm (e.g. Mod2_MA_input1.txt -v, Mod2_MA_input1.txt -m, Mod2_MA_input1.txt -vm)");;
+			System.out.println("Input file name and optional flags -vma (e.g. Mod2_MA_input1.txt -v, Mod2_MA_input1.txt -ma, Mod2_MA_input1.txt -vma)");
+			f = getFile(true, true, false, true);
 		}
-		
-		BufferedReader f = getFile(true, true, false);
 		
 		readAlphabet(f, false);
 		
@@ -173,7 +176,7 @@ public class Mod2_MA {
 		f.close();
 	}
 	
-	public static BufferedReader getFile(boolean vFlag, boolean mFlag, boolean dFlag) throws Exception {
+	public static BufferedReader getFile(boolean vFlag, boolean mFlag, boolean dFlag, boolean aFlag) throws Exception {
 		in = new Scanner(System.in);
 		String[] arrInput = in.nextLine().split(" ");
 		startTime = System.nanoTime();
@@ -185,7 +188,8 @@ public class Mod2_MA {
 		// handle flags
 		observationTableFlag = false;
 		minProgressFlag = false;
-		displayMinDimensionFlag = false;
+		minDimensionFlag = false;
+		dfaFlag = false;
 		if (arrInput.length == 2) {
 			if (vFlag && arrInput[1].contains("v")) {
 				observationTableFlag = true;
@@ -194,9 +198,17 @@ public class Mod2_MA {
 				minProgressFlag = true;
 			}
 			if (dFlag && arrInput[1].contains("d")) {
-				displayMinDimensionFlag = true;
+				minDimensionFlag = true;
+			}
+			if (aFlag && arrInput[1].contains("a")) {
+				dfaFlag = true;
 			}
 		}
+		
+		if (minProgressFlag && minDimensionFlag) {
+			throwException(null, "Invalid input: cannot have both the -m and -d flags.");
+		}
+		
 		System.out.println();
 		
 		return new BufferedReader(new FileReader(arrInput[0]));
@@ -251,13 +263,6 @@ public class Mod2_MA {
 		throw new Exception(message);
 	}
 	
-	/*
-	 * 
-	 * TODO!!!!!!!
-	 * 
-	 */
-	
-	// follows the minimization algorithm given in _______
 	@SuppressWarnings("unchecked")
 	public static void minimize() throws OutOfRangeException, Exception {
 		if (minProgressFlag) {
@@ -277,7 +282,7 @@ public class Mod2_MA {
 			
 			System.out.println("Minimization in progress...");
 			System.out.println("-------------------------");
-		} else if (displayMinDimensionFlag) {
+		} else if (minDimensionFlag) {
 			System.out.println("Minimization in progress...");
 		}
 		
@@ -285,7 +290,7 @@ public class Mod2_MA {
 		HashMap<String, HashMap<Integer, ArrayList<Integer>>> stateSpaceIndexToVector = new HashMap<String, HashMap<Integer, ArrayList<Integer>>>();
 		HashMap<Integer, ArrayList<Integer>> stateSpaceBasis = basis(inputFinalVector, inputTransitionMatrices, stateSpaceIndexToVector, stateSpaceBasisIndices, true);
 		
-		if (minProgressFlag || displayMinDimensionFlag) {
+		if (minProgressFlag || minDimensionFlag) {
 			System.out.println("Created the state space.");
 		}
 		
@@ -293,7 +298,7 @@ public class Mod2_MA {
 		HashMap<String, HashMap<Integer, ArrayList<Integer>>> coStateSpaceIndexToVector = new HashMap<String, HashMap<Integer, ArrayList<Integer>>>();
 		HashMap<Integer, ArrayList<Integer>> coStateSpaceBasis = basis(inputFinalVector, inputTransitionMatrices, coStateSpaceIndexToVector, coStateSpaceBasisIndices, false);
 		
-		if (minProgressFlag || displayMinDimensionFlag) {
+		if (minProgressFlag || minDimensionFlag) {
 			System.out.println("Created the co-state space.");
 			if (minProgressFlag) {
 				System.out.println();
@@ -303,7 +308,7 @@ public class Mod2_MA {
 		// (state space x co-state space) observation table
 		HashMap<Integer, ArrayList<Integer>> observationTable = multiply(stateSpaceBasis, coStateSpaceBasis);
 		
-		if (displayMinDimensionFlag) {
+		if (minDimensionFlag) {
 			System.out.println("Created the observation table.");
 		}
 		
@@ -319,12 +324,15 @@ public class Mod2_MA {
 		minRowIndices = new ArrayList<String>();
 		HashMap<Integer, ArrayList<Integer>> linIndRowsObservationTable = linIndSubMatrixRows(observationTable, stateSpaceBasisIndices, minRowIndices);
 		
-		if (displayMinDimensionFlag) {
+		if (minDimensionFlag) {
 			System.out.println("Minimized dimension: " + linIndRowsObservationTable.get(0).get(0));
-			if (in != null) {
-				in.close();
+			
+			if (!dfaFlag) {
+				if (in != null) {
+					in.close();
+				}
+				System.exit(0);
 			}
-			System.exit(0);
 		}
 		
 		minColIndices = new ArrayList<String>();
@@ -396,6 +404,18 @@ public class Mod2_MA {
 		
 		if (minProgressFlag) {
 			System.out.println("Minimization completed.\n");
+		}
+		
+		if (dfaFlag) {
+			System.out.println("Number of states of equivalent minimal DFA: " + dimensionMinDFA() + "\n");
+			
+			if (minDimensionFlag) {
+				if (in != null) {
+					in.close();
+				}
+				System.exit(0);
+			}
+			
 		}
 	}
 	
@@ -1012,6 +1032,38 @@ public class Mod2_MA {
 			}
 		}
 		return true;
+	}
+	
+	// returns the number of states of a minimal DFA equivalent to the minimized M2MA
+	// The number of states of the minimal DFA is the number of reachable states of the minimized M2MA.
+	public static int dimensionMinDFA() throws Exception {
+		HashSet<HashMap<Integer, ArrayList<Integer>>> reachable = new HashSet<HashMap<Integer, ArrayList<Integer>>>();
+		int sizeReachable = 0;
+		
+		ArrayList<HashMap<Integer, ArrayList<Integer>>> tests = new ArrayList<HashMap<Integer, ArrayList<Integer>>>();
+		// begin with ω_i = (1,0,0,...,0)
+		HashMap<Integer, ArrayList<Integer>> w_i = initialize(1, minFinalVector.get(0).get(1));
+		addElement(w_i, 1, 1);
+		tests.add(w_i);
+		int numTests = 1;
+		
+		while (numTests > 0) {
+			HashMap<Integer, ArrayList<Integer>> test = tests.remove(0);
+			numTests--;
+			
+			if (!reachable.contains(test)) {
+				reachable.add(test);
+				sizeReachable++;
+				
+				// add to tests the one-letter extensions of test
+				for (int i=0; i<alphabet.length; i++) {
+					tests.add(multiply(test, minTransitionMatrices[i]));
+					numTests++;
+				}
+			}
+		}
+		
+		return sizeReachable;
 	}
 	
 	public static void displayRuntime() {

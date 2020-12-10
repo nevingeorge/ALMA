@@ -42,7 +42,7 @@ public class NBA {
 	public static void readInput() throws Exception {
 		System.out.println("Input file name and optional flag -v (e.g. NBA_input1.txt or NBA_input1.txt -v)");
 		
-		BufferedReader f = Mod2_MA.getFile(true, false, false);
+		BufferedReader f = Mod2_MA.getFile(true, false, false, false);
 		
 		arbitrary.EQMaxTestLen = Integer.parseInt(Mod2_MA.readFile(f));	
 		arbitrary.EQNumTests = Integer.parseInt(Mod2_MA.readFile(f));

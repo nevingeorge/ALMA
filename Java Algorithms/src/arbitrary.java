@@ -47,7 +47,7 @@ public class arbitrary {
 	public static void readInput() throws Exception {
 		System.out.println("Input file name and optional flag -v (e.g. arb_input1.txt or arb_input1.txt -v)");
 
-		BufferedReader f = Mod2_MA.getFile(true, false, false);
+		BufferedReader f = Mod2_MA.getFile(true, false, false, false);
 		
 		// membership query function to call in MQ.java
 		try {
