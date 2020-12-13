@@ -5,6 +5,7 @@ Optional flags:\
 -v - display more verbose information regarding the procedures and outputs of the algorithms\
 -m - display the progress of the minimization algorithm\
 -d (only used in minimize.jar) - only display the dimension of the minimized mod-2-MA
+-a - display the number of states of a minimal DFA equivalent to the minimized mod-2-MA
 
 Each input file must be a text document following the format required of its intended program (specific details described below). Each file must have no line separation, entries must be space separated, and lines beginning with // are ignored. Example input files for all of the programs can be found in the repository.
 
