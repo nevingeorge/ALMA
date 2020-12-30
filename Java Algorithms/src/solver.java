@@ -53,7 +53,7 @@ public class solver {
                 for (int i=0; i<row; i++) {
                     sum -= luRow[i] * lu[i][col];
                 }
-                sum = Mod2_MA.mod2(sum);
+                sum = M2MA.mod2(sum);
                 luRow[col] = sum;
             }
 
@@ -67,7 +67,7 @@ public class solver {
                 for (int i=0; i<col; i++) {
                     sum -= luRow[i] * lu[i][col];
                 }
-                sum = Mod2_MA.mod2(sum);
+                sum = M2MA.mod2(sum);
                 luRow[col] = sum;
 
                 // maintain best permutation choice
@@ -157,7 +157,7 @@ public class solver {
             for (int col=0; col<m; col++) {
                 final double bpCol = bp[col];
                 for (int i=col+1; i<m; i++) {
-                    bp[i] = Mod2_MA.mod2(bp[i] - bpCol * lu[i][col]);
+                    bp[i] = M2MA.mod2(bp[i] - bpCol * lu[i][col]);
                 }
             }
 
@@ -166,7 +166,7 @@ public class solver {
                 bp[col] /= lu[col][col];
                 final double bpCol = bp[col];
                 for (int i=0; i<col; i++) {
-                	bp[i] = Mod2_MA.mod2(bp[i] - bpCol * lu[i][col]);
+                	bp[i] = M2MA.mod2(bp[i] - bpCol * lu[i][col]);
                 }
             }
 
@@ -201,7 +201,7 @@ public class solver {
                     final double[] bpI = bp[i];
                     final double luICol = lu[i][col];
                     for (int j=0; j<nColB; j++) {
-                        bpI[j] = Mod2_MA.mod2(bpI[j] - bpCol[j] * luICol);
+                        bpI[j] = M2MA.mod2(bpI[j] - bpCol[j] * luICol);
                     }
                 }
             }
@@ -213,7 +213,7 @@ public class solver {
                     final double[] bpI = bp[i];
                     final double luICol = lu[i][col];
                     for (int j=0; j<nColB; j++) {
-                    	bpI[j] = Mod2_MA.mod2(bpI[j] - bpCol[j] * luICol);
+                    	bpI[j] = M2MA.mod2(bpI[j] - bpCol[j] * luICol);
                     }
                 }
             }

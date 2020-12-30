@@ -1,0 +1,17 @@
+// From the paper "Strongly Unambiguous Büchi Automata Are Polynomially Predictable with
+// Membership Queries" by Dana Angluin, Timos Antonopoulos, and Dana Fisman.
+// alphabet
+a41i% b39*34_
+// size of the target function
+3
+// γ of the target function
+1 1 0
+// set of μ's for the target function
+// μ(a41i%)
+0 0 1
+1 0 0
+1 1 1
+// μ(b39*34_)
+0 1 0
+1 0 1
+1 1 0

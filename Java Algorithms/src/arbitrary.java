@@ -35,32 +35,32 @@ public class arbitrary {
 	public static void main(String[] args) throws Exception {
 		readInput();
 		
-		Mod2_MA.learn();
+		M2MA.learn();
 		
-		Mod2_MA.displayResults();
+		M2MA.displayResults();
 		
-		Mod2_MA.displayRuntime();
+		M2MA.displayRuntime();
 		
-		Mod2_MA.operationsOnLearnedMA();
+		M2MA.operationsOnLearnedMA();
 	}
 	
 	public static void readInput() throws Exception {
 		System.out.println("Input file name and optional flag -v (e.g. arb_input1.txt or arb_input1.txt -v)");
 
-		BufferedReader f = Mod2_MA.getFile(true, false, false, false);
+		BufferedReader f = M2MA.getFile(true, false, false, false);
 		
 		// membership query function to call in MQ.java
 		try {
-			MQMethod = (new MQ()).getClass().getMethod(Mod2_MA.readFile(f), String.class);
+			MQMethod = (new MQ()).getClass().getMethod(M2MA.readFile(f), String.class);
 		} catch (Exception e) {
-			Mod2_MA.throwException(f, "Invalid input: invalid membership query function name.");
+			M2MA.throwException(f, "Invalid input: invalid membership query function name.");
 		}
 		
-		EQMaxTestLen = Integer.parseInt(Mod2_MA.readFile(f));
-		EQNumTests = Integer.parseInt(Mod2_MA.readFile(f));
-		EQLimit = Integer.parseInt(Mod2_MA.readFile(f));
+		EQMaxTestLen = Integer.parseInt(M2MA.readFile(f));
+		EQNumTests = Integer.parseInt(M2MA.readFile(f));
+		EQLimit = Integer.parseInt(M2MA.readFile(f));
 		EQNumPerformed = 0;
-		Mod2_MA.readAlphabet(f, false);
+		M2MA.readAlphabet(f, false);
 				
 		f.close();
 	}
@@ -68,16 +68,16 @@ public class arbitrary {
 	public static boolean EQstatistical(HashMap<Integer, ArrayList<Integer>> hypothesisFinalVector, HashMap<Integer, ArrayList<Integer>>[] hypothesisTransitionMatrices) throws Exception {
 		int numFail = 0;
 		for (int i=0; i<EQNumTests; i++) {
-			String test = Mod2_MA.genTest((int) (Math.random() * (EQMaxTestLen + 1)), false);
+			String test = M2MA.genTest((int) (Math.random() * (EQMaxTestLen + 1)), false);
 			
-			if (Mod2_MA.MQ(test) != Mod2_MA.MQArbitrary(hypothesisFinalVector, hypothesisTransitionMatrices, test)) {
+			if (M2MA.MQ(test) != M2MA.MQArbitrary(hypothesisFinalVector, hypothesisTransitionMatrices, test)) {
 				// found a counter-example
 				// count the number of counter-examples
 				if (EQNumPerformed == EQLimit-1) {
 					numFail++;
 				} else {
 					EQNumPerformed++;
-					Mod2_MA.counterExample = test;
+					M2MA.counterExample = test;
 					return false;
 				}
 			}
@@ -85,9 +85,9 @@ public class arbitrary {
 		
 		// performs EQlimit equivalence queries
 		if (EQNumPerformed == EQLimit-1 && numFail != 0) {
-			Mod2_MA.resultFinalVector = hypothesisFinalVector;
-			Mod2_MA.resultTransitionMatrices = hypothesisTransitionMatrices;
-			Mod2_MA.displayResults();
+			M2MA.resultFinalVector = hypothesisFinalVector;
+			M2MA.resultTransitionMatrices = hypothesisTransitionMatrices;
+			M2MA.displayResults();
 			
 			System.out.println("Reached equivalence query limit.\nFinal equivalence query failed on " + numFail + " out of " + EQNumTests + " tests.");
 			System.exit(0);

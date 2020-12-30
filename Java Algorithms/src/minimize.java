@@ -21,37 +21,37 @@ public class minimize {
 
 	public static void main(String[] args) throws Exception {
 		int automataToMinimize = readInput();
-		Mod2_MA.inMinimize = true;
+		M2MA.inMinimize = true;
 		
 		// If == 1, then the input is a mod-2-MA; if == 2, then the input is a SUBA.
 		if (automataToMinimize == 1) {
-			Mod2_MA.readInput();
+			M2MA.readInput();
 		} else {
 			SUBA.SUBAtoUFA();
 			SUBA.UFAtoMod2MA();
 		}
 		
-		Mod2_MA.minimize();
+		M2MA.minimize();
 		
-		Mod2_MA.in.close();
+		M2MA.in.close();
 		
-		if (Mod2_MA.finalCheck(25, 1000, true)) {
+		if (M2MA.finalCheck(25, 1000, true)) {
 			displayResults();
 		} else {
 			throw new Exception("Algorithm failed: failed final check.");
 		}
 		
-		Mod2_MA.displayRuntime();
+		M2MA.displayRuntime();
 	}
 	
 	public static int readInput() {
-		Mod2_MA.in = new Scanner(System.in);
+		M2MA.in = new Scanner(System.in);
 		int automataToMinimize;
 		
 		while (true) {
 			try {
 				System.out.println("Enter 1 to minimize a mod-2-MA and 2 to mimimize a SUBA.");
-				automataToMinimize = Integer.parseInt(Mod2_MA.in.nextLine());
+				automataToMinimize = Integer.parseInt(M2MA.in.nextLine());
 				if (automataToMinimize != 1 && automataToMinimize != 2) {
 					throw new Exception("Invalid input.");
 				}
@@ -61,7 +61,7 @@ public class minimize {
 			}
 		}
 		
-		Mod2_MA.startTime = System.nanoTime();
+		M2MA.startTime = System.nanoTime();
 		
 		return automataToMinimize;
 	}
@@ -70,15 +70,15 @@ public class minimize {
 		System.out.println("Minimized mod-2-MA");
 		System.out.println("----------------");
 		
-		System.out.println("Dimension: " + Mod2_MA.minSize + '\n');
+		System.out.println("Dimension: " + M2MA.minSize + '\n');
 		
 		System.out.print("Final Vector: ");
-		Mod2_MA.displayMatrix(Mod2_MA.minFinalVector);
+		M2MA.displayMatrix(M2MA.minFinalVector);
 		
 		System.out.println("Transition Matrices:\n");
-		for (int i=0; i<Mod2_MA.minTransitionMatrices.length; i++) {
-			System.out.println("Letter " + Mod2_MA.alphabet[i]);
-			Mod2_MA.displayMatrix(Mod2_MA.minTransitionMatrices[i]);
+		for (int i=0; i<M2MA.minTransitionMatrices.length; i++) {
+			System.out.println("Letter " + M2MA.alphabet[i]);
+			M2MA.displayMatrix(M2MA.minTransitionMatrices[i]);
 		}
 	}
 }

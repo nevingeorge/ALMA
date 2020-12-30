@@ -29,73 +29,73 @@ public class NBA {
 	public static void main(String[] args) throws Exception {
 		readInput();
 
-		Mod2_MA.learn();
+		M2MA.learn();
 		
-		Mod2_MA.displayResults();
+		M2MA.displayResults();
 		
-		Mod2_MA.displayRuntime();
+		M2MA.displayRuntime();
 		
-		Mod2_MA.operationsOnLearnedMA();
+		M2MA.operationsOnLearnedMA();
 	}
 	
 	@SuppressWarnings("unchecked")
 	public static void readInput() throws Exception {
 		System.out.println("Input file name and optional flag -v (e.g. NBA_input1.txt or NBA_input1.txt -v)");
 		
-		BufferedReader f = Mod2_MA.getFile(true, false, false, false);
+		BufferedReader f = M2MA.getFile(true, false, false, false);
 		
-		arbitrary.EQMaxTestLen = Integer.parseInt(Mod2_MA.readFile(f));	
-		arbitrary.EQNumTests = Integer.parseInt(Mod2_MA.readFile(f));
-		arbitrary.EQLimit = Integer.parseInt(Mod2_MA.readFile(f));
+		arbitrary.EQMaxTestLen = Integer.parseInt(M2MA.readFile(f));	
+		arbitrary.EQNumTests = Integer.parseInt(M2MA.readFile(f));
+		arbitrary.EQLimit = Integer.parseInt(M2MA.readFile(f));
 		arbitrary.EQNumPerformed = 0;
 
-		NBAStates = Integer.parseInt(Mod2_MA.readFile(f));
+		NBAStates = Integer.parseInt(M2MA.readFile(f));
 		
 		// alphabet ΣU{$}
-		Mod2_MA.readAlphabet(f, true);
+		M2MA.readAlphabet(f, true);
 		
-		StringTokenizer st = new StringTokenizer(Mod2_MA.readFile(f));
+		StringTokenizer st = new StringTokenizer(M2MA.readFile(f));
 		NBAFinalStates = new boolean[NBAStates+1];
 		while (st.hasMoreTokens()) {
 			int state = Integer.parseInt(st.nextToken());
 			if(1<=state && state<=NBAStates && !NBAFinalStates[state]) {
 				NBAFinalStates[state] = true;
 			} else {
-				Mod2_MA.throwException(f, "Invalid input: invalid or duplicate final state.");
+				M2MA.throwException(f, "Invalid input: invalid or duplicate final state.");
 			}
 		}
 		
-		int numTransitions = Integer.parseInt(Mod2_MA.readFile(f));
-		if(numTransitions > ((Mod2_MA.alphabet.length - 1) * NBAStates * NBAStates)) {
-			Mod2_MA.throwException(f, "Invalid input: invalid number of transitions.");
+		int numTransitions = Integer.parseInt(M2MA.readFile(f));
+		if(numTransitions > ((M2MA.alphabet.length - 1) * NBAStates * NBAStates)) {
+			M2MA.throwException(f, "Invalid input: invalid number of transitions.");
 		}
 		
 		// (start state, letter, end state)
-		NBATransitions = new ArrayList[NBAStates+1][Mod2_MA.alphabet.length-1];
+		NBATransitions = new ArrayList[NBAStates+1][M2MA.alphabet.length-1];
 		for (int i=1; i<=NBAStates; i++) {
-			for (int j=0; j<Mod2_MA.alphabet.length-1; j++) {
+			for (int j=0; j<M2MA.alphabet.length-1; j++) {
 				NBATransitions[i][j] = new ArrayList<Integer>();
 			}
 		}
 		
 		// lines of the form q_i a q_j, where q_i,q_j∈NBAStates and a∈alphabet
 		for (int i=0; i<numTransitions; i++) {
-			st = new StringTokenizer(Mod2_MA.readFile(f));
+			st = new StringTokenizer(M2MA.readFile(f));
 			int p_start = Integer.parseInt(st.nextToken());
 			
 			String letter = st.nextToken();
 			
-			int a = Mod2_MA.letterToIndex.get(letter);
+			int a = M2MA.letterToIndex.get(letter);
 			int p_end = Integer.parseInt(st.nextToken());
 			if (p_start < 1 || p_start > NBAStates || p_end < 1 || p_end > NBAStates) {
-				Mod2_MA.throwException(f, "Invalid input: invalid transition.");
+				M2MA.throwException(f, "Invalid input: invalid transition.");
 			}
 
 			NBATransitions[p_start][a].add(p_end);
 		}
 		
-		if (Mod2_MA.readFile(f) != null) {
-			Mod2_MA.throwException(f, "Invalid input: more transitions inputted than specified.");
+		if (M2MA.readFile(f) != null) {
+			M2MA.throwException(f, "Invalid input: more transitions inputted than specified.");
 		}
 		
 		f.close();
@@ -203,7 +203,7 @@ public class NBA {
 		
 		// update nextStates with all of the states reachable from startStates on the first letter of str
 		for (int i=0; i<startStates.size(); i++) {
-			ArrayList<Integer> curTransition = NBATransitions[startStates.get(i)[0]][Mod2_MA.letterToIndex.get(firstLetter)];
+			ArrayList<Integer> curTransition = NBATransitions[startStates.get(i)[0]][M2MA.letterToIndex.get(firstLetter)];
 			for (int j=0; j<curTransition.size(); j++) {
 				int nextState = curTransition.get(j);
 				int mark = 0;
