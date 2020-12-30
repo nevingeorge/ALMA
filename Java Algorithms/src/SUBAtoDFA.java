@@ -1,8 +1,5 @@
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
@@ -17,8 +14,6 @@ public class SUBAtoDFA {
 		System.out.println("Input file name.");
 		Scanner in = new Scanner(System.in);
 		BufferedReader f = new BufferedReader(new FileReader(in.nextLine()));
-		PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("SUBAtoDFATable.txt")));
-		out.println("SUBA Dimension, Minimized M2MA Dimension, Minimal DFA Size");
 		System.out.println("SUBA Dimension, Minimized M2MA Dimension, Minimal DFA Size");
 		
 		int numSUBA = Integer.parseInt(M2MA.readFile(f));
@@ -30,7 +25,6 @@ public class SUBAtoDFA {
 			readInput(f);
 			SUBA.UFAtoMod2MA();
 			int[] minimizedDimensions = minimization();
-			out.println(SUBA.SUBAStates + " " + minimizedDimensions[0] + " " + minimizedDimensions[1]);
 			System.out.println(SUBA.SUBAStates + " " + minimizedDimensions[0] + " " + minimizedDimensions[1]);
 			
 			if (totalDimensions.get(SUBA.SUBAStates) == null) {
@@ -46,19 +40,15 @@ public class SUBAtoDFA {
 			}
 		}
 		
-		out.println("\nAggregate Results");
-		out.println("SUBA States, Total M2MA Dimension, Total DFA Size, Number of Automata, Average M2MA Dimension, Average DFA Size");
 		System.out.println("\nAggregate Results");
 		System.out.println("SUBA States, Total M2MA Dimension, Total DFA Size, Number of Automata, Average M2MA Dimension, Average DFA Size");
 		Set<Integer> keySet = totalDimensions.keySet();
 		
 		for (int subaStates : keySet) {
 			int[] results = totalDimensions.get(subaStates);
-			out.println(subaStates + " " + results[0] + " " + results[1] + " " + results[2] + " " + (((double) results[0])/results[2]) + " " + ((double) results[1])/results[2]);
 			System.out.println(subaStates + " " + results[0] + " " + results[1] + " " + results[2] + " " + (((double) results[0])/results[2]) + " " + ((double) results[1])/results[2]);
 		}
 		
-		out.close();
 		in.close();
 	}
 	

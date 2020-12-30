@@ -1,8 +1,5 @@
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
@@ -15,8 +12,6 @@ public class SUBAtoM2MA {
 		System.out.println("Input file name.");;
 		Scanner in = new Scanner(System.in);
 		BufferedReader f = new BufferedReader(new FileReader(in.nextLine()));
-		PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("dimensionTable.txt")));
-		out.println("SUBA Dimension, Minimized Dimension");
 		System.out.println("SUBA Dimension, Minimized Dimension");
 		
 		int numSUBA = Integer.parseInt(M2MA.readFile(f));
@@ -27,7 +22,6 @@ public class SUBAtoM2MA {
 			readInput(f);
 			SUBA.UFAtoMod2MA();
 			int minimizedDimension = minimization();
-			out.println(SUBA.SUBAStates + " " + minimizedDimension);
 			System.out.println(SUBA.SUBAStates + " " + minimizedDimension);
 			
 			if (totalDimensions.get(SUBA.SUBAStates) == null) {
@@ -40,20 +34,16 @@ public class SUBAtoM2MA {
 				totalDimensions.get(SUBA.SUBAStates)[1] += 1;
 			}
 		}
-		
-		out.println("\nAggregate Results");
-		out.println("SUBA States, Total Minimized Dimension, Number of Minimized Automata, Average Minimized Dimension");
+
 		System.out.println("\nAggregate Results");
 		System.out.println("SUBA States, Total Minimized Dimension, Number of Minimized Automata, Average Minimized Dimension");
 		Set<Integer> keySet = totalDimensions.keySet();
 		
 		for (int subaStates : keySet) {
 			int[] results = totalDimensions.get(subaStates);
-			out.println(subaStates + " " + results[0] + " " + results[1] + " " + ((double) results[0])/results[1]);
 			System.out.println(subaStates + " " + results[0] + " " + results[1] + " " + ((double) results[0])/results[1]);
 		}
 		
-		out.close();
 		in.close();
 	}
 	
