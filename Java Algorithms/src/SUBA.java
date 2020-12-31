@@ -64,7 +64,9 @@ public class SUBA {
 	@SuppressWarnings("unchecked")
 	public static void SUBAtoUFA() throws Exception {	
 		BufferedReader f;
-		if (M2MA.inMinimize) {
+		if (convert.f != null) {
+			f = convert.f;
+		} else if (M2MA.inMinimize) {
 			System.out.println("Input file name and optional flag -ma or -da (e.g. SUBA_input1.txt, SUBA_input1.txt -m, SUBA_input1.txt -da)");
 			f = M2MA.getFile(false, true, true, true);
 		} else {
@@ -168,11 +170,13 @@ public class SUBA {
 			UFAFinalStates[getIndex(q, q, 1)] = true;
 		}
 		
-		if (M2MA.readFile(f) != null) {
-			M2MA.throwException(f,"Invalid input: more transitions inputted than specified.");
-		}
+		if (convert.f == null) {
+			if (M2MA.readFile(f) != null) {
+				M2MA.throwException(f, "Invalid input: more transitions inputted than specified.");
+			}
 
-		f.close();
+			f.close();
+		}
 	}
 	
 	public static int getIndex(int j, int k, int i) {

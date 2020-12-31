@@ -25,7 +25,6 @@ import java.util.HashSet;
 import java.util.Scanner;
 import java.util.StringTokenizer;
 
-import org.apache.commons.math3.exception.OutOfRangeException;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.DecompositionSolver;
@@ -264,8 +263,17 @@ public class M2MA {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static void minimize() throws OutOfRangeException, Exception {
-		if (minProgressFlag) {
+	public static void minimize() throws Exception {
+		int inConvert = 0;
+		if (convert.results != null) {
+			if (convert.inM2MA) {
+				inConvert = 1;
+			} else {
+				inConvert = 2;
+			}
+		}
+		
+		if ((inConvert == 0) && minProgressFlag) {
 			System.out.println("Mod-2-MA to minimize:");
 			System.out.println("---------------------");
 			
@@ -282,7 +290,7 @@ public class M2MA {
 			
 			System.out.println("Minimization in progress...");
 			System.out.println("-------------------------");
-		} else if (minDimensionFlag) {
+		} else if ((inConvert == 0) && minDimensionFlag) {
 			System.out.println("Minimization in progress...");
 		}
 		
@@ -290,7 +298,7 @@ public class M2MA {
 		HashMap<String, HashMap<Integer, ArrayList<Integer>>> stateSpaceIndexToVector = new HashMap<String, HashMap<Integer, ArrayList<Integer>>>();
 		HashMap<Integer, ArrayList<Integer>> stateSpaceBasis = basis(inputFinalVector, inputTransitionMatrices, stateSpaceIndexToVector, stateSpaceBasisIndices, true);
 		
-		if (minProgressFlag || minDimensionFlag) {
+		if ((inConvert == 0) && (minProgressFlag || minDimensionFlag)) {
 			System.out.println("Created the state space.");
 		}
 		
@@ -298,7 +306,7 @@ public class M2MA {
 		HashMap<String, HashMap<Integer, ArrayList<Integer>>> coStateSpaceIndexToVector = new HashMap<String, HashMap<Integer, ArrayList<Integer>>>();
 		HashMap<Integer, ArrayList<Integer>> coStateSpaceBasis = basis(inputFinalVector, inputTransitionMatrices, coStateSpaceIndexToVector, coStateSpaceBasisIndices, false);
 		
-		if (minProgressFlag || minDimensionFlag) {
+		if ((inConvert == 0) && (minProgressFlag || minDimensionFlag)) {
 			System.out.println("Created the co-state space.");
 			if (minProgressFlag) {
 				System.out.println();
@@ -308,11 +316,11 @@ public class M2MA {
 		// (state space x co-state space) observation table
 		HashMap<Integer, ArrayList<Integer>> observationTable = multiply(stateSpaceBasis, coStateSpaceBasis);
 		
-		if (minDimensionFlag) {
+		if ((inConvert == 0) && minDimensionFlag) {
 			System.out.println("Created the observation table.");
 		}
 		
-		if (minProgressFlag) {
+		if ((inConvert == 0) && minProgressFlag) {
 			System.out.println("Observation table:" );
 			System.out.println("Dimension: " + stateSpaceBasis.get(0).get(0) + " x " + coStateSpaceBasis.get(0).get(1));
 			System.out.println("Rows: " + displayIndices(stateSpaceBasisIndices));
@@ -324,8 +332,14 @@ public class M2MA {
 		minRowIndices = new ArrayList<String>();
 		HashMap<Integer, ArrayList<Integer>> linIndRowsObservationTable = linIndSubMatrixRows(observationTable, stateSpaceBasisIndices, minRowIndices);
 		
-		if (minDimensionFlag) {
-			System.out.println("Minimized dimension: " + linIndRowsObservationTable.get(0).get(0));
+		minSize = linIndRowsObservationTable.get(0).get(0);
+		
+		if (inConvert == 1) {
+			return;
+		}
+		
+		if ((inConvert == 0) && minDimensionFlag) {
+			System.out.println("Minimized dimension: " + minSize);
 			
 			if (!dfaFlag) {
 				if (in != null) {
@@ -338,9 +352,7 @@ public class M2MA {
 		minColIndices = new ArrayList<String>();
 		HashMap<Integer, ArrayList<Integer>> minObservationTable = linIndSubMatrixCols(linIndRowsObservationTable, coStateSpaceBasisIndices, minColIndices);
 		
-		minSize = minObservationTable.get(0).get(0);
-		
-		if (minProgressFlag) {
+		if ((inConvert == 0) && minProgressFlag) {
 			System.out.println("Minimized observation table:");
 			System.out.println("Dimension: " + minSize);
 			System.out.println("Rows: " + displayIndices(minRowIndices));
@@ -357,12 +369,14 @@ public class M2MA {
 				minTransitionMatrices[i] = initialize(1, 1);
 			}
 			
-			if (minProgressFlag) {
-				System.out.println("Minimization completed.\n");
+			if (inConvert == 0) {
+				if (minProgressFlag) {
+					System.out.println("Minimization completed.\n");
+				}
+				
+				tested = new boolean[1][1];	
+				return;
 			}
-			
-			tested = new boolean[1][1];	
-			return;
 		}
 		
 		DecompositionSolver solver = new solver(sparseToReal(minObservationTable)).getSolver();
@@ -399,23 +413,25 @@ public class M2MA {
 			}
 		}
 		
-		// used in EQ to avoid testing the same word
-		tested = new boolean[minRowIndices.size()][minColIndices.size()];
-		
-		if (minProgressFlag) {
-			System.out.println("Minimization completed.\n");
-		}
-		
-		if (dfaFlag) {
-			System.out.println("Number of states of equivalent minimal DFA: " + dimensionMinDFA(true) + "\n");
+		if (inConvert == 0) {
+			// used in EQ to avoid testing the same word
+			tested = new boolean[minRowIndices.size()][minColIndices.size()];
 			
-			if (minDimensionFlag) {
-				if (in != null) {
-					in.close();
-				}
-				System.exit(0);
+			if (minProgressFlag) {
+				System.out.println("Minimization completed.\n");
 			}
 			
+			if (dfaFlag) {
+				System.out.println("Number of states of equivalent minimal DFA: " + dimensionMinDFA(true) + "\n");
+				
+				if (minDimensionFlag) {
+					if (in != null) {
+						in.close();
+					}
+					System.exit(0);
+				}
+				
+			}
 		}
 	}
 	
