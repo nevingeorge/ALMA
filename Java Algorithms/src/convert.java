@@ -117,16 +117,16 @@ public class convert {
 			String[] line = M2MA.readFile(f).split(" ");
 			int numNBA = Integer.parseInt(line[0]);
 			int numStates = Integer.parseInt(line[1]);
-			int numTransitions = Integer.parseInt(line[2]);
+			int numTransitionsToRemove = Integer.parseInt(line[2]);
 			int numFinal = Integer.parseInt(line[3]);
 			
-			runNBA(numNBA, numStates, numTransitions, numFinal);
+			runNBA(numNBA, numStates, numTransitionsToRemove, numFinal);
 		}
 		System.out.println("100% complete.\n");
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static void runNBA(int numTimes, int numStates, int numTransitions, int numFinalStates) throws Exception {
+	public static void runNBA(int numTimes, int numStates, int numTransitionsToRemove, int numFinalStates) throws Exception {
 		// for every reachable state add it to an array (also boolean array checkoff). Length of the array ends up being NBAStates.
 		for (int i = 0; i < numTimes; i++) {
 			arbitrary.EQNumPerformed = 0;
@@ -139,9 +139,9 @@ public class convert {
 			}
 			
 			if (inNBA) {
-				NBAtransitions(numStates, numTransitions, tempTransitions, reverseTempTransitions);
+				NBAtransitions(numStates, numTransitionsToRemove, tempTransitions, reverseTempTransitions);
 			} else {
-				DBAtransitions(numStates, numTransitions, tempTransitions, reverseTempTransitions);
+				DBAtransitions(numStates, numTransitionsToRemove, tempTransitions, reverseTempTransitions);
 			}
 			
 			// find all reachable states from state 1
@@ -244,50 +244,65 @@ public class convert {
 		}
 	}
 	
-	public static void NBAtransitions(int numStates, int numTransitions, ArrayList<int[]>[] tempTransitions, ArrayList<int[]>[] reverseTempTransitions) {
-		boolean[][][] usedTransitions = new boolean[numStates + 1][M2MA.alphabet.length - 1][numStates + 1];
+	public static void NBAtransitions(int numStates, int numTransitionsToRemove, ArrayList<int[]>[] tempTransitions, ArrayList<int[]>[] reverseTempTransitions) {
+		boolean[][][] unusedTransitions = new boolean[numStates + 1][M2MA.alphabet.length - 1][numStates + 1];
 		
-		for (int i = 0; i < numTransitions; i++) {
+		for (int i = 0; i < numTransitionsToRemove; i++) {
 			int state1 = (int) (Math.random() * numStates) + 1;
 			int letter = (int) (Math.random() * (M2MA.alphabet.length - 1));
 			int state2 = (int) (Math.random() * numStates) + 1;
 			
-			if (!usedTransitions[state1][letter][state2]) {
-				int[] transition = new int[2];
-				transition[0] = letter;
-				transition[1] = state2;
-				tempTransitions[state1].add(transition);
-				
-				int[] reverseTransition = new int[2];
-				reverseTransition[0] = letter;
-				reverseTransition[1] = state1;
-				reverseTempTransitions[state2].add(reverseTransition);
-				
-				usedTransitions[state1][letter][state2] = true;
+			if (!unusedTransitions[state1][letter][state2]) {	
+				unusedTransitions[state1][letter][state2] = true;
+			}
+		}
+		
+		for (int state1 = 1; state1 <= numStates; state1++) {
+			for (int letter = 0; letter < M2MA.alphabet.length - 1; letter++) {
+				for (int state2 = 1; state2 <= numStates; state2++) {
+					if (!unusedTransitions[state1][letter][state2]) {
+						int[] transition = new int[2];
+						transition[0] = letter;
+						transition[1] = state2;
+						tempTransitions[state1].add(transition);
+						
+						int[] reverseTransition = new int[2];
+						reverseTransition[0] = letter;
+						reverseTransition[1] = state1;
+						reverseTempTransitions[state2].add(reverseTransition);
+					}
+				}
 			}
 		}
 	}
 	
-	public static void DBAtransitions(int numStates, int numTransitions, ArrayList<int[]>[] tempTransitions, ArrayList<int[]>[] reverseTempTransitions) {
-		boolean[][] usedTransitions = new boolean[numStates + 1][M2MA.alphabet.length - 1];
+	public static void DBAtransitions(int numStates, int numTransitionsToRemove, ArrayList<int[]>[] tempTransitions, ArrayList<int[]>[] reverseTempTransitions) {
+		boolean[][] unusedTransitions = new boolean[numStates + 1][M2MA.alphabet.length - 1];
 		
-		for (int i = 0; i < numTransitions; i++) {
+		for (int i = 0; i < numTransitionsToRemove; i++) {
 			int state1 = (int) (Math.random() * numStates) + 1;
 			int letter = (int) (Math.random() * (M2MA.alphabet.length - 1));
-			int state2 = (int) (Math.random() * numStates) + 1;
 			
-			if (!usedTransitions[state1][letter]) {
-				int[] transition = new int[2];
-				transition[0] = letter;
-				transition[1] = state2;
-				tempTransitions[state1].add(transition);
-				
-				int[] reverseTransition = new int[2];
-				reverseTransition[0] = letter;
-				reverseTransition[1] = state1;
-				reverseTempTransitions[state2].add(reverseTransition);
-				
-				usedTransitions[state1][letter] = true;
+			if (!unusedTransitions[state1][letter]) {
+				unusedTransitions[state1][letter] = true;
+			}
+		}
+		
+		for (int state1 = 1; state1 <= numStates; state1++) {
+			for (int letter = 0; letter < M2MA.alphabet.length - 1; letter++) {
+				if (!unusedTransitions[state1][letter]) {
+					int state2 = (int) (Math.random() * numStates) + 1;
+					
+					int[] transition = new int[2];
+					transition[0] = letter;
+					transition[1] = state2;
+					tempTransitions[state1].add(transition);
+					
+					int[] reverseTransition = new int[2];
+					reverseTransition[0] = letter;
+					reverseTransition[1] = state1;
+					reverseTempTransitions[state2].add(reverseTransition);
+				}
 			}
 		}
 	}
