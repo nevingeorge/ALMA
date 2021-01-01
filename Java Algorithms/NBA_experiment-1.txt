@@ -7,8 +7,8 @@
 // alphabet
 a b c
 // number of lines to follow
-50
-// lines of the form (number of NBA, number of states, number of transitions, number of final states)
+1
+// lines of the form (number of NBA, number of states, number of transitions to remove, number of final states)
 20 5 10 2
 20 5 15 2
 20 5 20 2

@@ -77,6 +77,8 @@ public class convert {
 				prevPercentComplete = percentComplete;
 			}
 			
+			System.out.println(i);
+			
 			SUBA.SUBAtoUFA();
 			
 			SUBA.UFAtoMod2MA();

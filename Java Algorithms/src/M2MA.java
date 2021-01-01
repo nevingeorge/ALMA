@@ -375,8 +375,9 @@ public class M2MA {
 				}
 				
 				tested = new boolean[1][1];	
-				return;
 			}
+			
+			return;
 		}
 		
 		DecompositionSolver solver = new solver(sparseToReal(minObservationTable)).getSolver();
