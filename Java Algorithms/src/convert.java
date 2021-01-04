@@ -88,9 +88,7 @@ public class convert {
 			if (inM2MA) {
 				results[SUBA.SUBAStates][1] += M2MA.minSize;
 			} else {
-				int dim = M2MA.dimensionMinDFA(true);
-				results[SUBA.SUBAStates][1] += dim;
-				System.out.println(dim);
+				results[SUBA.SUBAStates][1] += M2MA.dimensionMinDFA(true);
 			}
 		}
 		System.out.println("100% complete.\n");
