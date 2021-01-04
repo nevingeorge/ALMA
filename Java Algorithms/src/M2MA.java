@@ -20,6 +20,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Scanner;
@@ -1053,25 +1054,23 @@ public class M2MA {
 	
 	// returns the number of states of a minimal DFA equivalent to the minimized M2MA
 	// The number of states of the minimal DFA is the number of reachable states of the minimized M2MA.
+	// Uses sparse ArrayLists instead of the HashMap representation for the tests to avoid out of memory issues.
 	public static int dimensionMinDFA(boolean minAutomata) throws Exception {
-		HashSet<HashMap<Integer, ArrayList<Integer>>> reachable = new HashSet<HashMap<Integer, ArrayList<Integer>>>();
+		HashMap<Integer, ArrayList<Integer>> orderedColSets = obtainColumnSets(minAutomata);
+		
+		HashSet<ArrayList<Integer>> reachable = new HashSet<ArrayList<Integer>>();
 		int sizeReachable = 0;
 		
-		ArrayList<HashMap<Integer, ArrayList<Integer>>> tests = new ArrayList<HashMap<Integer, ArrayList<Integer>>>();
-		HashMap<Integer, ArrayList<Integer>> w_i;
+		ArrayList<ArrayList<Integer>> tests = new ArrayList<ArrayList<Integer>>();
 		
 		// begin with ω_i = (1,0,0,...,0)
-		if (minAutomata) {
-			w_i = initialize(1, minFinalVector.get(0).get(1));
-		} else {
-			w_i = initialize(1, resultFinalVector.get(0).get(1));
-		}
-		addElement(w_i, 1, 1);
+		ArrayList<Integer> w_i = new ArrayList<Integer>();
+		w_i.add(1);
 		tests.add(w_i);
 		int numTests = 1;
 		
 		while (numTests > 0) {
-			HashMap<Integer, ArrayList<Integer>> test = tests.remove(0);
+			ArrayList<Integer> test = tests.remove(0);
 			numTests--;
 			
 			if (!reachable.contains(test)) {
@@ -1081,9 +1080,9 @@ public class M2MA {
 				// add to tests the one-letter extensions of test
 				for (int i=0; i<alphabet.length; i++) {
 					if (minAutomata) {
-						tests.add(multiply(test, minTransitionMatrices[i]));
+						tests.add(multiplyDimensionMinDFA(test, minTransitionMatrices[i], orderedColSets.get(i)));
 					} else {
-						tests.add(multiply(test, resultTransitionMatrices[i]));
+						tests.add(multiplyDimensionMinDFA(test, resultTransitionMatrices[i], orderedColSets.get(i)));
 					}
 					numTests++;
 				}
@@ -1091,6 +1090,56 @@ public class M2MA {
 		}
 		
 		return sizeReachable;
+	}
+	
+	public static HashMap<Integer, ArrayList<Integer>> obtainColumnSets(boolean minAutomata) {
+		HashMap<Integer, ArrayList<Integer>> orderedColSets = new HashMap<Integer, ArrayList<Integer>>();
+		
+		for (int i = 0; i < alphabet.length; i++) {
+			ArrayList<Integer> colSet = new ArrayList<Integer>();
+			int prevMax = 0;
+			boolean needsSorting = false;
+			
+			HashMap<Integer, ArrayList<Integer>> transitionMatrix;
+			
+			if (minAutomata) {
+				transitionMatrix = minTransitionMatrices[i];
+			} else {
+				transitionMatrix = resultTransitionMatrices[i];
+			}
+			
+			for (int c : transitionMatrix.keySet()) {
+				if (c < 0) {
+					colSet.add(c);
+					
+					if (!needsSorting && c > prevMax) {
+						needsSorting = true;
+					}
+					
+					prevMax = c;
+				}
+			}
+			
+			if (needsSorting) {
+				Collections.sort(colSet);
+			}
+			
+			orderedColSets.put(i, colSet);
+		}
+		
+		return orderedColSets;
+	}
+	
+	public static ArrayList<Integer> multiplyDimensionMinDFA(ArrayList<Integer> test, HashMap<Integer, ArrayList<Integer>> transitionMatrix, ArrayList<Integer> colSet) {
+		ArrayList<Integer> out = new ArrayList<Integer>();
+		
+		for (int c : colSet) {
+			if (dotProduct(test, transitionMatrix.get(c)) == 1) {
+				out.add(-1*c);
+			}
+		}
+		
+		return out;
 	}
 	
 	public static void displayRuntime() {
@@ -1235,7 +1284,7 @@ public class M2MA {
 		return out;
 	}
 	
-	// returns true if the dot product of two sparse vectors is 1, false otherwise
+	// returns the dot product of two sparse vectors
 	public static int dotProduct(ArrayList<Integer> v1, ArrayList<Integer> v2) {
 		if (v1 == null || v2 == null) {
 			return 0;
@@ -1294,8 +1343,8 @@ public class M2MA {
 			throwException(null, "Attempted to remove an invalid element from a matrix.");
 		}
 		
-		arr.get(row).remove(new Integer(col));
-		arr.get(col * -1).remove(new Integer(row));
+		arr.get(row).remove(Integer.valueOf(col));
+		arr.get(col * -1).remove(Integer.valueOf(row));
 	}
 	
 	// returns the element at position (row, col)
