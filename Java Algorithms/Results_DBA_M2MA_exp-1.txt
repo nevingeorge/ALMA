@@ -1,0 +1,9 @@
+Results
+-------
+Number of states: number of converted automata, sum of converted automata sizes, average converted automata size
+
+1: 4, 12, 3.0
+2: 13, 57, 4.384615384615385
+3: 34, 357, 10.5
+4: 75, 1255, 16.733333333333334
+5: 113, 3180, 28.141592920353983

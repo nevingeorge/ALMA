@@ -1,5 +1,8 @@
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -14,6 +17,7 @@ public class convert {
 	public static int[][] results;
 	
 	public static BufferedReader f;
+	public static PrintWriter out;
 	
 	public static void main(String[] args) throws Exception {
 		readInput();
@@ -25,6 +29,7 @@ public class convert {
 		}
 		
 		f.close();
+		out.close();
 		
 		displayResults();
 	}
@@ -58,7 +63,13 @@ public class convert {
 		
 		System.out.println("Input file name.");
 		f = new BufferedReader(new FileReader(M2MA.in.nextLine()));
+		
+		System.out.println("Output file name.");
+		out = new PrintWriter(new BufferedWriter(new FileWriter(M2MA.in.nextLine())));
+
 		M2MA.in.close();
+		
+		M2MA.startTime = System.nanoTime();
 		
 		// automata of size 1 to 30, int[][0] = count, int[][1] = sum of converted automata dimension
 		results = new int[31][2];
@@ -69,6 +80,12 @@ public class convert {
 		
 		int prevPercentComplete = 0;
 		System.out.println("0% complete.");
+		
+		if (inM2MA) {
+			out.println("SUBA size, minimized M2MA size");
+		} else {
+			out.println("SUBA size, minimized M2MA size, minimized DFA size");
+		}
 		
 		for (int i = 0; i < numSUBA; i++) {
 			int percentComplete = (int) ((((double) i) / numSUBA) * 100);
@@ -87,8 +104,11 @@ public class convert {
 			
 			if (inM2MA) {
 				results[SUBA.SUBAStates][1] += M2MA.minSize;
+				out.println(SUBA.SUBAStates + " " + M2MA.minSize);
 			} else {
-				results[SUBA.SUBAStates][1] += M2MA.dimensionMinDFA(true);
+				int dim = M2MA.dimensionMinDFA(true);
+				results[SUBA.SUBAStates][1] += dim;
+				out.println(SUBA.SUBAStates + " " + M2MA.minSize + " " + dim);
 			}
 		}
 		System.out.println("100% complete.\n");
@@ -103,6 +123,20 @@ public class convert {
 		M2MA.readAlphabet(f, true);		
 		
 		int numLines = Integer.parseInt(M2MA.readFile(f));	
+		
+		if (inM2MA) {
+			if (inNBA) {
+				out.println("NBA size, minimized M2MA size");
+			} else {
+				out.println("DBA size, minimized M2MA size");
+			}
+		} else {
+			if (inNBA) {
+				out.println("NBA size, minimized M2MA size, minimized DFA size");
+			} else {
+				out.println("DBA size, minimized M2MA size, minimized DFA size");
+			}
+		}
 		
 		int prevPercentComplete = 0;
 		System.out.println("0% complete.");
@@ -213,8 +247,11 @@ public class convert {
 				results[NBA.NBAStates][0]++;
 				if (inM2MA) {
 					results[NBA.NBAStates][1] += M2MA.learnedSize;
+					out.println(NBA.NBAStates + " " + M2MA.learnedSize);
 				} else {
-					results[NBA.NBAStates][1] += M2MA.dimensionMinDFA(false);
+					int dim = M2MA.dimensionMinDFA(false);
+					results[NBA.NBAStates][1] += dim;
+					out.println(NBA.NBAStates + " " + M2MA.learnedSize + " " + dim);
 				}
 			}
 		}
@@ -360,5 +397,7 @@ public class convert {
 				System.out.println(i + ": " + results[i][0] + ", " + results[i][1] + ", " + ((double) results[i][1])/results[i][0]);
 			}
 		}
+		System.out.println();
+		M2MA.displayRuntime();
 	}
 }

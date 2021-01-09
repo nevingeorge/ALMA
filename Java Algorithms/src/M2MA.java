@@ -18,7 +18,6 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -1145,8 +1144,8 @@ public class M2MA {
 	public static void displayRuntime() {
 		long endTime = System.nanoTime();
 		double totalTime = (endTime - startTime) / Math.pow(10, 9);
-		DecimalFormat df = new DecimalFormat("0.00");
-		System.out.println("Ran in " + df.format(totalTime) + "s.\n");
+		double roundedTime = ((int) (totalTime * 100))/100.0;
+		System.out.println("Ran in " + roundedTime + "s.\n");
 	}
 	
 	// performs operations on the learned mod-2-MA
