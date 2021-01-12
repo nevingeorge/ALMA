@@ -73,6 +73,10 @@ public class statistics {
 		}
 		in.close();
 		
+		System.out.println("\nExperiment Results");
+		System.out.println("------------------");
+		
+		
 		System.out.println("Initial automata size: mean size of converted M2MA, median size of converted M2MA");
 		for (int i = 1; i <= 30; i++) {
 			if (meanResultsM2MA[i][0] > 0) {
