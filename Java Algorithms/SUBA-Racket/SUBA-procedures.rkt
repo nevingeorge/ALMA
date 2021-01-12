@@ -334,10 +334,24 @@
   (let* ((o-port (open-output-file file-name #:exists 'replace))
          (list-nba '()))
 
-    (set! list-nba (append (generate-random-subas 1000 '(a b c) 20 2 6) list-nba))
-    (set! list-nba (append (generate-random-subas 1000 '(a b c) 20 2 13) list-nba))
-    (set! list-nba (append (generate-random-subas 1000 '(a b c) 20 2 20) list-nba))
-
+    (displayln "0%")
+    
+    (set! list-nba (append (generate-random-subas 6000 '(a b c) 10 2 2) list-nba))
+    (displayln "17%")
+    
+    (set! list-nba (append (generate-random-subas 6000 '(a b c) 10 2 6) list-nba))
+    (displayln "33%")
+    
+    (set! list-nba (append (generate-random-subas 6000 '(a b c) 10 2 10) list-nba))
+    (displayln "50%")
+    
+    (set! list-nba (append (generate-random-subas 6000 '(a b c) 10 3 2) list-nba))
+    (displayln "67%")
+    
+    (set! list-nba (append (generate-random-subas 6000 '(a b c) 10 3 6) list-nba))
+    (displayln "83%")
+    
+    (set! list-nba (append (generate-random-subas 6000 '(a b c) 10 3 10) list-nba))
     (displayln "100%")
 
     (displayln "// number of SUBA" o-port)
