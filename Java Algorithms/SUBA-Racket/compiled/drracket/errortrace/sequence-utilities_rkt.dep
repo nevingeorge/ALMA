@@ -1,1 +1,0 @@
-("7.9" racket ("14d1767577106a7adfe76a86f4c925d478e7a31b" . "2b5c7ccb11f8e7843b3ba0e884fcc205d5bae6fb") #"/Users/george/Desktop/Learning_Automata/Java Algorithms/SUBA-Racket/general-utilities.rkt" (collects #"errortrace" #"errortrace-key.rkt") (collects #"racket" #"main.rkt") (collects #"racket" #"runtime-config.rkt"))
