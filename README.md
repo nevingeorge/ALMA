@@ -86,6 +86,27 @@ Line 5: alphabet
 ## Minimizing automata
 minimize.java takes in as input a M2MA or SUBA and prints to stdout the M2MA obtained after minimizing the input function (in the SUBA case, it first converts the function into an equivalent UFA then M2MA). The format for the M2MA/SUBA inputs were described earlier.
 
+## Converting SUBA, NBA, and DBA to M2MA and DFA
+convert.jar takes in as input a series of SUBA, NBA, or DBA, and for each input omega automaton, the program adds to an output file the size of a minimal M2MA or DFA that accepts the same language. The program displays to stdout the average converted M2MA/DFA size for each input omega automaton size. Also, statistics.jar can be used to obtain more detailed statistics on the results of multiple output files representing the same conversion (e.g. SUBA->DFA or NBA->M2MA).
+
+### SUBA Input File Format
+Line 1: number of SUBA in the input file
+
+Lines 2-end: input SUBA - follows the same format as SUBA.jar
+
+### NBA/DBA Input File Format
+Line 1: maximum length of a test in the statistical equivalence query
+
+Line 2: number of tests the statistical equivalence query will check
+
+Line 3: limit on the number of equivalence queries to run
+
+Line 4: alphabet
+
+Line 5: number of lines to follow
+
+Lines 6-end: lines of the form (number of NBA/DBA to generate, max number of states, max number of transitions to remove, number of final states)
+
 ## Author: Nevin George
 
 ## Advisor: Dana Angluin

@@ -1,3 +1,9 @@
+/*
+ * Author: Nevin George
+ * Advisor: Dana Angluin
+ * Program Description: The program takes in either SUBA, NBA, or DBA and finds the size of an equivalent minimized M2MA or DFA.
+ */
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileReader;
@@ -103,9 +109,11 @@ public class convert {
 			results[SUBA.SUBAStates][0]++;
 			
 			if (inM2MA) {
+				// add to results the size of the converted minimized M2MA
 				results[SUBA.SUBAStates][1] += M2MA.minSize;
 				out.println(SUBA.SUBAStates + " " + M2MA.minSize);
 			} else {
+				// add to results the size of the converted minimized DFA
 				int dim = M2MA.dimensionMinDFA(true);
 				results[SUBA.SUBAStates][1] += dim;
 				out.println(SUBA.SUBAStates + " " + M2MA.minSize + " " + dim);
@@ -119,7 +127,6 @@ public class convert {
 		arbitrary.EQNumTests = Integer.parseInt(M2MA.readFile(f));
 		arbitrary.EQLimit = Integer.parseInt(M2MA.readFile(f));
 		
-		// alphabet ΣU{$}
 		M2MA.readAlphabet(f, true);		
 		
 		int numLines = Integer.parseInt(M2MA.readFile(f));	
@@ -161,7 +168,6 @@ public class convert {
 	
 	@SuppressWarnings("unchecked")
 	public static void runNBA(int numTimes, int numStates, int numTransitionsToRemove, int numFinalStates) throws Exception {
-		// for every reachable state add it to an array (also boolean array checkoff). Length of the array ends up being NBAStates.
 		for (int i = 0; i < numTimes; i++) {
 			arbitrary.EQNumPerformed = 0;
 			
@@ -186,8 +192,8 @@ public class convert {
 			finalStates(reachableStates, numFinalStates, tempFinalStates);
 			
 			// Find all the reachable states from every final state, reverse-deterministically.
-			// If it can't reach itself, remove its final property.
-			// If it reaches itself, add all the reachable states to finalReachableStates.
+			// If a final state can't reach itself, remove its final property.
+			// If a final state reaches itself, add all the reachable states to finalReachableStates.
 			HashSet<Integer> finalReachableStates = new HashSet<Integer>();
 			HashSet<Integer> finalFinalStates = new HashSet<Integer>();
 			
@@ -202,6 +208,7 @@ public class convert {
 			}			
 			
 			if (finalReachableStates.size() != 0) {
+				// construct the NBA
 				NBA.NBAStates = finalReachableStates.size();
 				
 				HashMap<Integer, Integer> tempToRealState = new HashMap<Integer, Integer>();
@@ -246,9 +253,11 @@ public class convert {
 				
 				results[NBA.NBAStates][0]++;
 				if (inM2MA) {
+					// add to results the size of the converted minimized M2MA
 					results[NBA.NBAStates][1] += M2MA.learnedSize;
 					out.println(NBA.NBAStates + " " + M2MA.learnedSize);
 				} else {
+					// add to results the size of the converted minimized DFA
 					int dim = M2MA.dimensionMinDFA(false);
 					results[NBA.NBAStates][1] += dim;
 					out.println(NBA.NBAStates + " " + M2MA.learnedSize + " " + dim);
@@ -257,6 +266,7 @@ public class convert {
 		}
 	}
 	
+	// find the states reachable from startState, checking to see if startState is reachable from itself upon some positive number of transitions
 	public static void finalReachable(boolean firstState, boolean passedFinalState, int startState, int finalState, HashSet<Integer> finalReachableStates, HashSet<Integer> tempFinalReachableStates, HashSet<Integer> reachableStates, ArrayList<int[]>[] reverseTempTransitions) {
 		if (!firstState && startState == finalState && !passedFinalState) {
 			passedFinalState = true;
@@ -281,6 +291,8 @@ public class convert {
 		}
 	}
 	
+	// generate the transitions of the NBA
+	// begin with a complete NBA and then randomly remove some given number of transitions
 	public static void NBAtransitions(int numStates, int numTransitionsToRemove, ArrayList<int[]>[] tempTransitions, ArrayList<int[]>[] reverseTempTransitions) {
 		boolean[][][] unusedTransitions = new boolean[numStates + 1][M2MA.alphabet.length - 1][numStates + 1];
 		
@@ -313,6 +325,8 @@ public class convert {
 		}
 	}
 	
+	// generate the transitions of the DBA
+	// begin with a complete DBA and then randomly remove some given number of transitions
 	public static void DBAtransitions(int numStates, int numTransitionsToRemove, ArrayList<int[]>[] tempTransitions, ArrayList<int[]>[] reverseTempTransitions) {
 		boolean[][] unusedTransitions = new boolean[numStates + 1][M2MA.alphabet.length - 1];
 		
@@ -344,6 +358,7 @@ public class convert {
 		}
 	}
 	
+	// find the states reachable from startState
 	public static void reachable(int startState, ArrayList<int[]>[] tempTransitions, HashSet<Integer> reachableStates) {
 		reachableStates.add(startState);
 		
@@ -354,6 +369,7 @@ public class convert {
 		}
 	}
 	
+	// randomly choose numFinalStates states out of the set of reachableStates to be final 
 	public static void finalStates(HashSet<Integer> reachableStates, int numFinalStates, HashSet<Integer> tempFinalStates) {	
 		int size = reachableStates.size();
 		numFinalStates = Math.min(size, numFinalStates);

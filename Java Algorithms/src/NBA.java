@@ -1,18 +1,8 @@
 /*
  * Author: Nevin George
  * Advisor: Dana Angluin
- * Program Description: The program takes in as input a NBA and prints to stdout the mod-2-MA obtained after 
+ * Program Description: The program takes in as input a NBA and prints to stdout the M2MA obtained after 
  * learning the NBA through a series of membership and statistical equivalence queries.
- * 
- * References:
- * 1 Amos Beimel, Francesco Bergadano, Nader H. Bshouty, Eyal Kushilevitz, Stefano Varric- chio. Learning 
- *   functions represented as multiplicity automata. J. ACM, 47(3):506–530, May 2000.
- * 2 Dana Angluin. Learning regular sets from queries and counterexamples. Inf. Comput., 75(2):87–106, 1987.
- * 3 Dana Angluin, Timos Antonopoulos, Dana Fis`man. Strongly Unambiguous Büchi Automata Are Polynomially 
- *   Predictable with Membership Queries. 28th International Conference on Computer Science Logic, 8:1–8:17, 2020.
- * 4 Michael Thon and Herbert Jaeger. Links Between Multiplicity Automata, Observable Operator Models and 
- *   Predictive State Representations — a Unified Learning Framework. Journal of Machine Learning Research, 
- *   16(4):103−147, 2015.
  */
 
 import java.io.BufferedReader;

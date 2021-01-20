@@ -1,19 +1,9 @@
 /*
  * Author: Nevin George
  * Advisor: Dana Angluin
- * Program Description: The program displays to stdout the mod-2-MA learned using a membership query method
+ * Program Description: The program displays to stdout the M2MA learned using a membership query method
  * specified in MQ.java and statistical equivalence queries. The program can be used to approximately learn any
  * type of automata, provided that MQ.java contains the desired automata's membership query function.
- * 
- * References:
- * 1 Amos Beimel, Francesco Bergadano, Nader H. Bshouty, Eyal Kushilevitz, Stefano Varric- chio. Learning 
- *   functions represented as multiplicity automata. J. ACM, 47(3):506–530, May 2000.
- * 2 Dana Angluin. Learning regular sets from queries and counterexamples. Inf. Comput., 75(2):87–106, 1987.
- * 3 Dana Angluin, Timos Antonopoulos, Dana Fisman. Strongly Unambiguous Büchi Automata Are Polynomially 
- *   Predictable with Membership Queries. 28th International Conference on Computer Science Logic, 8:1–8:17, 2020.
- * 4 Michael Thon and Herbert Jaeger. Links Between Multiplicity Automata, Observable Operator Models and 
- *   Predictive State Representations — a Unified Learning Framework. Journal of Machine Learning Research, 
- *   16(4):103−147, 2015.
  */
 
 import java.io.BufferedReader;
@@ -65,6 +55,7 @@ public class arbitrary {
 		f.close();
 	}
 	
+	// approximate equivalence query using a given number of randomly generated tests of some max length
 	public static boolean EQstatistical(HashMap<Integer, ArrayList<Integer>> hypothesisFinalVector, HashMap<Integer, ArrayList<Integer>>[] hypothesisTransitionMatrices) throws Exception {
 		int numFail = 0;
 		for (int i=0; i<EQNumTests; i++) {

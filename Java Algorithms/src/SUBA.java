@@ -2,21 +2,8 @@
  * Author: Nevin George
  * Advisor: Dana Angluin
  * Program Description: The program takes in as input a SUBA of n states and converts it into an equivalent UFA of 
- * 2n^2+n states. The UFA is then converted into an equivalent mod-2-MA of the same size and learned using
- * Mod2_MA.java.
- * 
- * References:
- * 1 Amos Beimel, Francesco Bergadano, Nader H. Bshouty, Eyal Kushilevitz, Stefano Varric- chio. Learning 
- *   functions represented as multiplicity automata. J. ACM, 47(3):506–530, May 2000.
- * 2 Dana Angluin. Learning regular sets from queries and counterexamples. Inf. Comput., 75(2):87–106, 1987.
- * 3 Dana Angluin, Timos Antonopoulos, Dana Fisman. Strongly Unambiguous Büchi Automata Are Polynomially 
- *   Predictable with Membership Queries. 28th International Conference on Computer Science Logic, 8:1–8:17, 2020.
- * 4 Michael Thon and Herbert Jaeger. Links Between Multiplicity Automata, Observable Operator Models and Predictive 
- *   State Representations — a Unified Learning Framework. Journal of Machine Learning Research, 16(4):103−147, 2015.
- * 5 N. Bousquet and C. Löding. Equivalence and inclusion problem for strongly unambiguous büchi automata. In 
- *   Language and Automata Theory and Applications, 4th International Conference, LATA 2010, Trier, Germany, May 
- *   24-28, 2010. Proceedings, pages 118–129, 2010. 
- *   URL: https: //doi.org/10.1007/978-3-642-13089-2_10, doi:10.1007/978-3-642-13089-2\_10.
+ * 2n^2+n states. The UFA is then converted into an equivalent M2MA of the same size and learned using
+ * M2MA.java.
  */
 
 import java.io.BufferedReader;

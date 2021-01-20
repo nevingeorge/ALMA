@@ -1,18 +1,8 @@
 /*
  * Author: Nevin George
  * Advisor: Dana Angluin
- * Program Description: The program takes in as input a mod-2-MA and prints to stdout the mod-2-MA obtained after 
+ * Program Description: The program takes in as input a M2MA and prints to stdout the M2MA obtained after 
  * learning the input function through a series of membership and equivalence queries.
- * 
- * References:
- * 1 Amos Beimel, Francesco Bergadano, Nader H. Bshouty, Eyal Kushilevitz, Stefano Varric- chio. Learning 
- *   functions represented as multiplicity automata. J. ACM, 47(3):506–530, May 2000.
- * 2 Dana Angluin. Learning regular sets from queries and counterexamples. Inf. Comput., 75(2):87–106, 1987.
- * 3 Dana Angluin, Timos Antonopoulos, Dana Fisman. Strongly Unambiguous Büchi Automata Are Polynomially 
- *   Predictable with Membership Queries. 28th International Conference on Computer Science Logic, 8:1–8:17, 2020.
- * 4 Michael Thon and Herbert Jaeger. Links Between Multiplicity Automata, Observable Operator Models and 
- *   Predictive State Representations — a Unified Learning Framework. Journal of Machine Learning Research, 
- *   16(4):103−147, 2015.
  */
 
 import java.io.BufferedReader;
@@ -40,7 +30,7 @@ public class M2MA {
 	 * 
 	 * map.get(0) returns an arraylist of size 2, where the first element is the row dimension, and
 	 * the second element is the column dimension.
-	 * I.e. map.get(0).get(0) = row dimension, map.get(0).get(1) = column dimension
+	 * i.e. map.get(0).get(0) = row dimension, map.get(0).get(1) = column dimension
 	 * 
 	 * Every row/column in the matrix is represented as an arraylist, where the arraylist contains
 	 * the indices (starting from 1 instead of 0) corresponding to locations of the 1's.
@@ -1226,6 +1216,7 @@ public class M2MA {
 	
 	/* Sparse matrix operations. */
 	
+	// initializes a sparse matrix with a given number of rows and columns
 	public static HashMap<Integer, ArrayList<Integer>> initialize(int numRows, int numCols) {
 		HashMap<Integer, ArrayList<Integer>> arr = new HashMap<Integer, ArrayList<Integer>>();
 		ArrayList<Integer> dim = new ArrayList<Integer>();

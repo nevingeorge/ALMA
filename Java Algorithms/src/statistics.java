@@ -1,3 +1,9 @@
+/*
+ * Author: Nevin George
+ * Advisor: Dana Angluin
+ * Program Description: The program generates statistics such as mean and median for the results of convert.java.
+ */
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;

@@ -1,5 +1,7 @@
-// modified version of LUDecomposition.java found in the Apache Commons Math 3 package
-// performs LU decomposition, solves matrix equations, and computes inverses in the field modulo 2
+/*
+ *  This is a modified version of LUDecomposition.java found in the Apache Commons Math 3 package.
+ *  The program performs LU decomposition, solves matrix equations, and computes inverses in the field modulo 2.
+ */
 
 import org.apache.commons.math3.exception.DimensionMismatchException;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
