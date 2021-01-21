@@ -1,0 +1,24 @@
+// maximum length of a test in the statistical equivalence query
+25
+// number of tests the statistical equivalence query will check
+1000
+// limit on the number of equivalence queries to run
+100000
+// alphabet
+a b c
+// number of lines to follow
+12
+// lines of the form (number of NBA, number of states, number of transitions to remove, number of final states)
+15 8 350 2
+15 8 370 2
+15 8 390 2
+15 8 410 2
+15 8 430 2
+15 8 450 2
+
+15 8 350 2
+15 8 370 2
+15 8 390 2
+15 8 410 2
+15 8 430 2
+15 8 450 2
