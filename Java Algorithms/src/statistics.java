@@ -103,14 +103,16 @@ public class statistics {
 	public static void displayResults(ArrayList<Integer>[] results, String convertedAutomataName) {
 		System.out.println("\n" + convertedAutomataName + " Results");
 		System.out.println("------------");
-		System.out.println("Initial automata size: mean, median, standard deviation");
+		System.out.println("Initial automata size: mean, median, standard deviation, min, max");
 		for (int i = 1; i <= 30; i++) {
 			if (results[i].size() > 0) {
 				double mean = calculateMean(results[i]);
 				double median = calculateMedian(results[i]);
 				double stdDev = calculateStandardDeviation(results[i], mean);
+				int min = calculateMin(results[i]);
+				int max = calculateMax(results[i]);
 				
-				System.out.println(i + ": " + mean + ", " + median + ", " + stdDev);
+				System.out.println(i + ": " + mean + ", " + median + ", " + stdDev + ", " + min + ", " + max);
 			}
 		}
 	}
@@ -154,5 +156,29 @@ public class statistics {
 		double stdDev = Math.sqrt(sum / (count - 1));
 		
 		return Math.round(stdDev * 100) / 100.0;
+	}
+	
+	public static int calculateMin(ArrayList<Integer> arr) {
+		int min = Integer.MAX_VALUE;
+		
+		for (int n : arr) {
+			if (n < min) {
+				min = n;
+			}
+		}
+		
+		return min;
+	}
+	
+	public static int calculateMax(ArrayList<Integer> arr) {
+		int max = 0;
+		
+		for (int n : arr) {
+			if (n > max) {
+				max = n;
+			}
+		}
+		
+		return max;
 	}
 }
