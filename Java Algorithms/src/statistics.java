@@ -103,14 +103,14 @@ public class statistics {
 	public static void displayResults(ArrayList<Integer>[] results, String convertedAutomataName) {
 		System.out.println("\n" + convertedAutomataName + " Results");
 		System.out.println("------------");
-		System.out.println("Initial automata size: mean, median, standard error");
+		System.out.println("Initial automata size: mean, median, standard deviation");
 		for (int i = 1; i <= 30; i++) {
 			if (results[i].size() > 0) {
 				double mean = calculateMean(results[i]);
 				double median = calculateMedian(results[i]);
-				double stdError = calculateStandardError(results[i], mean);
+				double stdDev = calculateStandardDeviation(results[i], mean);
 				
-				System.out.println(i + ": " + mean + ", " + median + ", " + stdError);
+				System.out.println(i + ": " + mean + ", " + median + ", " + stdDev);
 			}
 		}
 	}
@@ -125,7 +125,9 @@ public class statistics {
 			sum += n;
 		}
 		
-		return Math.round((sum / count) * 100) / 100.0;
+		double mean = sum / count;
+		
+		return Math.round(mean * 100) / 100.0;
 	}
 
 	public static double calculateMedian(ArrayList<Integer> arr) {
@@ -140,7 +142,7 @@ public class statistics {
 		}
 	}
 	
-	public static double calculateStandardError(ArrayList<Integer> arr, double mean) {
+	public static double calculateStandardDeviation(ArrayList<Integer> arr, double mean) {
 		int count = 0;
 		double sum = 0;
 		
@@ -149,6 +151,8 @@ public class statistics {
 			sum += Math.pow(n - mean, 2);
 		}
 		
-		return Math.sqrt(sum / (count - 1)) / Math.sqrt(count);
+		double stdDev = Math.sqrt(sum / (count - 1));
+		
+		return Math.round(stdDev * 100) / 100.0;
 	}
 }
