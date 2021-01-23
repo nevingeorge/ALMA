@@ -9,16 +9,16 @@ a b c
 // number of lines to follow
 12
 // lines of the form (number of NBA, number of states, number of transitions to remove, number of final states)
-20 5 90 2
-20 5 100 2
-20 5 110 2
-20 5 120 2
-20 5 130 2
-20 5 140 2
+20 6 160 2
+20 6 170 2
+20 6 180 2
+20 6 190 2
+20 6 200 2
+20 6 210 2
 
-20 5 90 3
-20 5 100 3
-20 5 110 3
-20 5 120 3
-20 5 130 3
-20 5 140 3
+20 6 160 3
+20 6 170 3
+20 6 180 3
+20 6 190 3
+20 6 200 3
+20 6 210 3
