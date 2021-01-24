@@ -13,22 +13,29 @@ import java.util.Scanner;
 
 public class statistics {
 	
+	public static int numFiles;
+	public static int weighting;
 	public static boolean inDFA;
 	
-	public static ArrayList<Integer>[] resultsM2MA;
-	public static ArrayList<Integer>[] resultsDFA;
+	public static ArrayList<Integer>[][] resultsM2MA;
+	public static ArrayList<Integer>[][] resultsDFA;
+	public static int[][] counts;
+	public static int[][] weights;
 
 	public static void main(String[] args) throws Exception {
 		Scanner in = new Scanner(System.in);
 		
 		System.out.println("Input number of files to read.");
-		int numFiles = Integer.parseInt(in.nextLine());
+		numFiles = Integer.parseInt(in.nextLine());
 		
 		String[] fileNames = new String[numFiles];
 		for (int i = 0; i < numFiles; i++) {
 			System.out.println("Input file name.");
 			fileNames[i] = in.nextLine();
 		}
+		
+		System.out.println("Enter 1 to give each file equal weight, or 2 to give each input automata equal weight.");
+		weighting = Integer.parseInt(in.nextLine());
 		in.close();
 		
 		inDFA = containsDFAResults(fileNames[0]);
@@ -36,7 +43,7 @@ public class statistics {
 		initialize();
 		
 		for (int i = 0; i < numFiles; i++) {
-			readFile(fileNames[i]);
+			readFile(fileNames[i], i);
 		}
 		
 		displayResults(resultsM2MA, "M2MA");
@@ -59,18 +66,24 @@ public class statistics {
 	
 	@SuppressWarnings("unchecked")
 	public static void initialize() {
-		resultsM2MA = new ArrayList[31];
+		resultsM2MA = new ArrayList[31][numFiles];
 		for (int i = 1; i <= 30; i++) {
-			resultsM2MA[i] = new ArrayList<Integer>();
+			for (int j = 0; j < numFiles; j++) {
+				resultsM2MA[i][j] = new ArrayList<Integer>();
+			}
 		}
 		
-		resultsDFA = new ArrayList[31];
+		resultsDFA = new ArrayList[31][numFiles];
 		for (int i = 1; i <= 30; i++) {
-			resultsDFA[i] = new ArrayList<Integer>();
+			for (int j = 0; j < numFiles; j++) {
+				resultsDFA[i][j] = new ArrayList<Integer>();
+			}
 		}
+		
+		counts = new int[31][numFiles];
 	}
 	
-	public static void readFile(String fileName) throws IOException {
+	public static void readFile(String fileName, int fileNumber) throws IOException {
 		BufferedReader f = new BufferedReader(new FileReader(fileName));
 		f.readLine();
 		String line = f.readLine();
@@ -82,12 +95,14 @@ public class statistics {
 				int initialSize = Integer.parseInt(lineArr[0]);
 						
 				int convertedM2MASize = Integer.parseInt(lineArr[1]);
-				resultsM2MA[initialSize].add(convertedM2MASize);
+				resultsM2MA[initialSize][fileNumber].add(convertedM2MASize);
 				
 				if (inDFA) {
 					int convertedDFASize = Integer.parseInt(lineArr[2]);
-					resultsDFA[initialSize].add(convertedDFASize);
+					resultsDFA[initialSize][fileNumber].add(convertedDFASize);
 				}
+				
+				counts[initialSize][fileNumber]++;
 				
 				line = f.readLine();
 				if (line == null) {
@@ -100,39 +115,107 @@ public class statistics {
 		f.close();
 	}
 	
-	public static void displayResults(ArrayList<Integer>[] results, String convertedAutomataName) {
+	public static void displayResults(ArrayList<Integer>[][] results, String convertedAutomataName) {
 		System.out.println("\n" + convertedAutomataName + " Results");
 		System.out.println("------------");
 		System.out.println("Initial automata size: mean, median, standard deviation, min, max");
+		
 		for (int i = 1; i <= 30; i++) {
-			if (results[i].size() > 0) {
-				double mean = calculateMean(results[i]);
-				double median = calculateMedian(results[i]);
-				double stdDev = calculateStandardDeviation(results[i], mean);
+			if (containsData(i)) {
+				double[] weights = calculateWeights(i);
+						
+				double mean = calculateMean(results[i], weights, i);
+				double median = calculateMedian(results[i], weights, i);
+				double stdDev = calculateStandardDeviation(results[i], mean, weights, i);
 				int min = calculateMin(results[i]);
 				int max = calculateMax(results[i]);
 				
-				System.out.println(i + ": " + mean + ", " + median + ", " + stdDev + ", " + min + ", " + max);
+				System.out.println(i + ": " + round(mean, 2) + ", " + round(median, 2) + ", " 
+						+ round(stdDev, 2) + ", " + min + ", " + max);
 			}
 		}
 	}
 	
+	public static boolean containsData(int size) {
+		for (int i = 0; i < counts[size].length; i++) {
+			if (counts[size][i] > 0) {
+				return true;
+			}
+		}
+		return false;
+	}
 	
-	public static double calculateMean(ArrayList<Integer> arr) {
-		int count = 0;
-		double sum = 0;
+	public static double[] calculateWeights(int size) {
+		double[] weights = new double[numFiles];
 		
-		for (int n : arr) {
-			count++;
-			sum += n;
+		if (weighting == 2) {
+			for (int i = 0; i < numFiles; i++) {
+				weights[i] = 1;
+			}
+			return weights;
 		}
 		
-		double mean = sum / count;
+		double max = 0;
+		for (int i = 0; i < numFiles; i++) {
+			if (counts[size][i] > max) {
+				max = counts[size][i];
+			}
+		}
 		
-		return Math.round(mean * 100) / 100.0;
+		for (int i = 0; i < numFiles; i++) {
+			if (counts[size][i] > 0) {
+				weights[i] = max / counts[size][i];
+			}
+		}
+		
+		return weights;
+	}
+	
+	public static double calculateMean(ArrayList<Integer>[] arr, double[] weights, int size) {
+		double weightsSum = 0;
+		double sum = 0;
+		
+		for (int i = 0; i < numFiles; i++) {
+			if (counts[size][i] > 0) {
+				for (int n : arr[i]) {
+					weightsSum += weights[i];
+					sum += n * weights[i];
+				}
+			}
+		}
+		
+		return sum / weightsSum;
 	}
 
-	public static double calculateMedian(ArrayList<Integer> arr) {
+	public static double calculateMedian(ArrayList<Integer>[] arr, double[] weights, int size) {
+		if (weighting == 1) {
+			int count = 0; 
+			double sum = 0;
+			
+			for (int i = 0; i < numFiles; i++) {
+				if (counts[size][i] > 0) {
+					count++;
+					sum += medianFormula(arr[i]);
+				}
+			}
+			
+			return sum / count;
+		} else {
+			ArrayList<Integer> aggregateArr = new ArrayList<Integer>();
+			
+			for (int i = 0; i < numFiles; i++) {
+				if (counts[size][i] > 0) {
+					for (int n : arr[i]) {
+						aggregateArr.add(n);
+					}
+				}
+			}
+			
+			return medianFormula(aggregateArr);
+		}
+	}
+	
+	public static double medianFormula(ArrayList<Integer> arr) {
 		Collections.sort(arr);
 		
 		int len = arr.size();
@@ -144,41 +227,54 @@ public class statistics {
 		}
 	}
 	
-	public static double calculateStandardDeviation(ArrayList<Integer> arr, double mean) {
-		int count = 0;
+	public static double calculateStandardDeviation(ArrayList<Integer>[] arr, double mean, double[] weights, int size) {
+		double count = 0;
+		double weightsSum = 0;
 		double sum = 0;
 		
-		for (int n : arr) {
-			count++;
-			sum += Math.pow(n - mean, 2);
+		for (int i = 0; i < numFiles; i++) {
+			if (counts[size][i] > 0) {
+				for (int n : arr[i]) {
+					count++;
+					weightsSum += weights[i];
+					sum += weights[i] * Math.pow(n - mean, 2);
+				}
+			}
 		}
 		
-		double stdDev = Math.sqrt(sum / (count - 1));
-		
-		return Math.round(stdDev * 100) / 100.0;
+		return Math.sqrt(sum / (((count - 1) / count) * weightsSum));
 	}
 	
-	public static int calculateMin(ArrayList<Integer> arr) {
+	public static int calculateMin(ArrayList<Integer>[] arr) {
 		int min = Integer.MAX_VALUE;
 		
-		for (int n : arr) {
-			if (n < min) {
-				min = n;
+		for (int i = 0; i < numFiles; i++) {
+			for (int n : arr[i]) {
+				if (n < min) {
+					min = n;
+				}
 			}
 		}
 		
 		return min;
 	}
 	
-	public static int calculateMax(ArrayList<Integer> arr) {
+	public static int calculateMax(ArrayList<Integer>[] arr) {
 		int max = 0;
 		
-		for (int n : arr) {
-			if (n > max) {
-				max = n;
+		for (int i = 0; i < numFiles; i++) {
+			for (int n : arr[i]) {
+				if (n > max) {
+					max = n;
+				}
 			}
 		}
 		
 		return max;
+	}
+
+	public static double round(double num, int numDecimalPlaces) {
+		double pow10 = Math.pow(10, numDecimalPlaces);
+		return Math.round(pow10 * num) / pow10;
 	}
 }
