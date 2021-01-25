@@ -118,7 +118,7 @@ public class statistics {
 	public static void displayResults(ArrayList<Integer>[][] results, String convertedAutomataName) {
 		System.out.println("\n" + convertedAutomataName + " Results");
 		System.out.println("------------");
-		System.out.println("Initial automata size: mean, median, standard deviation, min, max");
+		System.out.println("Initial automata size: mean, median, standard deviation, min, max, number of automata");
 		
 		for (int i = 1; i <= 30; i++) {
 			if (containsData(i)) {
@@ -129,9 +129,10 @@ public class statistics {
 				double stdDev = calculateStandardDeviation(results[i], mean, weights, i);
 				int min = calculateMin(results[i]);
 				int max = calculateMax(results[i]);
+				int count = calculateCount(i);
 				
 				System.out.println(i + ": " + round(mean, 2) + ", " + round(median, 2) + ", " 
-						+ round(stdDev, 2) + ", " + min + ", " + max);
+						+ round(stdDev, 2) + ", " + min + ", " + max + ", " + count);
 			}
 		}
 	}
@@ -276,5 +277,13 @@ public class statistics {
 	public static double round(double num, int numDecimalPlaces) {
 		double pow10 = Math.pow(10, numDecimalPlaces);
 		return Math.round(pow10 * num) / pow10;
+	}
+	
+	public static int calculateCount(int size) {
+		int count = 0;
+		for (int i = 0; i < numFiles; i++) {
+			count += counts[size][i];
+		}
+		return count;
 	}
 }
