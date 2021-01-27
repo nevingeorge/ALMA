@@ -1,10 +1,10 @@
 # Learning Automata
-To run the programs, in Terminal/Command Prompt change your current directory to the Java Algorithms folder and input the command "java -jar" followed by "M2MA.jar", "SUBA.jar", "NBA.jar", "arbitrary.jar", or "minimize.jar". The program will then ask for the input file name and optional flags. Make sure the desired input file is in the same folder as the jar file.
+To run the programs, in Terminal/Command Prompt change your current directory to the Java Algorithms folder and input the command "java -jar" followed by the name of the desired jar file. The program will then ask for the input file name and optional flags. Make sure the desired input file is in the same folder as the jar file.
 
 Optional flags:\
 -v - display more verbose information regarding the procedures and outputs of the algorithms\
 -m - display the progress of the minimization algorithm\
--d (only used in minimize.jar) - only display the dimension of the minimized M2MA\
+-d - only display the dimension of the minimized M2MA\
 -a - display the number of states of a minimal DFA equivalent to the minimized M2MA
 
 Each input file must be a text document following the format required of its intended program (specific details described below). Each file must have no line separation, entries must be space separated, and lines beginning with // are ignored. Example input files for all of the programs can be found in the repository.
@@ -87,7 +87,7 @@ Line 5: alphabet
 minimize.java takes in as input a M2MA or SUBA and prints to stdout the M2MA obtained after minimizing the input function (in the SUBA case, it first converts the function into an equivalent UFA then M2MA). The format for the M2MA/SUBA inputs were described earlier.
 
 ## Converting SUBA, NBA, and DBA to M2MA and DFA
-convert.jar takes in as input a series of SUBA, NBA, or DBA, and for each input omega automaton, the program adds to an output file the size of a minimal M2MA or DFA that accepts the same language. The program displays to stdout the average converted M2MA/DFA size for each input omega automaton size. Also, statistics.jar can be used to obtain more detailed statistics on the results of multiple output files representing the same conversion (e.g. SUBA->DFA or NBA->M2MA).
+convert.jar takes in as input a series of SUBA, NBA, or DBA, and for each input omega automaton, the program adds to an output file the size of a minimal M2MA or DFA that accepts the same language. The program displays to stdout the average converted M2MA/DFA size for each input omega automaton size. Also, statistics.jar can be used to obtain more detailed statistics on the results of multiple output files representing the same conversion (e.g. SUBA->DFA or NBA->M2MA). Various experiments have been run using convert.jar, and the experiment input files and results can be found in the GitHub.
 
 ### SUBA Input File Format
 Line 1: number of SUBA in the input file
