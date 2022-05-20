@@ -1,19 +1,19 @@
-// SUBA for the language (a^* a^5 c)^w
-// variant of SUBA_input3.txt
-// Before minimization, mod-2-MA/UFA has dimension 55
-// learned mod-2-MA has dimension = 32
+// SUBA for the language (a^* a^6 b)^w
+// learned MOD-2-MA has dimension = 58
 // number of states
-5
+7
 // alphabet
-a c
+a b
 // final states
-5
+7
 // number of transitions
-6
+8
 // transitions
 1 a 1
 1 a 2
 2 a 3
 3 a 4
 4 a 5
-5 c 1
+5 a 6
+6 a 7
+7 b 1
