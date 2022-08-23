@@ -15,7 +15,7 @@ Contains the specifications of a M2MA.
 
 Line 1: alphabet
 
-Line 2: size
+Line 2: dimension
 
 Line 3: final vector
 
