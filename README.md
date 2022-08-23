@@ -1,4 +1,4 @@
-# ALMA - Automata Learner using modulo 2 Multiplicity Automata
+# ALMA: Automata Learner using modulo 2 Multiplicity Automata
 To run the programs, in Terminal/Command Prompt change your current directory to the Java Algorithms folder and input the command "java -jar" followed by the name of the desired jar file. The program will then ask for the input file name and optional flags. Make sure the desired input file is in the same folder as the jar file. Each input file must be a text document following the format required of its intended program (specific details described below). Each file must have no line separation, entries must be space separated, and lines beginning with // are ignored. Example input files for all of the programs can be found in the repository.
 
 Optional flags:\
