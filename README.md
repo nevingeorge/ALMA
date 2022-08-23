@@ -7,8 +7,8 @@ Optional flags:\
 -d - only display the dimension of the minimized M2MA\
 -a - display the number of states of a minimal DFA equivalent to the minimized M2MA
 
-## Learning mod-2-multiplicity automata
-M2MA.java takes in as input a M2MA and prints to stdout the M2MA obtained after learning the input function through a series of membership and equivalence queries.
+## Learning modulo 2 multiplicity automata
+M2MA.java takes in as input an M2MA and prints to stdout the M2MA obtained after learning the input function through a series of membership and equivalence queries.
 
 ### Input File Format
 Contains the specifications of a M2MA.
