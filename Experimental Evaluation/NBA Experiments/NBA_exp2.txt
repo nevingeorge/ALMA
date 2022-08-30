@@ -1,29 +1,26 @@
 // maximum length of a test in the statistical equivalence query
 25
 // number of tests the statistical equivalence query will check
-100000
+10000
 // limit on the number of equivalence queries to run
-200
+30
 // number of states
-8
+4
 // alphabet
-a b c d
+a b
 // final states
-5 8
+2 4
 // number of transitions
-14
+11
 // transitions
-1 a 1
-1 b 1
+2 b 1
 1 a 2
-1 b 6
-2 a 3
-2 b 3
+1 b 2
+1 a 1
+3 b 2
+4 a 3
+1 a 3
+4 b 4
 3 a 4
-4 a 5
-4 b 5
-5 c 1
-6 a 7
-6 b 7
-7 b 8
-8 d 1
+3 a 1
+4 b 3

@@ -1,7 +1,7 @@
 /*
  * Author: Nevin George
  * Advisor: Dana Angluin
- * Program Description: The program generates statistics such as mean and median for the results of convert.java.
+ * Program Description: Used in the paper by Angluin et. al. in FoSSaCS 2022. The program generates statistics such as mean and median for the results of convert.java.
  */
 
 import java.io.BufferedReader;

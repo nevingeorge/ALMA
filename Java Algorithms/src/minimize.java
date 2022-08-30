@@ -1,7 +1,7 @@
 /*
  * Author: Nevin George
  * Advisor: Dana Angluin
- * Program Description: The program takes in as input a M2MA or SUBA and prints to stdout the M2MA obtained after 
+ * Program Description: The program takes in as input an M2MA or SUBA and prints to stdout the M2MA obtained after 
  * minimizing the input function (in the SUBA case, it first converts the function into an equivalent UFA then M2MA).
  */
 
@@ -10,6 +10,11 @@ import java.util.Scanner;
 public class minimize {
 
 	public static void main(String[] args) throws Exception {
+		System.out.println("Program Description:");
+		System.out.println("The program takes in as input an M2MA or SUBA and prints to stdout the M2MA obtained after"
+				+ " minimizing the input function (in the SUBA case, it first converts the function into an equivalent UFA then M2MA).");
+		System.out.println("\n----------------------------\n");
+		
 		int automataToMinimize = readInput();
 		M2MA.inMinimize = true;
 		

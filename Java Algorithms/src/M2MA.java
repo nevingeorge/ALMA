@@ -1,8 +1,8 @@
 /*
  * Author: Nevin George
  * Advisor: Dana Angluin
- * Program Description: The program takes in as input a M2MA and prints to stdout the M2MA obtained after 
- * learning the input function through a series of membership and equivalence queries.
+ * Program Description: The program takes in as input an M2MA and prints to stdout the M2MA obtained after 
+ * minimizing the input function and learning it using membership and equivalence queries.
  */
 
 import java.io.BufferedReader;
@@ -51,6 +51,8 @@ public class M2MA {
 	public static boolean minDimensionFlag;
 	// if true, displays the dimension of an equivalent minimal DFA
 	public static boolean dfaFlag;
+	// if true, nothing is displayed
+	public static boolean displayFlag;
 	
 	public static String[] alphabet;
 	// maps each letter in the alphabet to an index
@@ -92,6 +94,11 @@ public class M2MA {
 	public static boolean inMinimize = false;
 	
 	public static void main(String[] args) throws Exception {
+		System.out.println("Program Description:");
+		System.out.println("The program takes in as input an M2MA and prints to stdout the M2MA "
+				+ "obtained after minimizing the input function and learning it using membership and equivalence queries.");
+		System.out.println("\n----------------------------\n");
+		
 		readInput();
 		
 		minimize();
@@ -118,10 +125,10 @@ public class M2MA {
 	public static void readInput() throws Exception {	
 		BufferedReader f;
 		if (inMinimize) {
-			System.out.println("Input file name and optional flags -ma (e.g. M2MA_input1.txt, M2MA_input1.txt -m)");
+			System.out.println("Enter the input file name and optional flags -ma (e.g. M2MA_input1.txt, M2MA_input1.txt -m)");
 			f = getFile(false, true, false, true);
 		} else {
-			System.out.println("Input file name and optional flags -vma (e.g. M2MA_input1.txt -v, M2MA_input1.txt -ma, M2MA_input1.txt -vma)");
+			System.out.println("Enter the input file name and optional flags -vma (e.g. M2MA_input1.txt -v, M2MA_input1.txt -ma, M2MA_input1.txt -vma)");
 			f = getFile(true, true, false, true);
 		}
 		

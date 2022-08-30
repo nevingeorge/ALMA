@@ -1,7 +1,7 @@
 /*
  * Author: Nevin George
  * Advisor: Dana Angluin
- * Program Description: The program displays to stdout the M2MA learned using a membership query method
+ * Program Description: The program displays to stdout the M2MA learned using a membership query function
  * specified in MQ.java and statistical equivalence queries. The program can be used to approximately learn any
  * type of automata, provided that MQ.java contains the desired automata's membership query function.
  */
@@ -23,6 +23,13 @@ public class arbitrary {
 	public static int EQNumPerformed;
 
 	public static void main(String[] args) throws Exception {
+		System.out.println("Program Description:");
+		System.out.println("The program displays to stdout the M2MA learned using a membership query function"
+				+ " specified in MQ.java and statistical equivalence queries.");
+		System.out.println("The program can be used to approximately learn any"
+				+ " type of automata, provided that MQ.java contains the desired automata's membership query function.");
+		System.out.println("\n----------------------------\n");
+		
 		readInput();
 		
 		M2MA.learn();

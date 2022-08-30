@@ -1,8 +1,8 @@
 /*
  * Author: Nevin George
  * Advisor: Dana Angluin
- * Program Description: The program takes in as input a SUBA of n states and converts it into an equivalent UFA of 
- * 2n^2+n states. The UFA is then converted into an equivalent M2MA of the same size and learned using
+ * Program Description: The program takes in as input a SUBA of size n and converts it into an equivalent UFA of 
+ * size 2n^2+n. The UFA is then converted into an equivalent M2MA of the same size and learned using
  * M2MA.java.
  */
 
@@ -24,6 +24,13 @@ public class SUBA {
 	public static boolean[] UFAFinalStates;
 
 	public static void main(String[] args) throws Exception {		
+		System.out.println("Program Description:");
+		System.out.println("The program takes in as input a SUBA of size n and converts it into an equivalent UFA of"
+				+ " size 2n^2+n.");
+		System.out.println("The UFA is then converted into an equivalent M2MA of the same size and learned using"
+				+ " M2MA.java.");
+		System.out.println("\n----------------------------\n");
+		
 		SUBAtoUFA();
 		
 		UFAtoMod2MA();

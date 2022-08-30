@@ -1,7 +1,7 @@
 /*
  * Author: Nevin George
  * Advisor: Dana Angluin
- * Program Description: The program takes in either SUBA, NBA, or DBA and finds the size of an equivalent minimized M2MA or DFA.
+ * Program Description: Used in the paper by Angluin et. al. in FoSSaCS 2022. The program takes in either SUBA, NBA, or DBA and finds the size of an equivalent minimized M2MA or DFA.
  */
 
 import java.io.BufferedReader;

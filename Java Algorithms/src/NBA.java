@@ -1,7 +1,7 @@
 /*
  * Author: Nevin George
  * Advisor: Dana Angluin
- * Program Description: The program takes in as input a NBA and prints to stdout the M2MA obtained after 
+ * Program Description: The program takes in as input an NBA and prints to stdout the M2MA obtained after 
  * learning the NBA through a series of membership and statistical equivalence queries.
  */
 
@@ -17,6 +17,11 @@ public class NBA {
 	public static boolean[] NBAFinalStates;
 
 	public static void main(String[] args) throws Exception {
+		System.out.println("Program Description:");
+		System.out.println("The program takes in as input an NBA and prints to stdout the M2MA obtained after"
+				+ " learning the NBA through a series of membership and statistical equivalence queries.");
+		System.out.println("\n----------------------------\n");
+		
 		readInput();
 
 		M2MA.learn();
