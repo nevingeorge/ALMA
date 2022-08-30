@@ -11,7 +11,7 @@ Optional flags:\
 M2MA.java takes in as input an M2MA and prints to stdout the M2MA obtained after learning the input function through a series of membership and equivalence queries.
 
 ### Input File Format
-Contains the specifications of a M2MA.
+Contains the specifications of an M2MA.
 
 Line 1: alphabet
 
@@ -42,10 +42,10 @@ Lines 5-end: transitions - each line has the form q_i a q_j, where q_i,q_j∈Q a
 By default, the only initial state of the SUBA (and therefore also the UFA) is q_1.
 
 ## Learning non-deterministic Büchi automata (NBA)
-NBA.java takes in as input a NBA and prints to stdout the M2MA obtained after learning the NBA through a series of membership and statistical equivalence queries.
+NBA.java takes in as input an NBA and prints to stdout the M2MA obtained after learning the NBA through a series of membership and statistical equivalence queries.
 
 ### Input File Format
-Contains the specifications of a NBA of the form (Q, Σ, ∆, F) and the desired level of approximation for the statistical equivalence queries.
+Contains the specifications of an NBA of the form (Q, Σ, ∆, F) and the desired level of approximation for the statistical equivalence queries.
 
 Line 1: maximum length of a test in the statistical equivalence query
 
@@ -82,10 +82,10 @@ Line 4: limit on the number of equivalence queries to run
 Line 5: alphabet
 
 ## Minimizing automata
-minimize.java takes in as input a M2MA or SUBA and prints to stdout the M2MA obtained after minimizing the input function (in the SUBA case, it first converts the function into an equivalent UFA then M2MA). The format for the M2MA/SUBA inputs were described earlier.
+minimize.java takes in as input an M2MA or SUBA and prints to stdout the M2MA obtained after minimizing the input function (in the SUBA case, it first converts the function into an equivalent UFA then M2MA). The format for the M2MA/SUBA inputs were described earlier.
 
 ## Converting SUBA, NBA, and DBA to M2MA and DFA
-convert.jar takes in as input a series of SUBA, NBA, or DBA, and for each input omega automaton, the program adds to an output file the size of a minimal M2MA or DFA that accepts the same language. The program displays to stdout the average converted M2MA/DFA size for each input omega automaton size. Also, statistics.jar can be used to obtain more detailed statistics on the results of multiple output files representing the same conversion (e.g. SUBA->DFA or NBA->M2MA). Various experiments have been run using convert.jar, and the experiment input files and results can be found in the GitHub.
+convert.jar takes in as input a series of SUBA, NBA, or DBA. For each input automaton, the program adds to an output file the size of a minimal M2MA or DFA that accepts the same language. The program displays to stdout the average converted M2MA/DFA size for each input omega automaton size. Also, statistics.jar can be used to obtain more detailed statistics on the results of multiple output files representing the same conversion (e.g. SUBA->DFA or NBA->M2MA).
 
 ### SUBA Input File Format
 Line 1: number of SUBA in the input file
@@ -110,12 +110,26 @@ Lines 6-end: lines of the form (number of NBA/DBA to generate, max number of sta
 ## Advisor: Dana Angluin
 
 ## References
+Angluin, D. Learning regular sets from queries and counterexamples. Inf. Comput., 75(2):87–106 (1987)
+
+Angluin, D. Queries and concept learning. \textit{Mach. Learn. 2}, 4, 319–342 (1988)
+
+Angluin, D., Antonopoulos, T., Fisman, D.:Strongly unambiguous Büchi automata are polynomially predictable with membership queries. In: 28th EACSL Annual Conference on Computer Science Logic, CSL. pp. 8:1–8:17 (2020)
+
+Angluin, D., Antonopoulos, T., Fisman, D., George, N.:Representing Regular Languages of Infinite Words Using Mod 2 Multiplicity Automata. FoSSaCS (2022)
+
+Beimel, A., Bergadano, F., Bshouty, N.H., Kushilevitz, E., Varricchio, S.: Learning
+functions represented as multiplicity automata. J. ACM 47(3), 506–530 (May 2000)
+
+Bousquet, N., Löding, C.: Equivalence and inclusion problem for strongly unambiguous Büchi automata. In: Language and Automata Theory and Applications, 4th International Conference, LATA. Proceedings. pp. 118–129 (2010).
+
+Büchi, J.R.: On a decision method in restricted second order arithmetic. In: International Congress on Logic, Methodology and Philosophy of Science, Stanford University Press (1962) 1–11
+
+Calbrix, H., Nivat, M., Podelski, A.: Ultimately periodic words of rational $\omega$-languages. In: Proceedings of the 9th International Conference on Mathematical Foundations of Programming Semantics. pp. 554–566. Springer-Verlag (1994)
+
+Carton, O., Michel, M.: Unambiguous Büchi automata. Theor. Comput. Sci. 297(1–3) (2003) 37–81
+
+Michael R. Thon and Herbert Jaeger. Links between multiplicity automata, observable operator models and predictive state representations: a unified learning framework. \textit{Journal of Machine Learning Research}, 16:103–147 (2015)
+
+Sakarovitch, J.: Elements of Automata Theory. Cambridge University Press, USA (2009)
 Amos Beimel, Francesco Bergadano, Nader H. Bshouty, Eyal Kushilevitz, Stefano Varric- chio. Learning functions represented    as multiplicity automata. *J. ACM*, 47(3):506–530, May 2000.
-
-Dana Angluin. Learning regular sets from queries and counterexamples. *Inf. Comput.*, 75(2):87–106, 1987.
-
-Dana Angluin, Timos Antonopoulos, Dana Fisman. Strongly Unambiguous Büchi Automata Are Polynomially Predictable with Membership Queries. *28th International Conference on Computer Science Logic*, 8:1–8:17, 2020.
-
-Michael Thon and Herbert Jaeger. Links Between Multiplicity Automata, Observable Operator Models and Predictive State Representations — a Unified Learning Framework. *Journal of Machine Learning Research*, 16(4):103−147, 2015.
-
-N. Bousquet and C. Löding. Equivalence and inclusion problem for strongly unambiguous büchi automata. In *Language and Automata Theory and Applications, 4th International Conference, LATA 2010, Trier, Germany, May 24-28, 2010. Proceedings,* pages 118–129, 2010. URL: https: //doi.org/10.1007/978-3-642-13089-2_10, doi:10.1007/978-3-642-13089-2\_10.
