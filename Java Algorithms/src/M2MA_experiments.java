@@ -86,8 +86,9 @@ public class M2MA_experiments {
 			double averageTime = sumRuntimes / numM2MAs;
 			double convertedTime = averageTime / Math.pow(10,  9);
 			double roundedTime = ((int) (convertedTime * 100))/100.0;
-			System.out.println("Average run time of M2MAs of dimension " + dim + ": " + roundedTime);
+			System.out.println("Average run time of M2MAs of dimension " + dim + ": " + roundedTime + "s");
 		}
+		System.out.println("Algorithm complete.");
 	}
 	
 	public static void readInput() {
